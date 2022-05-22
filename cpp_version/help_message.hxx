@@ -38,14 +38,16 @@ string help()
   ostrstm << endl << "-f filename" << endl;
   ostrstm << "\tSpecifies a raw signal file. Format is PCM 16 bits as many channels as defined by the -n option" << endl;  
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
-  ostrstm << endl << "-K sine or pulses" << endl;
+  ostrstm << endl << "-K sine, pulses or triangle" << endl;
   ostrstm << "\tSpecifies the output signal file, raw and jackaudio (if so)." << endl;
-  ostrstm << "\ts=sine, p=pulses, b=both odd channels are sine, even are pulse, to be used for testing." << endl;
+  ostrstm << "\ts=sine, p=pulses, e=triangle, b=both odd channels are sine, even are pulse, to be used for testing." << endl;
   ostrstm << "\tIf not specified, the ";
 #ifdef __OUTPUT_SINE_MODE__
   ostrstm << "sine";
 #elif __OUTPUT_PULSES_MODE__
   ostrstm << "pulse";
+#elif __OUTPUT_TRIANGLE_MODE__
+  ostrstm << "triangle";
 #endif
   ostrstm << " mode is used" << endl;
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;

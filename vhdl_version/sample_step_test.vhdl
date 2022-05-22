@@ -34,7 +34,7 @@ entity sample_step_sine_test is
     --! 32 points from 0 to 2.PI minus epsilon are performed. 2 power this
     --! parameter ( - 1 ) additional points are added in each interval 
     sub_counter_size : integer range 4 to 20 := 8;
-    limit_calc : std_logic_vector( 4 downto 0 ) := "00111";
+    limit_calc : integer range 4 to 31 := 7;
     amplitude : integer range 0 to 65535 := 65535);
   port (
     --! Tells the simulation is over. It is used (with an and-reduce) in batch mode to start all the reporting
@@ -113,7 +113,7 @@ begin
               else
                 sub_counter <= ( others => '0' );
                 main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
-                report "L " & integer'image( to_integer( unsigned( limit_calc ))) & ", " &
+                report "L " & integer'image( limit_calc ) & ", " &
                   "A " & integer'image( amplitude ) & ", " &
                   "SCS " & integer'image( sub_counter_size ) & ", " &
                   integer'image( to_integer( unsigned( main_counter ))) & "/33 done";
@@ -144,7 +144,7 @@ begin
               end if;
             end loop;
 
-            if completed = '1' then
+            if_completed : if completed = '1' then
               quadrant_v := sin_out( sin_out'high downto sin_out'high ) &
                                cos_out( cos_out'high downto cos_out'high );
               last_quadrant <= quadrant_v;
@@ -213,13 +213,13 @@ begin
                 min_residual_z <= residual_z;
               end if;
               
-            end if;
+            end if if_completed;
           end if;
         end if CLK_1;
         CLK <= not CLK;
         wait for 20 nS;
       else
-        report "Limit: " & integer'image( to_integer( unsigned( limit_calc ))) & ", " &
+        report "Limit: " & integer'image( limit_calc ) & ", " &
           "Amplitude: " & integer'image( amplitude ) &
           "sub counter size: " & integer'image( sub_counter_size ) & ", " &
           "Simulation is over" severity note;
@@ -231,7 +231,7 @@ begin
     display : process
     begin
       wait until ( display_in = '1' or ( display_in = 'U' and simul_over_s = '1' ));
-      report "Limit: " & integer'image( to_integer( unsigned( limit_calc ))) & ", " &
+      report "Limit: " & integer'image( limit_calc ) & ", " &
           "sub counter size: " & integer'image( sub_counter_size ) & ", " &
           "********** Verifications **********" severity note;
       report "Quadrants CCW correct 00->01: " & integer'image( quadrant_trans( 1 )) &
@@ -265,11 +265,12 @@ begin
       display_out_s <= '1';
     end process display;
 
-    sample_step_sine_instanc : sample_step_sine port map (
+    sample_step_sine_instanc : sample_step_sine generic map (
+      limit_calc => limit_calc )
+      port map (
       CLK => CLK,
       RST => RST( RST'low ),
       start_calc => start,
-      limit_calc => limit_calc,
       amplitude => amplitude_vector,
       angle => angle,
       completed => completed,
@@ -295,6 +296,151 @@ configuration sample_step_sine_iobehavior_test of sample_step_sine_test is
   end for;
 end configuration sample_step_sine_iobehavior_test;
 
+--! Use standard library
+library ieee;
+use ieee.std_logic_1164.all,
+  ieee.numeric_std.all,
+  ieee.math_real.all,
+work.signal_gene.all;
+
+entity sample_step_triangle_test is
+  generic (
+    --! 256 points from 0 to 2.PI minus epsilon are performed. 2 power this
+    --! parameter ( - 1 ) additional points are added in each interval 
+    sub_counter_size : integer range 2 to 8 := 2;
+    limit_calc : integer range 2 to 16 := 8;
+    amplitude : integer range 0 to 65535 := 65535);
+  port (
+    --! Tells the simulation is over. It is used (with an and-reduce) in batch mode to start all the reporting
+    simul_over : out std_logic;
+    --! Controls the report. 0 = wait, 1 = do it, U = do it after the simulation is completed (stand alone)
+    display_in :  in std_logic;
+    --! Pass the event to the next instantiation after the report is completed (batch mode)
+    display_out: out std_logic);
+end entity sample_step_triangle_test;
+
+architecture arch of sample_step_triangle_test is
+  signal CLK : std_logic := '0';
+  signal RST : std_logic_vector( 5 downto 0 ) := ( others => '1' );
+  signal main_counter : std_logic_vector( 8 downto 0 ) := ( others => '0' );
+  constant main_counter_max : std_logic_vector( main_counter'range ) := "100000010";
+  signal sub_counter : std_logic_vector( sub_counter_size - 1 downto 0 ) := ( others => '0' );
+  constant sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
+  signal angle : std_logic_vector( 23 downto 0 );
+  constant amplitude_vector : std_logic_vector( 15 downto 0 ) :=
+    std_logic_vector( to_unsigned( amplitude, 16 ));
+  signal triangle_out : std_logic_vector( 15 downto 0 );
+  signal completed,start : std_logic;
+  signal triangle_out_analog : std_logic_vector( triangle_out'range );
+  signal last_t, last_delta : integer := 0;
+  signal delta_t, delta2_t : integer := 0;
+  signal started : std_logic := '0';
+  signal simul_over_s : std_logic := '0';
+  signal display_out_s : std_logic := '0';
+begin
+  main_proc : process
+    variable is_main : boolean;
+    variable ind_count : integer;
+    variable delta_t_v, delta2_t_v : integer;
+  begin
+      if main_counter /= main_counter_max then
+        CLK_1 : if CLK = '1' then
+          RST( RST'high - 1 downto RST'low ) <= RST( RST'high downto RST'low + 1 );
+          RST( RST'high ) <= '0';
+          if RST = std_logic_vector( to_unsigned( 0 , RST'length )) then
+          --        counter <= std_logic_vector( unsigned( counter ) + 1 );
+            if started = '0' then
+              start <= '1';
+              started <= '1';
+            elsif completed = '1' then
+              -- respawn imediately after a computation is over
+              triangle_out_analog( triangle_out_analog'high ) <= not triangle_out( triangle_out'high );
+              triangle_out_analog( triangle_out_analog'high - 1 downto triangle_out_analog'low ) <=
+                triangle_out( triangle_out'high - 1 downto triangle_out'low);             
+              start <= '1';
+              if sub_counter /= sub_counter_max then
+                sub_counter <= std_logic_vector( unsigned( sub_counter ) + 1 );
+              else
+                sub_counter <= ( others => '0' );
+                main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
+                report "A " & integer'image( amplitude ) & ", " &
+                  "SCS " & integer'image( sub_counter_size ) & ", " &
+                  integer'image( to_integer( unsigned( main_counter ))) & "/" &
+                  integer'image( 2 ** ( main_counter'length - 1 ) + 1 ) & " done";
+              end if;
+            else
+              start <= '0';
+            end if;
+            is_main := true;
+            ind_count := main_counter'high - 1;
+            for ind in angle'high downto angle'low loop
+              if is_main then
+                angle( ind ) <= main_counter( ind_count );
+                if ind_count /= main_counter'low then
+                  ind_count := ind_count - 1;
+                else
+                  ind_count := sub_counter'high;
+                  is_main := false;
+                end if;
+              else
+                angle( ind ) <= sub_counter( ind_count );
+                if ind_count /= sub_counter'low then
+                  ind_count := ind_count - 1;
+                else
+                  ind_count := main_counter'high - 1;
+                  is_main := true;
+                end if;
+
+              end if;
+            end loop;
+            -- Due to the limited precision, the 0 crossing is always done
+            -- with 2 point at 0, then skip this case
+            if_completed : if completed = '1' and
+             ( to_integer( signed( triangle_out )) /= 0 or last_t /= 0 ) then
+              delta_t_v := to_integer( signed( triangle_out )) - last_t;
+              delta_t <= delta_t_v;
+              last_t <= to_integer( signed( triangle_out ));
+              
+              delta2_t_v := delta_t_v - last_delta;
+              delta2_t <= delta2_t_v;
+              last_delta <= delta_t_v;
+            end if if_completed;
+          end if;
+        end if CLK_1;
+        CLK <= not CLK;
+        wait for 20 nS;
+      else
+        report "Limit: " & integer'image( limit_calc ) & ", " &
+          "Amplitude: " & integer'image( amplitude ) &
+          "sub counter size: " & integer'image( sub_counter_size ) & ", " &
+          "Simulation is over" severity note;
+        simul_over_s <= '1';
+        wait;
+        end if;
+      end process main_proc;
+
+      display : process
+    begin
+      wait until ( display_in = '1' or ( display_in = 'U' and simul_over_s = '1' ));
+      report "Limit: " & integer'image( limit_calc ) severity note;
+      report "Check for the signal and its derivatives. Automatic verification has to be done"
+        severity note;
+      display_out_s <= '1';
+    end process display;
+
+    sample_step_triangle_instanc : sample_step_triangle generic map (
+      limit_calc => limit_calc )
+      port map (
+      CLK => CLK,
+      RST => RST( RST'low ),
+      start_calc => start,
+      amplitude => amplitude_vector,
+      angle => angle,
+      completed => completed,
+      out_t => triangle_out );
+
+end architecture arch;
+      
 --! Use standard library
 library ieee;
 use ieee.std_logic_1164.all,

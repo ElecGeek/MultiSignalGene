@@ -23,7 +23,6 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   signed long cor_c, cor_s;
   signed long cor_z;
 
-  // Save it in order to not call more than one time the run operator
   signed long amplitude_r( amplitude );
 
   // Shift would have been 7 to convert unsigned short into signed long24
@@ -118,6 +117,47 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
 		}
 	}
 }
+sample_step_triangle :: sample_step_triangle( frequency_handler&frequency ):
+  sample_step( frequency )
+{}
+sample_step_triangle :: ~sample_step_triangle()
+{}
+signed short sample_step_triangle :: Run_Step(const unsigned short&amplitude)
+{
+  // amplitude is a 16 bits unsigned
+  signed long amplitude_r( amplitude );
+
+  frequency();
+  unsigned long angle = frequency.GetAngle();
+  signed long the_return;
+
+  // We are in the quadrant PI/2 -> PI or 3.PI/2 -> 2.PI (excluded)
+  //   then get the symetric
+  if ( ( angle & 0x00400000 ) == 0x00400000 )
+	{
+	  angle &= 0x00bfffff;
+	  angle ^= 0x003fffff;
+	}
+  if( ( angle & 0x00200000 ) == 0x00200000 )
+    {
+	  //We are at the saturation level
+	  // the_return is a signed short and subject to be negated
+	  the_return = amplitude_r >> 1;
+    } else {
+	// We are in the triangle are, multiply the angle by the amplitude
+	// with an angle limited to 8 bits
+	  // amplitude_r is unisgned short, slice of angle is unsigned char
+	  the_return = amplitude_r * (( angle & 0x001fe000) >> 13);
+	  // the_return is 24 bits unsigned
+	  the_return >>= 9;
+	  // the_return is now signed short
+  }
+  if ( ( angle & 0x00800000 ) == 0x00800000 )
+	{
+	  the_return = - the_return;
+	}
+  return (signed short)the_return;
+}
 sample_step_pulse :: sample_step_pulse( frequency_handler&frequency, const unsigned short&length ):
 	sample_step( frequency ), state( 0 )
 {
@@ -136,7 +176,6 @@ signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 {
   signed long the_return;
   frequency();
-  // Save it in order to not call more than one time the run operator
   signed long amplitude_r( amplitude );
   // Shift is 7 to convert unsigned short into signed long24
   amplitude_r <<= 7;
@@ -240,7 +279,6 @@ sample_step_txt :: ~sample_step_txt()
 signed short sample_step_txt ::Run_Step(const unsigned short&amplitude)
 {
   signed long the_return;
-  // Save it in order to not call more than one time the run operator
   const signed long amplitude_r( amplitude );
 
   frequency();

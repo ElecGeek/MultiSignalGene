@@ -18,7 +18,7 @@ architecture arch of sample_step_sine_generic_test is
   component sample_step_sine_test is
     generic (
       sub_counter_size : integer range 2 to 20 := 8;
-      limit_calc : std_logic_vector( 4 downto 0 ) := "00111";
+      limit_calc : integer range 4 to 31 := 7;
       amplitude : integer range 0 to 65535 := 65535);
     port (
       simul_over : out std_logic;
@@ -53,28 +53,28 @@ begin
       
   sample_step_sine_test_L7 : sample_step_sine_test generic map (
     sub_counter_size => 8,
-    limit_calc => "00111")
+    limit_calc => 7)
     port map (
       simul_over => simul_over( 0 ),
       display_in => simul_over_and_reduce ,
       display_out => display_io( 0 ) );
   sample_step_sine_test_Lmax : sample_step_sine_test generic map (
     sub_counter_size => 4,
-    limit_calc => "11111")
+    limit_calc => 31)
     port map (
       simul_over => simul_over( 1 ),
       display_in => display_io( 0 ) ,
       display_out => display_io( 1 ) );
   sample_step_sine_test_fine_Lmax : sample_step_sine_test generic map (
     sub_counter_size => 9,
-    limit_calc => "11111")
+    limit_calc => 31)
     port map (
       simul_over => simul_over( 2 ),
       display_in => display_io( 1 ) ,
       display_out => display_io( 2 ));
   sample_step_sine_test_low_amp : sample_step_sine_test generic map (
     sub_counter_size => 4,
-    limit_calc => "11111",
+    limit_calc => 31,
     amplitude => 255)
     port map (
       simul_over => simul_over( 3 ),
@@ -82,7 +82,7 @@ begin
       display_out => display_io( 3 ) );
   sample_step_sine_test_amp_close_0 : sample_step_sine_test generic map (
     sub_counter_size => 4,
-    limit_calc => "11111",
+    limit_calc => 31,
     amplitude => 20)
     port map (
       simul_over => simul_over( 4 ),
@@ -90,7 +90,7 @@ begin
       display_out => display_io( 4 ) );
   sample_step_sine_test_amp_0 : sample_step_sine_test generic map (
     sub_counter_size => 4,
-    limit_calc => "11111",
+    limit_calc => 31,
     amplitude => 0)
     port map (
       simul_over => simul_over( 5 ),

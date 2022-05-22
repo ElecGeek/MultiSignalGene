@@ -5,13 +5,14 @@ use ieee.std_logic_1164.all,
 
 package signal_gene is
 component sample_step_sine is
+  generic (
+        --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : integer range 4 to 31 := 31 );
   port (
     --! Component runs on each clock cycle (if it is in the running state)
     CLK        : in  std_logic;
     RST         : in  std_logic;
     start_calc : in  std_logic;
-    --! Send (others=>'1') for full computation, or an unsigned limit for fast one
-    limit_calc : in  std_logic_vector( 4 downto 0 );
     --! Unsigned amplitude value
     amplitude  : in  std_logic_vector;
     --! Unsigned 0 to 2.PI value
@@ -24,6 +25,24 @@ component sample_step_sine is
     --! Signed cosine output (mostly used for test purposes)
     out_c      : out std_logic_vector(23 downto 0));
 end component sample_step_sine;
+
+component sample_step_triangle is
+  generic (
+        --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : integer range 4 to 14 := 10 );
+  port (
+    --! Component runs on each clock cycle (if it is in the running state)
+    CLK        : in  std_logic;
+    RST         : in  std_logic;
+    start_calc : in  std_logic;
+    --! Unsigned amplitude value
+    amplitude  : in  std_logic_vector;
+    --! Unsigned 0 to 2.PI value
+    angle      : in  std_logic_vector(23 downto 0);
+    completed  : out std_logic;
+    --! Signed triangle output;
+    out_t      : out std_logic_vector);
+end component sample_step_triangle;
 
 component sample_step_pulse is
   port (
@@ -65,13 +84,14 @@ use ieee.std_logic_1164.all,
 --! In debug mode, they provide a high precision for validation\n
 --! More information is in the files located in the cpp_version folder
 entity sample_step_sine is
+  generic (
+        --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : integer range 4 to 31 := 31 );
   port (
     --! Component runs on each clock cycle (if it is in the running state)
     CLK        : in  std_logic;
     RST         : in  std_logic;
     start_calc : in  std_logic;
-    --! Send (others=>'1') for full computation, or an unsigned limit for fast one
-    limit_calc : in  std_logic_vector( 4 downto 0 );
     --! Unsigned amplitude value
     amplitude  : in  std_logic_vector;
     --! Unsigned 0 to 2.PI value
@@ -237,8 +257,8 @@ main_proc : process ( CLK )
           completed <= '0';
           -- Initiate the termination if all the list was computed or if an
           -- abort is reached
-          if to_integer( unsigned( limit_calc )) < to_integer( unsigned( cordic_iter )) then
-            cordic_iter_last <= limit_calc;
+          if limit_calc < to_integer( unsigned( cordic_iter )) then
+            cordic_iter_last <= std_logic_vector( to_unsigned( limit_calc, cordic_iter'length ));
           else
             cordic_iter_last <= std_logic_vector( to_unsigned( cor_angle_list'length, cordic_iter'length ));
           end if;
@@ -368,8 +388,8 @@ begin
           completed <= '0';
           -- Initiate the termination if all the list was computed or if an
           -- abort is reached
-          if to_integer( unsigned( limit_calc )) < to_integer( unsigned( cordic_iter )) then
-            cordic_iter_last <= limit_calc;
+          if limit_calc  < to_integer( unsigned( cordic_iter )) then
+            cordic_iter_last <= std_logic_vector( to_unsigned( limit_calc, cordic_iter_last'length ));
           else
             cordic_iter_last <= std_logic_vector( to_unsigned( cor_angle_list_length, cordic_iter'length ));
           end if;
@@ -386,6 +406,113 @@ begin
       
 end architecture fast;
     
+
+library ieee;
+use ieee.std_logic_1164.all,
+  ieee.numeric_std.all;
+
+--! @brief This module computes the sine (and cosine)\n
+--!
+--! It does not know anything about the frequency\n
+--! It takes an unsigned 24 bits as the angle,
+--! low $0 = angle 0, high $ffffff = angle 2.PI - epsilon\n
+--! It returns the triangle as an unconstrainst signed\n
+--! In run mode, the 16 bits is the standard.
+--! In debug mode, 24 bits is nice for some verifications\n
+--! Since the precision is limited and symetry properties applied,\n
+--! the zero crossing is done with 2 samples at 0\n
+
+entity sample_step_triangle is
+  generic (
+        --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : integer range 4 to 14 := 10 );
+  port (
+    --! Component runs on each clock cycle (if it is in the running state)
+    CLK        : in  std_logic;
+    RST         : in  std_logic;
+    start_calc : in  std_logic;
+    --! Unsigned amplitude value
+    amplitude  : in  std_logic_vector;
+    --! Unsigned 0 to 2.PI value
+    angle      : in  std_logic_vector(23 downto 0);
+    completed  : out std_logic;
+    --! Signed triangle output;
+    out_t      : out std_logic_vector);
+end entity sample_step_triangle;
+
+architecture arch of sample_step_triangle is
+  signal angle_h : std_logic;
+  signal angle_l : std_logic_vector( angle'high - 3 downto angle'low );
+  signal the_out : std_logic_vector( out_t'range );
+  signal amplitude_iter : std_logic_vector( amplitude'high - 2 downto amplitude'low );
+  signal triangle_iter, triangle_iter_last : std_logic_vector( 3 downto 0 );
+begin
+
+  assert amplitude'length <= the_out'length
+       report "Size of amplitude should be less than size of the_out"
+             severity failure;
+
+  out_t <= the_out;
+
+  main_proc: process ( CLK )
+  variable angle_m : std_logic;
+  variable padding2 : std_logic_vector( 1 downto 0 );
+  begin
+  if rising_edge( CLK ) then
+      RST_IF : if RST = '0' then
+        -- Index is up to N - 1, process the triangle product algo
+        RUN_IF : if to_integer( unsigned( triangle_iter )) < to_integer( unsigned( triangle_iter_last ) - 1 ) then
+          if angle_l( angle_l'high ) = '1' then
+            padding2 := "00";
+            the_out <= std_logic_vector( unsigned( the_out ) + unsigned( padding2 & amplitude_iter ));
+          end if;
+          amplitude_iter( amplitude_iter'high - 1 downto amplitude_iter'low ) <=
+            amplitude_iter( amplitude_iter'high downto amplitude_iter'low + 1 );
+          amplitude_iter( amplitude_iter'high ) <= '0';
+          angle_l( angle_l'high downto angle_l'low + 1 ) <= angle_l(angle_l'high - 1 downto angle_l'low );
+          angle_l( angle_l'low ) <= angle_l( angle_l'high );
+          triangle_iter <= std_logic_vector( unsigned( triangle_iter ) + 1 );
+        elsif triangle_iter < std_logic_vector( unsigned( triangle_iter_last )) then
+          -- Check if negative, eexcetute if so
+          if angle_h = '1' then
+            the_out <= std_logic_vector( - signed( the_out ));
+          end if;
+          triangle_iter <= std_logic_vector( unsigned( triangle_iter ) + 1 );
+        elsif triangle_iter = triangle_iter_last then
+          completed <= '1';
+          triangle_iter <= ( others => '1' );
+        -- If on hold, starting now
+        elsif start_calc = '1' then
+          triangle_iter <= ( others => '0' );
+          angle_h <= angle( angle'high );
+          if angle( angle'high - 1 ) = '0' then
+            angle_m := angle( angle'high - 2 );
+            angle_l <= angle( angle'high - 3 downto angle'low );
+          else
+            angle_m := not angle( angle'high - 2 );
+            angle_l <= not angle( angle'high - 3 downto angle'low );
+          end if;
+          if angle_m = '1' then
+            -- saturation of the triangle
+            -- load the final value only and prevent any multiplication
+            the_out( the_out'high ) <= '0';
+            the_out( the_out'high - 1 downto the_out'low ) <= amplitude( amplitude'high downto amplitude'high - the_out'length + 1 + 1 );
+            amplitude_iter <= ( others => '0' );
+          else
+            the_out <= ( others => '0' );
+            amplitude_iter <= amplitude( amplitude'high downto amplitude'high - the_out'length + 1 + 2 );
+          end if;
+          triangle_iter_last <= std_logic_vector( to_unsigned( limit_calc, triangle_iter_last'length ));
+          completed <= '0';
+        end if;
+      else
+        completed <= '0';
+      end if RST_IF;
+    end if;
+  end process main_proc;
+
+end architecture arch;
+
 
 library ieee;
 use ieee.std_logic_1164.all,

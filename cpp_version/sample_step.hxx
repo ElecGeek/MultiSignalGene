@@ -60,6 +60,28 @@ public:
   ~sample_step_pulse(void);
   signed short Run_Step(const unsigned short&amplitude);
 };
+/** \brief Regular triangle generator
+ *
+ * Generates bi-phase triangles with saturation until the parameters are modified
+ * The amplitude is the saturation
+ * The output is linear form 0 to the amplitude for angles from 0 to PI/4
+ * The output is the amplitude for angles from PI/4 to 3.PI/4
+ * The output is linear form the amplitude to 0 for angles from 3.PI/4 to PI
+ * From PI to 2 PI, the output is minus the one from 0 to PI
+ *
+ * Note the linear ris and fall are computed on a limited precision
+ */
+class sample_step_triangle : public sample_step, private sample_step_output
+{
+  unsigned short state;
+  unsigned short length;
+  unsigned short length_count;
+  sample_step_triangle(void);
+public:
+  sample_step_triangle( frequency_handler&frequency );
+  ~sample_step_triangle(void);
+  signed short Run_Step(const unsigned short&amplitude);
+};
 /** \brief Debug text generator
  *
  * Returns only one "Dirac" pulse of the amplitude
