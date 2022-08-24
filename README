@@ -5,8 +5,14 @@ This project generates audio signals using some primitives.
 * Future modules are going to modulate the frequency
 
 The 2 sub-projects are
-* a pure IT project to handle (in and out) the parameters and to generate the sounds 
-* a pure electronics project to receive the parameters in one format only and to generate the sounds
+* a pure IT project
+    It handles input parameter channels (at least one) in any supported formats.
+    It handles output parameter channels (optional) in any supported formats.
+    Generates the sounds on the fly or save it in a file. 
+* a pure electronics project
+    Receives the parameters in the midi (5pin DIN) format only
+    Generate the sounds on the fly
+
 
 The base of the parameters format is the (music) midi notes. Each not and its velocity is mapped into a parameter and its value. There are many software on the Internet to edit mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
 
@@ -17,4 +23,5 @@ It is written in the DevOps style. Some short cuts or quick and dirty parts are 
 There is no documentation files. All the data is in the code. A run of the doxygen software, separately in the 2 folders generates the documentation in the format one wants.
 
 For more information, in the sub folders, there are README files specific to each sub-projects
- 
+
+As of the summer 2022, there is a change in the minimum requirements for the C++ version
