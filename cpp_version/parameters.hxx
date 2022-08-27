@@ -59,7 +59,7 @@ class input_params_base {
   ostringstream info_out_stream;
   explicit input_params_base(const unsigned short&samples_per_TS);
  public:
-  virtual ~input_params_base(void);
+  virtual ~input_params_base(void)=default;
   bool check_next_event( const unsigned short&elapsed_samples, vector<signals_param_action>&action );
   virtual bool eot(void) const = 0;
   virtual bool is_ready(void) = 0;
@@ -86,7 +86,7 @@ class output_params_base {
   ostringstream info_out_stream;
   explicit output_params_base(const unsigned short&samples_per_TS);
  public:
-  virtual ~output_params_base(void);
+  virtual ~output_params_base(void)=default;
   bool check_next_event( const unsigned short&elapsed_samples, const vector<signals_param_action>&action );
 };
 

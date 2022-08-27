@@ -17,8 +17,6 @@ input_params_base::input_params_base(const unsigned short&samples_per_TS):
   samples_per_TS( samples_per_TS ),
   clearing( c_unknown )
 {}
-input_params_base::~input_params_base()
-{}
 bool input_params_base::check_next_event( const unsigned short&elapsed_samples, vector<signals_param_action>&actions)
 {
   bool do_leave( false );
@@ -66,8 +64,6 @@ bool input_params_base::check_next_event( const unsigned short&elapsed_samples, 
 
 output_params_base::output_params_base(const unsigned short&samples_per_TS):
   cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS( 4800 )
-{}
-output_params_base::~output_params_base()
 {}
 bool output_params_base::check_next_event( const unsigned short&elapsed_samples,
 										   const vector<signals_param_action>&actions)

@@ -4,21 +4,17 @@ extern unsigned char debug_level;
 sample_step::sample_step( frequency_handler&frequency):
   frequency( frequency )
 {}
-sample_step :: ~sample_step()
-{}
 sample_step_sine :: sample_step_sine( frequency_handler&frequency ):
   sample_step( frequency )
-{}
-sample_step_sine :: ~sample_step_sine()
 {}
 signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
 {
   // Only 20 iterations. Since 110dB of THD are not required, this is OK
   // C++03
-  const signed long cal[] = { 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5 };
-  const vector<signed long> cor_angle_list( cal, cal + sizeof( cal ) / sizeof( cal[ 0 ] ));
+  //const signed long cal[] = { 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5 };
+  //const vector<signed long> cor_angle_list( cal, cal + sizeof( cal ) / sizeof( cal[ 0 ] ));
   // C++11
-  //  const vector<signed long> cor_angle_list{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5};
+  array<signed long,20> cor_angle_list{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5};
 
   signed long cor_c, cor_s;
   signed long cor_z;
@@ -59,7 +55,8 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   cor_z = angle & 0x003fffff;
   unsigned short shifts = 0;
   // Now run the alghorythm
-  for( vector<signed long>::const_iterator z_diff = cor_angle_list.begin();
+  // for( vector<signed long>::const_iterator z_diff = cor_angle_list.begin();
+  for( decltype(cor_angle_list)::const_iterator z_diff = cor_angle_list.begin();
 	   z_diff != cor_angle_list.end();
 	   ++z_diff, ++shifts )
 	{
@@ -120,8 +117,6 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
 sample_step_triangle :: sample_step_triangle( frequency_handler&frequency ):
   sample_step( frequency )
 {}
-sample_step_triangle :: ~sample_step_triangle()
-{}
 signed short sample_step_triangle :: Run_Step(const unsigned short&amplitude)
 {
   // amplitude is a 16 bits unsigned
@@ -170,8 +165,6 @@ sample_step_pulse :: sample_step_pulse( frequency_handler&frequency, const unsig
 	  this->length = 1;
 	}
 }
-sample_step_pulse :: ~sample_step_pulse()
-{}
 signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 {
   signed long the_return;
@@ -273,8 +266,6 @@ signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 
 sample_step_txt :: sample_step_txt( frequency_handler&frequency ):
   sample_step( frequency ), out_str( cout )
-{}
-sample_step_txt :: ~sample_step_txt()
 {}
 signed short sample_step_txt ::Run_Step(const unsigned short&amplitude)
 {

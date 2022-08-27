@@ -4,8 +4,9 @@
 #include "amplitude_handler.hxx"
 #include "frequency_handler.hxx"
 
-#include<vector>
+#include <vector>
 #include <iostream>
+#include <array>
 using namespace std;
 
 /** \brief Base of all the wave generators
@@ -20,7 +21,7 @@ protected:
   sample_step(void);
 public:
   explicit sample_step( frequency_handler&frequency );
-  virtual ~sample_step(void);
+  virtual ~sample_step(void)=default;
   virtual signed short Run_Step(const unsigned short&amplitude)=0;
   void set_frequency( unsigned short &frequency );
   friend class signal_channel;
@@ -39,7 +40,7 @@ class sample_step_sine : public sample_step, private sample_step_output
   sample_step_sine(void);
 public:
   explicit sample_step_sine( frequency_handler&frequency );
-  ~sample_step_sine(void);
+  ~sample_step_sine(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
 };
 /** \brief Regular pulse generator
@@ -57,7 +58,7 @@ class sample_step_pulse : public sample_step, private sample_step_output
   sample_step_pulse(void);
 public:
   sample_step_pulse( frequency_handler&frequency, const unsigned short& length );
-  ~sample_step_pulse(void);
+  ~sample_step_pulse(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
 };
 /** \brief Regular triangle generator
@@ -79,7 +80,7 @@ class sample_step_triangle : public sample_step, private sample_step_output
   sample_step_triangle(void);
 public:
   sample_step_triangle( frequency_handler&frequency );
-  ~sample_step_triangle(void);
+  ~sample_step_triangle(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
 };
 /** \brief Debug text generator
@@ -95,7 +96,7 @@ class sample_step_txt : public sample_step, private sample_step_output
   sample_step_txt(void);
 public:
   sample_step_txt( frequency_handler&frequency );
-  ~sample_step_txt(void);
+  ~sample_step_txt(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
 };
 
