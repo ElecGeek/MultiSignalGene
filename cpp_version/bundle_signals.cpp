@@ -72,12 +72,18 @@ signed short signal_channel::operator()()
   unsigned short pulse_output = base_amplitude - (unsigned short)pulse_run_0_1;
 
   // Primitive 3 amplitude modulation
+  unsigned long modulation_amplitude = pulse_output * ampl_modul_depth();
+  // return to short
+  modulation_amplitude /= 65536;
+  if ( modulation_amplitude >= 65536 )
+	cerr << "Problems 1bis in signal_channel::operator() MA:" << dec << modulation_amplitude << " PO:" << pulse_output << endl;
+
   // Get the sin of the amplitude modulation and divide by 2 for a range of signed -1/2 to +1/2
-  signed short ampl_modul_run = ampl_modul_step.Run_Step( (unsigned short)pulse_output );
+  signed short ampl_modul_run = ampl_modul_step.Run_Step( (unsigned short)modulation_amplitude );
   if ( ampl_modul_run == -32768 )
 	cerr << "Problems 5 in signal_channel::operator()" << endl;
   // Compute the amplitude modulation in a range of signed 0 +1
-  signed long ampl_modul_run_0_1 = (signed long)pulse_output / 2 - (signed long)ampl_modul_run;
+  signed long ampl_modul_run_0_1 = (signed long)modulation_amplitude / 2 - (signed long)ampl_modul_run;
   if ( ampl_modul_run_0_1 < 0 )
 	{
 	  if ( ampl_modul_run_0_1 < -3 )

@@ -234,7 +234,7 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 		  action.value = long_value;
 		  break;
 		case 0x20:
-		  if ( key == 0x20 )
+		  if ( ( key & 0x04 ) == 0x0 )
 			{
 			  long_value = get_value( 2, 0 );
 			  // info_out_stream << "Sets the pulse data " << hex << long_value;
@@ -250,14 +250,14 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 		  }
 		  break;		  
 		case 0x28:
-		  if ( key == 0x28 )
+		  if ( ( key & 0x04 ) == 0x0 )
 			{
 			  long_value = get_value( 2, 6 );
 			  // info_out_stream << "Sets the pulse data " << hex << long_value;
 			  // info_out_stream << ", means: " << dec << long_value << " (0-255)"<<endl;
 			  action.action = signals_param_action::pulse_low_hold;
 			  action.value = long_value;
-			} else {
+			} else { // key == 0x2c
 			long_value = get_value( 2, 6 );
 			// info_out_stream << "Sets the pulse data " << hex << long_value;
 			// info_out_stream << ", means: " << dec << long_value << " (0-255)"<<endl;

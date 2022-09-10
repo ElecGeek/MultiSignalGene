@@ -40,5 +40,5 @@ output_midi.o			:	output_midi.hxx output_midi.cpp parameters.hxx amplitude_handl
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o output_midi.o output_midi.cpp
 
 clean			:
-	rm -f *.o
+	rm -f *.o estim
 
