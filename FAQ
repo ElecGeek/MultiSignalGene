@@ -1,0 +1,26 @@
+Q: Why not using floating numbers in the arithmetic?
+A: Some part of the software is a proof of concept and verification 
+     of an electronic version. I wouldn't consume all the FPGA
+     for irrelevant precision
+
+Q: Why the midi codes?
+A: Many little reasons.
+     They are supper short messages which make easy interfaces over networks
+     Many software can edit them
+     The electronic version requires a few resources (Ethernet or USB stacks consume all the FPGA)
+     Interfaces like DTMF or a super DTMF should be possible for the video
+
+Q: Why a slow moving to the C++11?
+A: I need to run on an old compiler on an old machine. I don't know what is or is not
+     properly supported. The features are tested one by one before production.
+
+Q: Why so old minimum versions?
+A: I need to run it on an old machine. It had the 4.6.2 version of GCC
+     Since I needed a newer version for many other purposes. I moved to the 5.5.0
+     after 6 hours to compile the compiler.
+     Then now the software is C++11
+
+Q: What is the purpose of the no operation instructions in the input command files?
+A: The examples of the early versions has been hand edited. Not all the reverse hex-dump software
+     accepts (text) files without addresses. An insertion needs to update all the file.
+     The NOP allows to keep some room.

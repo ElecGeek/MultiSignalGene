@@ -6,6 +6,7 @@
 #include "bundle_signals.hxx"
 #include "output_midi.hxx"
 #include "input_midi.hxx"
+#include "sound_file_output.hxx"
 #include "help_message.hxx"
 
 #include <deque>
@@ -31,6 +32,7 @@ int main(int argc,char *argv[] )
   bool has_hv( false );
   bool has_cin;
   bool has_cout;
+  bool follow_timebeat=false;
 
 #ifdef __OUTPUT_SINE_MODE__
   char output_mode('s');
@@ -41,6 +43,7 @@ int main(int argc,char *argv[] )
 #endif
 
   string filename;
+  string jack_peername;
   char sample_rate_id = 1;
   char channels_number = 0;
 
@@ -71,12 +74,9 @@ int main(int argc,char *argv[] )
 		case 'c':
 		  channels_number = atoi( optarg );
 		  break;
-		case 't':
-		  run_dummy = true;
-		  cout << "Dummy -d OPTON IS NOT YET DONE" << endl;
-		  break;
 		case 'j':
 		  has_output = true;
+		  jack_peername = string( optarg );
 		  cout << "Jackaudio -j OPTION IS NOT YET DONE" << endl;
 		  break;
 		case 'r':
@@ -87,6 +87,9 @@ int main(int argc,char *argv[] )
 			case 192000: sample_rate_id = 4; break;
 			default: cout << "Only 48, 96, 192KHz are allowed sample rates" << endl; break;
 			}		  
+		  break;
+		case 't':
+		  follow_timebeat = true;
 		  break;
 		case 'h':
 		  cout << help();
@@ -123,13 +126,10 @@ int main(int argc,char *argv[] )
   	  cout << "Debug set to: " << dec << (unsigned short)debug_level << endl;
 	}
 
-  if ( filename.empty() )
+  if( filename.empty() == false && jack_peername.empty() == false )
 	{
-	  channels_number = 0;
-	}
-  else
-	{
-	  cout << "Opening raw file " << filename.c_str() << " for writing" << endl;
+	  cout << "Can NOT open both an audio and a file output " << endl;
+	  exit( EXIT_FAILURE );
 	}
 
   switch ( output_mode )
@@ -167,7 +167,7 @@ int main(int argc,char *argv[] )
 	  signals += new output_params_txt( cout );
 	}
   
-  global_run_file grf( signals, filename.c_str() );
+  // global_run_file grf( signals, filename.c_str() );
   //  global_run_single ers(signals);
 
   cout << "Initializing " << (unsigned short)channels_number << " channels" << endl;
@@ -179,11 +179,32 @@ int main(int argc,char *argv[] )
 	  sleep( 1 );
 	}
 
+  cout << "Opening the sound file output module "<< endl;
+  sound_file_output_base * sfob; 
+  if ( filename.empty() )
+	{
+	  if( jack_peername.empty() )
+		sfob = (sound_file_output_base*) new sound_file_output_dry( signals, follow_timebeat );
+	  else
+		sfob = (sound_file_output_base*) new sound_file_output_jackaudio( signals );
+	}
+  else
+	{
+	  if( jack_peername.empty() )
+		sfob = (sound_file_output_base*) new sound_file_output_file( signals, filename, follow_timebeat );
+	  else
+		{
+		  cout << "Internal error" << endl;
+		  exit( EXIT_FAILURE );		  
+		}
+	}
+  sfob->run();
+
   unsigned short jalon( 0 );
-  while( signals.exec_actions())
+  /*  while( signals.exec_actions())
 	{
 	  grf();
-	}
+	  }*/
   
   cout << endl << signals.get_clearing() << endl;
   

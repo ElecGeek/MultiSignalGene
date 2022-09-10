@@ -1,5 +1,5 @@
-#include "global_run.hxx"
-
+#include "sample_step.hxx"
+#include "main_loop.hxx"
 
 extern unsigned char debug_level;
 

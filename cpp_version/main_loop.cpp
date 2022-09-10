@@ -10,7 +10,8 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
   samples_count( 0 ),
   samples_per_param_check( samples_per_param_check ),
   shutdown_start( shutdown_length ),
-  shutdown_count( 0 )
+  shutdown_count( 0 ),
+  debug_once(false)
 {
   samples_per_TS_unit = sample_rate_id * samples_per_param_check;
   //  cout << "SPTU " <<samples_per_TS_unit << endl;
@@ -57,6 +58,173 @@ unsigned short main_loop::GetSamplesSize()const
 {
   return (short)signal_list.size();
 }
+ostream&operator<<(ostream&,const sound_file_output_buffer&);
+
+bool main_loop::check_action(void)
+{
+  // Each "while" loop is one sample, all relevant channels
+  // Check if the are parameters to proceed as, for real time rasons,
+  // it is done every N samples
+  if ( samples_count != 0 )
+	samples_count -= 1;
+  else
+	{
+	  // Shutdown is not finished, not tested etc...
+	  if( shutdown_count > 0 )
+		{
+		  if ( shutdown_count != shutdown_start )
+			shutdown_count += 1;
+		}else{
+		// Each exec_action loop is every 1mS, regardles the sample rate
+		if ( exec_actions() == false )
+		  shutdown_count = 1;
+		samples_count = samples_per_TS_unit;
+	  }
+	}
+  if( shutdown_count != shutdown_start )
+	return false;
+  else
+	return true;
+}
+
+unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buffer)
+{
+
+  //  cout<<buffer;
+  
+  if( buffer.interleave == false )
+	{
+	  cout << "Sorry interleave false is not yet supported"<<endl;
+	  return 0;
+	}
+
+  if ( buffer.channels_bounds.first >= signal_list.size() ||
+	   buffer.channels_bounds.first == buffer.channels_bounds.second )
+	{
+	  //  There is no match between the boundary requested by the audio output
+	  //    and the boundary defined in the parameters.
+	  //  One reason is: there is no audio output
+	  //  Another reason is: in the future a list of buffers might be implemented
+	  //    The goal is each buffer takes a set of outputs (with or without overmap)
+	  if ( buffer.data != NULL )
+		fill( (char*)buffer.data, (char*)buffer.data + buffer.data_size , 0 );
+	  if( exec_actions() )
+	   	// ignore all the buffer members, simply tells the time (uS) supposed to elapsed
+		return 1000 / sample_rate_id;
+	  else
+		// Run is finished, here there is no shutdown to handle, tell to leave now
+		return 0;
+	}
+  else
+	{
+	  unsigned long sample_action_count = 0;
+	  unsigned long data_sent = 0;
+	  unsigned short chan_begin, chan_end;
+	  // Number of elements
+	  unsigned long frame_size_exec;
+	  unsigned long frame_size_requested;
+
+	  // the intersect is never empty, otherwyse one would have left above
+	  // The assume is the parameters channels id always starts at 0
+	  // This should be IMPROVED
+	  if ( buffer.channels_bounds.second == numeric_limits<unsigned short>::max() )
+		{
+		  // The buffer is unlimited, use the size of the signals
+		  chan_end = signal_list.size();
+		  chan_begin = max( buffer.channels_bounds.first, (const unsigned short)0 );
+		  frame_size_exec = ( chan_end - chan_begin );
+		  frame_size_requested = frame_size_exec;
+		}
+	  else
+		{
+		  chan_end = min( buffer.channels_bounds.second,
+						  (unsigned short)signal_list.size());
+		  // See above
+		  chan_begin = max( buffer.channels_bounds.first, (const unsigned short) 0 );
+		  frame_size_exec = ( chan_end - chan_begin );
+		  frame_size_requested =  ( buffer.channels_bounds.second - buffer.channels_bounds.first );
+		}
+	  if( debug_once == false )
+		{
+		  cout << "Excecution begin: "<< chan_begin <<", end: "<<chan_end;
+		  cout << ", size exec: " << frame_size_exec << ", size req: " << frame_size_requested<<endl;
+		}
+	  bool no_more_input = true;
+
+	  if ( buffer.data != NULL )
+		{
+		  short sample_val;
+		  switch( buffer.sample_size )
+			{
+			case 2:
+			  short* frame_iter_2;
+			  frame_iter_2 = static_cast<short*>(buffer.data);
+			  while( ( data_sent + frame_size_requested ) <= ( buffer.data_size / buffer.sample_size ))
+				{
+				  no_more_input = check_action();
+				  for( unsigned short ind = chan_begin; ind < chan_end; ind++ )
+					{
+					  sample_val = (*signal_list[ind])();
+
+					  *frame_iter_2++ = sample_val;
+					}
+				  // now check if there are channels to fill up
+				  // This should be done on each buffer refill as outputs
+				  // such as jackaudio always sends different buffer
+				  // (then one should not considered as cached)
+				  if ( frame_size_requested > frame_size_exec )
+					for( unsigned long ind = 0; ind < ( frame_size_requested - frame_size_exec); ind++ )
+					  *frame_iter_2++ = 0;
+				  
+				  data_sent += frame_size_requested;
+				  sample_action_count ++;
+				}
+
+			  break;
+			case 4:
+			  long* frame_iter_4;
+			  frame_iter_4 = static_cast<long*>(buffer.data);
+			  while( ( data_sent + frame_size_requested ) <= ( buffer.data_size / buffer.sample_size ))
+				{
+				  no_more_input = check_action();
+				  long sample_val_long;
+				  for( unsigned short ind = chan_begin; ind < chan_end; ind++ )
+					{
+					  sample_val = (*signal_list[ind])();
+
+					  sample_val_long = sample_val;
+					  sample_val_long *= 65536;
+					  *frame_iter_4++ = sample_val_long;
+					}
+				  // now check if there are channels to fill up
+				  // This should be done on each buffer refill as outputs
+				  // such as jackaudio always sends different buffer
+				  // (then one should not considered as cached)
+				  if ( frame_size_requested > frame_size_exec )
+					for( unsigned long ind = 0; ind < ( frame_size_requested - frame_size_exec); ind++ )
+					  *frame_iter_4++ = 0;
+				  data_sent += frame_size_requested;
+				  sample_action_count ++;
+				}
+
+			  break;
+			default:
+			  cerr << "NOT SUPPORTED" << endl;
+			  break;
+			}
+		}
+
+
+	  debug_once = true;
+	  if( no_more_input )
+		return 0;
+	  else
+		{
+		  unsigned long elapsed_time = sample_action_count * 20833;
+		  return elapsed_time / ( 1000 * sample_rate_id );
+		}
+	}
+}
 bool main_loop::operator()(vector<signed short>&the_out)
 {
   // First execute the parameters changes if so
@@ -83,6 +251,7 @@ bool main_loop::operator()(vector<signed short>&the_out)
 	   s.its != signal_list.end() && s.it_out != the_out.end();
 	   ++s.its,++s.it_out)
 	*s.it_out = (*s.its->second)();
+  // If no output and ftb is set then wait
   return true;
 };
 

@@ -59,7 +59,7 @@ string help()
   ostrstm << endl << "-t" << endl;
   ostrstm << "\tFollow the time beat, even if no audio output is selected" << endl;
   ostrstm << "\tIf no option to define an audio output is defined, the software computes as fast as the machine can do" << endl;
-  ostrstm << "\tThis option execute the time stamps and plays as an audio output would have do TODO" << endl;
+  ostrstm << "\tThis option execute the time stamps and plays as an audio output would have do" << endl;
   ostrstm << endl << "-j peer-name" << endl;
   ostrstm << "\tUse jackaudio as audio channel TODO" << endl;
   ostrstm << endl << "-r"; ostrstm << endl;

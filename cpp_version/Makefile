@@ -3,10 +3,10 @@ CXXFLAGS?=-O2
 DEFAULTFLAGS?=-D__OUTPUT_SINE_MODE__
 CXX_Version?=-std=c++11
 
-estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o global_run.o amplitude_handler.o frequency_handler.o
-	$(CXX) $(CXXFLAGS) -o estim main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o global_run.o amplitude_handler.o frequency_handler.o
+estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o
+	$(CXX) $(CXXFLAGS) -o estim main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o
 
-main.o					:	main.cpp help_message.hxx
+main.o					:	main.cpp help_message.hxx sound_file_output.hxx
 	$(CXX) -c $(CXXFLAGS) $(DEFAULTFLAGS) $(CXX_Version) -o main.o main.cpp
 
 amplitude_handler.o		:	amplitude_handler.hxx		amplitude_handler.cpp
@@ -21,11 +21,14 @@ sample_step.o			:	sample_step.hxx	sample_step.cpp amplitude_handler.hxx frequenc
 bundle_signals.o		:	bundle_signals.hxx	bundle_signals.cpp sample_step.hxx parameters.hxx amplitude_handler.hxx frequency_handler.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o bundle_signals.o bundle_signals.cpp
 
-main_loop.o		:	main_loop.hxx	main_loop.cpp sample_step.hxx parameters.hxx amplitude_handler.hxx frequency_handler.hxx
+main_loop.o		:	main_loop.hxx	main_loop.cpp sample_step.hxx parameters.hxx amplitude_handler.hxx frequency_handler.hxx sound_file_output.hxx sound_file_output_buffer.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o main_loop.o main_loop.cpp
 
-global_run.o			:	global_run.hxx	global_run.cpp
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o global_run.o global_run.cpp
+#global_run.o			:	global_run.hxx	global_run.cpp
+#	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o global_run.o global_run.cpp
+
+sound_file_output.o			:	sound_file_output.hxx	sound_file_output.cpp sound_file_output_buffer.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o sound_file_output.o sound_file_output.cpp
 
 parameters.o			:	parameters.hxx parameters.cpp amplitude_handler.hxx frequency_handler.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o parameters.o parameters.cpp
