@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "global_run.hxx"
 #include "bundle_signals.hxx"
 #include "output_midi.hxx"
 #include "input_midi.hxx"
@@ -33,6 +32,7 @@ int main(int argc,char *argv[] )
   bool has_cin;
   bool has_cout;
   bool follow_timebeat=false;
+  sample_rate_list the_sr_list;
 
 #ifdef __OUTPUT_SINE_MODE__
   char output_mode('s');
@@ -44,7 +44,6 @@ int main(int argc,char *argv[] )
 
   string filename;
   string jack_peername;
-  char sample_rate_id = 1;
   char channels_number = 0;
 
   debug_level = 0;
@@ -77,15 +76,14 @@ int main(int argc,char *argv[] )
 		case 'j':
 		  has_output = true;
 		  jack_peername = string( optarg );
-		  cout << "Jackaudio -j OPTION IS NOT YET DONE" << endl;
 		  break;
 		case 'r':
 		  switch ( atoi( optarg ) )
 			{
-			case 48000: sample_rate_id = 1; break;
-			case 96000: sample_rate_id = 2; break;
-			case 192000: sample_rate_id = 4; break;
-			default: cout << "Only 48, 96, 192KHz are allowed sample rates" << endl; break;
+			case 48000: the_sr_list.add_value( 1 ); break;
+			case 96000: the_sr_list.add_value( 2 ); break;
+			case 192000: the_sr_list.add_value( 4 ); break;
+			default: cout << "Only 48, 96, 192KHz are allowed sample rates, ignored" << endl; break;
 			}		  
 		  break;
 		case 't':
@@ -144,6 +142,41 @@ int main(int argc,char *argv[] )
 	  cout << "Both output mode is used" << endl;
 	  break;
 	}
+
+  cout << "Opening the sound file output module "<< endl;
+  sound_file_output_base * sfob; 
+  if ( filename.empty() )
+	{
+	  if( jack_peername.empty() )
+		sfob = (sound_file_output_base*) new sound_file_output_dry( follow_timebeat );
+	  else
+		sfob = (sound_file_output_base*) new sound_file_output_jackaudio( channels_number, jack_peername );
+	}
+  else
+	{
+	  if( jack_peername.empty() )
+		sfob = (sound_file_output_base*) new sound_file_output_file(filename, follow_timebeat );
+	  else
+		{
+		  cout << "Internal error" << endl;
+		  exit( EXIT_FAILURE );		  
+		}
+	}
+  cout << "Sample rate(s) requested by the parameters: " << the_sr_list << endl;
+  the_sr_list = sfob->process_sample_rate( the_sr_list );
+  cout << "Sample rate(s) validated by the output module: " << the_sr_list << endl;
+  const unsigned char sample_rate_id = the_sr_list.get_sample_rate();
+
+  if ( sample_rate_id == 0 )
+	{
+	  cout << "Sorry no common value has been found" << endl;
+	  exit( EXIT_FAILURE );
+	}
+  cout << "Sample rate is: " << sample_rate_id*48000 << endl;
+
+  cout << "Opening the input and output modules ";
+  cout << "with " << channels_number << "channels" << endl;
+ 
   main_loop signals(sample_rate_id,output_mode,channels_number);
 
   for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
@@ -169,8 +202,6 @@ int main(int argc,char *argv[] )
   
   // global_run_file grf( signals, filename.c_str() );
   //  global_run_single ers(signals);
-
-  cout << "Initializing " << (unsigned short)channels_number << " channels" << endl;
   
   clock_t ticks( clock() );
   while( signals.is_all_ready() == false )
@@ -179,25 +210,7 @@ int main(int argc,char *argv[] )
 	  sleep( 1 );
 	}
 
-  cout << "Opening the sound file output module "<< endl;
-  sound_file_output_base * sfob; 
-  if ( filename.empty() )
-	{
-	  if( jack_peername.empty() )
-		sfob = (sound_file_output_base*) new sound_file_output_dry( signals, follow_timebeat );
-	  else
-		sfob = (sound_file_output_base*) new sound_file_output_jackaudio( signals );
-	}
-  else
-	{
-	  if( jack_peername.empty() )
-		sfob = (sound_file_output_base*) new sound_file_output_file( signals, filename, follow_timebeat );
-	  else
-		{
-		  cout << "Internal error" << endl;
-		  exit( EXIT_FAILURE );		  
-		}
-	}
+  sfob->set_signals( &signals );
   sfob->run();
 
   unsigned short jalon( 0 );

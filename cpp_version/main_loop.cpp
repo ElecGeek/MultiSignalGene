@@ -1,5 +1,6 @@
 #include "main_loop.hxx"
 
+#include <jack/jack.h>
 
 main_loop::main_loop( const unsigned char&sample_rate_id,
 					  const unsigned char&mode,
@@ -89,15 +90,6 @@ bool main_loop::check_action(void)
 
 unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buffer)
 {
-
-  //  cout<<buffer;
-  
-  if( buffer.interleave == false )
-	{
-	  cout << "Sorry interleave false is not yet supported"<<endl;
-	  return 0;
-	}
-
   if ( buffer.channels_bounds.first >= signal_list.size() ||
 	   buffer.channels_bounds.first == buffer.channels_bounds.second )
 	{
@@ -105,9 +97,10 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 	  //    and the boundary defined in the parameters.
 	  //  One reason is: there is no audio output
 	  //  Another reason is: in the future a list of buffers might be implemented
-	  //    The goal is each buffer takes a set of outputs (with or without overmap)
-	  if ( buffer.data != NULL )
-		fill( (char*)buffer.data, (char*)buffer.data + buffer.data_size , 0 );
+	  //    The goal is each buffer takes a set of outputs (with or without overlap)
+	  for_each ( buffer.data.begin(), buffer.data.end(), [&](void*buf_ptr){
+		  fill( static_cast<char*>(buf_ptr), static_cast<char*>(buf_ptr) + buffer.data_size , 0 );
+		});
 	  if( exec_actions() )
 	   	// ignore all the buffer members, simply tells the time (uS) supposed to elapsed
 		return 1000 / sample_rate_id;
@@ -118,7 +111,6 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
   else
 	{
 	  unsigned long sample_action_count = 0;
-	  unsigned long data_sent = 0;
 	  unsigned short chan_begin, chan_end;
 	  // Number of elements
 	  unsigned long frame_size_exec;
@@ -151,14 +143,19 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		}
 	  bool no_more_input = true;
 
-	  if ( buffer.data != NULL )
+	  // There are many copy and paste
+	  // Since this is a time critical part, I prefer to switch and to loop
+	  //   rather than to lopp and to switch
+
+	  unsigned long data_sent = 0;
+	  short sample_val;
+	  if ( buffer.data.empty() == false && buffer.interleave == true )
 		{
-		  short sample_val;
 		  switch( buffer.sample_size )
 			{
 			case 2:
 			  short* frame_iter_2;
-			  frame_iter_2 = static_cast<short*>(buffer.data);
+			  frame_iter_2 = static_cast<short*>(buffer.data[0]);
 			  while( ( data_sent + frame_size_requested ) <= ( buffer.data_size / buffer.sample_size ))
 				{
 				  no_more_input = check_action();
@@ -183,7 +180,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 			  break;
 			case 4:
 			  long* frame_iter_4;
-			  frame_iter_4 = static_cast<long*>(buffer.data);
+			  frame_iter_4 = static_cast<long*>(buffer.data[0]);
 			  while( ( data_sent + frame_size_requested ) <= ( buffer.data_size / buffer.sample_size ))
 				{
 				  no_more_input = check_action();
@@ -213,8 +210,63 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 			  break;
 			}
 		}
+	  if ( buffer.data.empty() == false && buffer.interleave == false )
+		{
+		  unsigned short buffer_numbers = buffer.data.size();
+		  unsigned short buffer_n_exec = buffer_numbers;
+		  if ( frame_size_exec < buffer_n_exec )
+			// in this case, buffer_n_exec - frame_size_exec has to be blanked, see below
+			buffer_n_exec = frame_size_exec;
+		  vector<short*>frame_NI_2;
+		  vector<jack_default_audio_sample_t*>frame_jack_4;
+		  switch( buffer.sample_size )
+			{
+			case 2:
+			  for_each( buffer.data.begin(), buffer.data.begin() + buffer_n_exec,
+						[&frame_NI_2](void*buf_ptr){
+						  frame_NI_2.push_back( static_cast<short*>(buf_ptr));
+						});
+			  cerr << "Do be finished" << endl;
+			  break;
+			case 4:
+			  for_each( buffer.data.begin(), buffer.data.begin() + buffer_n_exec,
+						[&frame_jack_4](void*buf_ptr){
+						  frame_jack_4.push_back( static_cast<jack_default_audio_sample_t*>(buf_ptr));
+						});
+			  while( ( data_sent + 1 ) <= ( buffer.data_size / buffer.sample_size ))
+				{
+				  no_more_input = check_action();
 
+				  unsigned short ind = chan_begin;
+				  /*				  for_each( frame_jack_4.begin(), frame_jack_4.end(),[&](jack_default_audio_sample_t*val)
+							{
+							  sample_val = (*signal_list[ind++])();
 
+							  *val++ = ((jack_default_audio_sample_t)sample_val)/65536.0;
+							  });*/
+				  for( vector<jack_default_audio_sample_t*>::iterator iter=frame_jack_4.begin() ;
+					   iter != frame_jack_4.end();
+					   iter++ )
+					{
+					  sample_val = (*signal_list[ind++])();
+					  
+					  *(*iter)++ = ((jack_default_audio_sample_t)sample_val)/32768.0;
+					}
+			  
+				  data_sent += 1;
+				  }
+			  break;
+			default:
+			  cout << "NOT SUPPORTED" << endl;
+			  break;
+			}
+		  /*		  if ( frame_size_exec < buffer_numbers )
+			for_each( buffer.data.begin() + ( buffer_numbers - frame_size_exec ),
+					  buffer.data.end(),
+					  [&](void*buf_ptr){
+						fill( static_cast<char*>(buf_ptr), static_cast<char*>(buf_ptr) + buffer.data_size , 0 );
+						});*/
+		}
 	  debug_once = true;
 	  if( no_more_input )
 		return 0;

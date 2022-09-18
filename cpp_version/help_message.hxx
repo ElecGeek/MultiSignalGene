@@ -65,7 +65,8 @@ string help()
   ostrstm << endl << "-r"; ostrstm << endl;
   ostrstm << "\tSpecifies the sample rate" << endl;
   ostrstm << "\tOnly 1= 48KHz, 2= 96KHz and 4=192KHz are valid" << endl;
-  ostrstm << "\tIf not involved, 1 is the default MI: Only the last usage is considered" << endl;
+  ostrstm << "\tIf not involved, let the output module choose or default" << endl;
+  ostrstm << "\tMI: specifies a list submited to the output module" << endl;
   return ostrstm.str();
 }
 

@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <array>
+#include <algorithm>
 using namespace std;
 
 /** \brief Base of all the wave generators

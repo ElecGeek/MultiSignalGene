@@ -4,7 +4,7 @@ DEFAULTFLAGS?=-D__OUTPUT_SINE_MODE__
 CXX_Version?=-std=c++11
 
 estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o
-	$(CXX) $(CXXFLAGS) -o estim main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o
+	$(CXX) $(CXXFLAGS) -o estim main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o -l jack
 
 main.o					:	main.cpp help_message.hxx sound_file_output.hxx
 	$(CXX) -c $(CXXFLAGS) $(DEFAULTFLAGS) $(CXX_Version) -o main.o main.cpp

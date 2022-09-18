@@ -56,40 +56,40 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   unsigned short shifts = 0;
   // Now run the alghorythm
   // for( vector<signed long>::const_iterator z_diff = cor_angle_list.begin();
-  for( decltype(cor_angle_list)::const_iterator z_diff = cor_angle_list.begin();
-	   z_diff != cor_angle_list.end();
-	   ++z_diff, ++shifts )
-	{
-	  signed long cor_c_temp, cor_s_temp;
-	  if ( cor_z >= 0 )
-		{
-		  cor_s_temp = cor_s + ( cor_c >> shifts );
-		  cor_c_temp = cor_c - ( cor_s >> shifts );
-		  cor_z -= *z_diff;
-		  //  cout <<'+';
-		} else {
-		  cor_s_temp = cor_s - ( cor_c >> shifts );
-		  cor_c_temp = cor_c + ( cor_s >> shifts );
-		  cor_z += *z_diff;
-		  //cout << '-';	  
-	  }
-	  cor_s = cor_s_temp;
-	  cor_c = cor_c_temp;
-	  if( true )
-		{
-		  if ( (cor_s >= 16777214) || (cor_s < -16777216) )
+  for_each( cor_angle_list.begin(), cor_angle_list.end(), [&](signed long&z_diff)
 			{
-			  cerr << "********** Problem in the cordic algo (sin) **********" << endl;
+			  signed long cor_c_temp, cor_s_temp;
+			  if ( cor_z >= 0 )
+				{
+				  cor_s_temp = cor_s + ( cor_c >> shifts );
+				  cor_c_temp = cor_c - ( cor_s >> shifts );
+				  cor_z -= z_diff;
+				  //  cout <<'+';
+				} else {
+				cor_s_temp = cor_s - ( cor_c >> shifts );
+				cor_c_temp = cor_c + ( cor_s >> shifts );
+				cor_z += z_diff;
+				//cout << '-';	  
+			  }
+			  cor_s = cor_s_temp;
+			  cor_c = cor_c_temp;
+			  shifts += 1;
+			  if( true )
+				{
+				  if ( (cor_s >= 16777214) || (cor_s < -16777216) )
+					{
+					  cerr << "********** Problem in the cordic algo (sin) **********" << endl;
+					}
+				  if ( (cor_c >= 16777214) || (cor_c < -16777216) )
+					{
+					  cerr << "********** Problem in the cordic algo (cos) **********" << endl;
+					}
+				}
 			}
-		  if ( (cor_c >= 16777214) || (cor_c < -16777216) )
-			{
-			  cerr << "********** Problem in the cordic algo (cos) **********" << endl;
-			}
-		}
-	}
-  // For debug chek the sum of the squares of the sine and cosine is 1 ... in fact the amplitude
+			);
+	// For debug chek the sum of the squares of the sine and cosine is 1 ... in fact the amplitude
   //  return (signed short)(((cor_s >> 8 )*(cor_s >> 8 ) + (cor_c >> 8 )*(cor_c >> 8 ))>>16);
-  const signed long the_return = cor_s + ( cor_s >> 3 ) + ( cor_s >> 4 ) + ( cor_s >> 6 ) + ( cor_s >> 7 );
+	const signed long the_return = cor_s + ( cor_s >> 3 ) + ( cor_s >> 4 ) + ( cor_s >> 6 ) + ( cor_s >> 7 );
   if ( the_return <= -8388608 )
 	{
 	  if ( debug_level >= 2 )

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <vector>
 
 using namespace std;
 
@@ -28,12 +29,12 @@ struct sound_file_output_buffer
   //! Size of the data buffer
   size_t data_size;
   //! Data buffer pointer. To be cast according with the sample_size
-  void*const   data;
+  vector<void*>  data;
   sound_file_output_buffer( const pair<unsigned short,unsigned short>&channels_bounds,
 							const unsigned short&sample_size,
 							const bool&interleave,
 							const size_t&data_size,
-							void*const&data);
+							const vector<void*>&data);
   friend ostream&operator<<(ostream&,const sound_file_output_buffer&);
 };
 
