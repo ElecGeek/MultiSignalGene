@@ -60,7 +60,8 @@ public:
   virtual~sound_file_output_base()=default;
   void set_signals(main_loop*const&);
   sample_rate_list process_sample_rate(const sample_rate_list&)const;
-  virtual bool is_open()const;
+  virtual bool is_ready()const;
+  virtual void pre_run();
   virtual void run()=0;
 };
 
@@ -72,12 +73,17 @@ class sound_file_output_jackaudio: public sound_file_output_base
   vector<jack_port_t*>output_ports;
   jack_client_t *client;
   bool is_open_b;
+  bool is_started;
+  // For the call back function
+  bool sound_started;
+  bool shutdown_requested;
   // No sound_file_output_buffer as it is constructed on each call
   // as one should not cache some data
 public:
   sound_file_output_jackaudio(const unsigned char&,const string& jack_peer);
-  ~sound_file_output_jackaudio()=default;
-  bool is_open()const;
+  ~sound_file_output_jackaudio();
+  bool is_ready()const;
+  void pre_run();
   void run();
 };
 

@@ -252,7 +252,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 					  
 					  *(*iter)++ = ((jack_default_audio_sample_t)sample_val)/32768.0;
 					}
-			  
+				  sample_action_count ++;			  
 				  data_sent += 1;
 				  }
 			  break;
@@ -312,9 +312,16 @@ bool main_loop::exec_actions()
   bool more_input_params( false );
   bool more_output_params( false );
   // Check if at least one of them has not yet reached the eot. If so true is returned
-  for( deque<input_params_base*>::iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
-	if ((*it)->check_next_event( samples_per_param_check, actions ) )
-	  more_input_params = true;
+  for_each( params_input_list.begin(), params_input_list.end(), [&]( input_params_base*const& it )
+			{
+			  if (it->check_next_event( samples_per_param_check, actions ) )
+				more_input_params = true;
+			  else
+				{
+				  if( it->exec_loops() )
+					more_input_params = true;
+				}
+			});
   for( deque<output_params_base*>::iterator it=params_output_list.begin(); it!=params_output_list.end(); ++it)
 	if ((*it)->check_next_event( samples_per_param_check, actions ) )
 	  more_output_params = true;

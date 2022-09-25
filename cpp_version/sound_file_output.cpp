@@ -102,10 +102,12 @@ void sound_file_output_base::set_signals(main_loop*const&signals)
 {
   this->signals = signals;
 }
-bool sound_file_output_base::is_open()const
+bool sound_file_output_base::is_ready()const
 {
   return true;
 }
+void sound_file_output_base::pre_run()
+{}
 sample_rate_list sound_file_output_base::process_sample_rate(const sample_rate_list&a)const
 {
   return sr_list.intersect_sr_list( a );
@@ -120,19 +122,25 @@ int sound_file_output_jackaudio::call_back_audio( jack_nframes_t nframes, void *
   auto& my_this = *static_cast<sound_file_output_jackaudio*>(arg);
 
   jack_default_audio_sample_t *out;
-  
-  transform( my_this.output_ports.begin(), my_this.output_ports.end(), my_this.sfo_buffer.data.begin(),
-			 [&](jack_port_t*the_port){
-			   //			   out = (jack_default_audio_sample_t*)jack_port_get_buffer( the_port, nframes );  
-			   //memset( out, 0, sizeof(jack_default_audio_sample_t ) * nframes );
-			   return jack_port_get_buffer( the_port, nframes );
-			 });
-  my_this.sfo_buffer.data_size = sizeof(jack_default_audio_sample_t ) * nframes;
-  
-  unsigned long microseconds_elapsed;
-  microseconds_elapsed = my_this.signals->send_to_sound_file_output( my_this.sfo_buffer );
-  //	  if ( microseconds_elapsed == 0 )
-  // shutdown requested
+
+  if( my_this.sound_started && ( my_this.shutdown_requested == false ))
+	{
+	  transform( my_this.output_ports.begin(), my_this.output_ports.end(), my_this.sfo_buffer.data.begin(),
+				 [&](jack_port_t*the_port){
+				   return jack_port_get_buffer( the_port, nframes );
+				 });
+	  my_this.sfo_buffer.data_size = sizeof(jack_default_audio_sample_t ) * nframes;
+
+	  unsigned long microseconds_elapsed;
+	  microseconds_elapsed = my_this.signals->send_to_sound_file_output( my_this.sfo_buffer );
+	  if ( microseconds_elapsed == 0 )
+		my_this.shutdown_requested = true;
+	}else{
+	for_each( my_this.output_ports.begin(), my_this.output_ports.end(), [&](jack_port_t*the_port){
+		out = (jack_default_audio_sample_t*)jack_port_get_buffer( the_port, nframes );  
+		memset( out, 0, sizeof(jack_default_audio_sample_t ) * nframes );
+	  });
+  }
   return 0;
 };
 
@@ -146,7 +154,7 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
 													 3),
 													 4,false,
 													 0,vector<void*>())),
-  is_open_b( true )
+  is_open_b( true ),is_started(false),sound_started(false),shutdown_requested(false)
 {
   const char *server_name = nullptr;
   jack_options_t options = JackNullOption;
@@ -166,7 +174,7 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
 	}
   if ( is_open_b )
 	{
-	  jack_set_process_callback( client, call_back_audio, this);
+   	  jack_set_process_callback( client, call_back_audio, this);
 	  
 	  // jack_on_shutdown
 	  
@@ -202,46 +210,57 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
 	}
 
 }
-bool sound_file_output_jackaudio::is_open()const
+sound_file_output_jackaudio::~sound_file_output_jackaudio()
 {
-  return is_open_b;
+  cout << "Jackaudio NOT CLEANLY closed" << endl;
+  // Set here the code to close cleanly jackaudio
+}
+bool sound_file_output_jackaudio::is_ready()const
+{
+  return is_started && ( ~shutdown_requested );
 }
 //sound_file_output_jackaudio::~sound_file_output_jackaudio()
 //{}
 // the code inside should go into the callback function
-void sound_file_output_jackaudio::run()
+void sound_file_output_jackaudio::pre_run()
 {
-  // Run a first time the input parameters to flush the buffers in order to avoid a real time crash
-  signals->check_action();
-
-  if ( jack_activate( client ) != 0 )
-	is_open_b = false;
-
   if ( is_open_b )
 	{
-	  const char **ports;
+	  if ( jack_activate( client ) != 0 )
+		is_open_b = false;
+	}
+  const char **ports;
+  if ( is_open_b )
+	{
 	  ports = jack_get_ports( client, nullptr, nullptr, JackPortIsPhysical | JackPortIsInput );
 	  if ( ports == nullptr )
 		is_open_b = false;
+	}
+  if ( is_open_b )
+	{
+	  // open the file and connect as requested
+	  //	  if( jack_connect( client, jack_port_name( jackaudio_singleton_t::output_port ), ports[0]))
+	  //	is_open_b = false;
+	  free( ports );
+	}
+}
 
-	  if ( is_open_b )
+#include <unistd.h>
+void sound_file_output_jackaudio::run()
+{
+  bool the_loop( true );	  
+  if ( is_open_b )
+	{
+	  sound_started = true;
+	  while( the_loop )
 		{
-		  //	  if( jack_connect( client, jack_port_name( jackaudio_singleton_t::output_port ), ports[0]))
-		  //	is_open_b = false;
-		  free( ports );
-		  cout << "55555555555555555" << endl;
-
-		  //		  sound_file_output_buffer sfo_buffer({0,2},2,true,1000,vector<void*>());
-	  
-		  unsigned short limit=0;
-		  while( true ){};
-		  while( signals->send_to_sound_file_output( sfo_buffer ) > 0)
+		  this_thread::sleep_for(chrono::seconds(2));
+		  if( shutdown_requested )
 			{
-			  //	  limit++;
-			  // if( limit > 2000 )
-			  //	break;
+			  the_loop = false;
+			  cout << "main loop" << endl;
 			}
-		}
+	  }
 	}
 }
 

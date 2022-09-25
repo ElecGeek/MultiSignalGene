@@ -19,13 +19,13 @@ class midi_event {
   ostream&info_out_str;
  protected:
   enum status_t{ warming_up, running, end_track } status;
-  unsigned long timestamp;
   unsigned char code;
   unsigned char key;
   unsigned char value;
   unsigned short str_length;
   string user_str;
   unsigned long track_tellg;
+  unsigned long timestamp_construct;
   const bool with_time_stamp;
   unsigned char header;
   midi_event(void);
@@ -66,12 +66,14 @@ class input_params_midi : public input_params_base, public midi_event, private m
  */
 class input_params_midi_file : public input_params_midi{
   ifstream if_str;
+  unsigned short loops_counter;
  public:
-  explicit input_params_midi_file(const string&);
+  input_params_midi_file(const string&filename,const unsigned short&loops_counter);
   ~input_params_midi_file(void);
   unsigned long check_next_time_stamp(void);
   bool eot(void) const;
   bool is_ready(void);
+  bool exec_loops();
 };
 /** \brief Midi pc keyboard control
  *

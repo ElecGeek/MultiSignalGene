@@ -15,6 +15,9 @@
 #include <sstream>
 using namespace std;
 
+#include <chrono>
+#include <thread>
+
 
 extern char *optarg;
 
@@ -32,6 +35,8 @@ int main(int argc,char *argv[] )
   bool has_cin;
   bool has_cout;
   bool follow_timebeat=false;
+  int n_loops( 0 );
+  int wait_for_start_in_sec( 0 );
   sample_rate_list the_sr_list;
 
 #ifdef __OUTPUT_SINE_MODE__
@@ -48,7 +53,7 @@ int main(int argc,char *argv[] )
 
   debug_level = 0;
 
-  while (( opt= getopt( argc, argv, "d:o:i:K:f:c:tj:r:hv" )) != EOF ) 
+  while (( opt= getopt( argc, argv, "d:o:i:K:f:c:tj:r:l:w:hv" )) != EOF ) 
 	{
 	  switch ( opt )
 		{
@@ -85,6 +90,12 @@ int main(int argc,char *argv[] )
 			case 192000: the_sr_list.add_value( 4 ); break;
 			default: cout << "Only 48, 96, 192KHz are allowed sample rates, ignored" << endl; break;
 			}		  
+		  break;
+		case 'l':
+		  n_loops = atoi( optarg );
+		  break;
+		case 'w':
+		  wait_for_start_in_sec = atoi( optarg );
 		  break;
 		case 't':
 		  follow_timebeat = true;
@@ -184,7 +195,7 @@ int main(int argc,char *argv[] )
 	if ( (*it).compare( "-" ) != 0 )
 	  {
 		cout << "Opening midi file " << *it << endl; 
-		signals += new input_params_midi_file( *it );
+		signals += new input_params_midi_file( *it, n_loops );
 	  } else {
 	  cout << "Opening midi input keyboard" << endl;
 	  signals += new input_params_midi_pckeyboard( cin );
@@ -204,21 +215,25 @@ int main(int argc,char *argv[] )
   //  global_run_single ers(signals);
   
   clock_t ticks( clock() );
-  while( signals.is_all_ready() == false )
+  do
 	{
-	  cout << "waiting for some input parameters channels" << endl;
-	  sleep( 1 );
-	}
+	  cout << "waiting all input parameters channels to be ready" << endl;
+	  this_thread::sleep_for(chrono::milliseconds( 500 ));
+	} while( signals.is_all_ready() == false );
 
   sfob->set_signals( &signals );
-  sfob->run();
-
-  unsigned short jalon( 0 );
-  /*  while( signals.exec_actions())
+  sfob->pre_run();
+  while( wait_for_start_in_sec > 0 )
 	{
-	  grf();
-	  }*/
-  
+	  cout << wait_for_start_in_sec << " ";
+	  cout.flush();
+	  this_thread::sleep_for(chrono::seconds( 1 ));
+	  wait_for_start_in_sec -= 1;
+	}
+  cout << "Start" << endl;
+  sfob->run();
+  cout << "End" << endl;
+  delete sfob;
   cout << endl << signals.get_clearing() << endl;
   
   return 0;

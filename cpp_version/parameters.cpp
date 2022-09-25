@@ -61,6 +61,15 @@ bool input_params_base::check_next_event( const unsigned short&elapsed_samples, 
 	}
   return true;
 }
+/** \brief re-execute handler
+ *
+ * The base (vitual) function is the NON seekable inputs
+ * \return always false
+ */
+bool input_params_base::exec_loops(){
+  return false;
+}
+
 
 output_params_base::output_params_base(const unsigned short&samples_per_TS):
   cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS( 4800 )

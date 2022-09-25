@@ -2,7 +2,7 @@
 
 midi_event::midi_event(ostream&os,const bool&with_time_stamp ):
   info_out_str(os),with_time_stamp( with_time_stamp ),
-  status( warming_up ), timestamp( 0 ),
+  status( warming_up ), timestamp_construct( 0 ),
   code( 0 ), key( 0 ), value( 0 ), track_tellg( 0 ),
   state( state_end ), header( 0 )
 {}
@@ -13,27 +13,31 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
   if( state == state_end )
 	{
 	  if( with_time_stamp == true )
-		state = state_ts;
+		{
+		  timestamp_construct = 0;
+		  state = state_ts;
+		}
 	  else
 		state = state_code;
+	  user_str = string();
 	}
-  timestamp = 0;
-  user_str = string();
 
   while( (i_str.eof() == false) && (status != end_track) && (state != state_end) )
 	{
 	  i_str.read( (char*)(&val_read) , 1 );
+	  // For future error plain text display
+	  track_tellg += 1;
 	  // info_out_str << hex << (unsigned short)val_read << '\t';
 	  switch( state ){
 		// Totally done here as the TS is always provided
 	  case state_ts:
 		if ( val_read > 127 )
 		  {
-			timestamp += val_read;
-			timestamp -= 128;
-			timestamp *= 128;
+			timestamp_construct += val_read;
+			timestamp_construct -= 128;
+			timestamp_construct *= 128;
 		  } else {
-		  timestamp += val_read;
+		  timestamp_construct += val_read;
 		  state = state_code;
 		}
 		break;
@@ -83,7 +87,6 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
 			  break;
 			}
 		}
-		track_tellg += 1;
 		break;
 	  case state_string:
 		  user_str += (string::value_type)val_read;
@@ -109,7 +112,7 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
 
 ostream& operator<<( ostream&the_out , const midi_event&me )
 {
-  the_out << "Timestamp: " << hex << me.timestamp << ", code: " << (unsigned short)me.code;
+  the_out << "Timestamp: " << hex << me.timestamp_construct << ", code: " << (unsigned short)me.code;
   the_out << ", key/note: " << (unsigned short)me.key;
   the_out << ", value: " << (unsigned short)me.value << ", optional str: " << me.user_str;
   return the_out;
@@ -301,8 +304,8 @@ ostream&operator<<(ostream&the_out,const input_params_midi&)
 }
 
 
-input_params_midi_file::input_params_midi_file( const string&filename ):
-  input_params_midi( true )
+input_params_midi_file::input_params_midi_file( const string&filename, const unsigned short&loops_counter ):
+  input_params_midi( true ),loops_counter( loops_counter )
 {
   //  unsigned long midi_header( 22 );
   if_str.open( filename.c_str(), ios_base::binary );
@@ -324,9 +327,11 @@ unsigned long input_params_midi_file::check_next_time_stamp()
 {
   if ( get_event( if_str, clearing ) )
 	{
+	  // Something read
 	  //	  info_out_stream<< (*this);
-	  return timestamp;
+	  return timestamp_construct;
 	}else
+	// Input is "starving" nothing has been received or is not complete
 	return 0xffffffff;
 }
 bool input_params_midi_file::eot()const
@@ -361,6 +366,22 @@ bool input_params_midi_file::is_ready()
 	}
 
   return status != warming_up;
+}
+/** \brief re-execute handler
+ *
+ * It computes the loop counter and tell if it is over
+ * \return true after the last run
+ */
+bool input_params_midi_file::exec_loops(){
+  cout << "Checking loop" << endl;
+  if( loops_counter > 0 )
+	{
+	  if_str.seekg( 22 );
+	  status = running;
+	  loops_counter -= 1;
+	  return true;
+	}else
+	return false;
 }
 
 

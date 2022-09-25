@@ -67,6 +67,14 @@ string help()
   ostrstm << "\tOnly 1= 48KHz, 2= 96KHz and 4=192KHz are valid" << endl;
   ostrstm << "\tIf not involved, let the output module choose or default" << endl;
   ostrstm << "\tMI: specifies a list submited to the output module" << endl;
+  ostrstm << endl << "-l"; ostrstm << endl;
+  ostrstm << "\tSpecifies how much time the input is re-executed" << endl;
+  ostrstm << "\tWorks only with file or other seekable input" << endl;
+  ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
+  ostrstm << endl << "-w"; ostrstm << endl;
+  ostrstm << "\tSpecifies, in seconds, a wainting time between the initialisation" << endl;
+  ostrstm << "\tand the start of the sequence. Useful to connect to the jackaudio outputs" << endl;
+  ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
   return ostrstm.str();
 }
 
