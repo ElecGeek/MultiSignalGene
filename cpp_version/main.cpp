@@ -105,7 +105,7 @@ int main(int argc,char *argv[] )
 		  has_hv = true;
 		  break;
 		case 'v':
-		  cout << "estim v0.1" << endl;
+		  cout << "estim v0.2" << endl;
 		  has_hv = true;
 		  break;
 		}
@@ -221,18 +221,23 @@ int main(int argc,char *argv[] )
 	  this_thread::sleep_for(chrono::milliseconds( 500 ));
 	} while( signals.is_all_ready() == false );
 
+  // Today, there is oinly one "physical" ouput at a time
+  // Keep in mind there can have more in the future
   sfob->set_signals( &signals );
-  sfob->pre_run();
-  while( wait_for_start_in_sec > 0 )
+  if( sfob->pre_run() == true )
 	{
-	  cout << wait_for_start_in_sec << " ";
-	  cout.flush();
-	  this_thread::sleep_for(chrono::seconds( 1 ));
-	  wait_for_start_in_sec -= 1;
-	}
-  cout << "Start" << endl;
-  sfob->run();
-  cout << "End" << endl;
+	  while( wait_for_start_in_sec > 0 )
+		{
+		  cout << wait_for_start_in_sec << " ";
+		  cout.flush();
+		  this_thread::sleep_for(chrono::seconds( 1 ));
+		  wait_for_start_in_sec -= 1;
+		}
+	  cout << "Start" << endl;
+	  sfob->run();
+	  cout << "End" << endl;
+	}else
+	cerr << "An error occured while running the audio output" << endl;
   delete sfob;
   cout << endl << signals.get_clearing() << endl;
   

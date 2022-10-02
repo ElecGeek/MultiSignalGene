@@ -65,16 +65,17 @@ ostream&operator<<(ostream&a,const sample_rate_list&b)
   return a;
 }
 
-sound_file_output_buffer::sound_file_output_buffer( const pair<unsigned short,unsigned short>&channels_bounds,
-													const unsigned short&sample_size,
+sound_file_output_buffer::sound_file_output_buffer( const unsigned short&sample_size,
 													const bool&interleave,
 													const size_t&data_size,
 													const vector<void*>& data):
-	channels_bounds(channels_bounds),
-	sample_size(sample_size),
-	interleave(interleave),
-	data_size(data_size),
-	data(data)
+  channels_bounds(pair<unsigned short,unsigned short>
+													(numeric_limits<unsigned short>::min(),
+													 numeric_limits<unsigned short>::max())),
+  sample_size(sample_size),
+  interleave(interleave),
+  data_size(data_size),
+  data(data)
 {}
 ostream&operator<<(ostream&the_out,const sound_file_output_buffer&a)
 {
@@ -106,8 +107,10 @@ bool sound_file_output_base::is_ready()const
 {
   return true;
 }
-void sound_file_output_base::pre_run()
-{}
+bool sound_file_output_base::pre_run()
+{
+  return true;
+}
 sample_rate_list sound_file_output_base::process_sample_rate(const sample_rate_list&a)const
 {
   return sr_list.intersect_sr_list( a );
@@ -146,37 +149,90 @@ int sound_file_output_jackaudio::call_back_audio( jack_nframes_t nframes, void *
 
 
 
-sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbre_channels,const string&jack_peer):
-  sound_file_output_base(  sound_file_output_buffer( pair<unsigned short,unsigned short>
-													 (numeric_limits<unsigned short>::min(),
-													  //			  numeric_limits<unsigned short>::min()),
-													  //2),
-													 3),
-													 4,false,
+sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbre_channels,
+														 const string&jack_connections):
+  sound_file_output_base(  sound_file_output_buffer( 4,false,
 													 0,vector<void*>())),
   is_open_b( true ),is_started(false),sound_started(false),shutdown_requested(false)
 {
+  // In the entire constructor, one does not have to take care about the real time
+  //   as jack is not activated
   const char *server_name = nullptr;
   jack_options_t options = JackNullOption;
   jack_status_t status;
 
-  cout << sizeof( jack_default_audio_sample_t ) << endl;
-
-  client = jack_client_open( jack_peer.c_str(), options, &status, server_name );
-  if ( client != nullptr )
+  // Get the file containing the jackaudio parameters
+  // if not "." then open the file and process it
+  //   else take the default values
+  if( jack_connections.compare(".") != 0 )
 	{
-	  if( status & JackServerStarted )
-		cout <<"JACK server started ";
-	  if( status & JackNameNotUnique )
-		cout << "Unique name: " << jack_get_client_name( client ) << "assigned";
-	}else{
-	is_open_b = false;
+	  // Read the connection file
+	  ifstream inputfile_stream( jack_connections, istream::binary );
+	  if ( inputfile_stream.is_open() == true )
+		{
+		  cerr << "Sorry not yet implemented" << endl;
+		  // TODO
+		  inputfile_stream.close();
+		  is_open_b  = false;
+		}else
+		  is_open_b  = false;
+	} else {
+	// Or use the hardcoded default values
+	jack_peer = string( "estim" );
+
+	sfo_buffer.channels_bounds.first = numeric_limits<unsigned short>::min();
+	sfo_buffer.channels_bounds.second = numeric_limits<unsigned short>::min();
+	array< unsigned short, 4 > hardcoded_connections_audio = { 0, 1, 2, 3 };
+	for( auto &m : hardcoded_connections_audio )
+	  {
+		if ( m != 3 )
+		  connections_list_audio.insert( pair< string, deque< string> >
+										(string( "gene_" ) + to_string( m ),
+										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
+		else
+		  connections_list_audio[ string( "gene_2" ) ].push_back( "system:playback_" + to_string( m + 1 )); 
+		sfo_buffer.channels_bounds.second += 1;
+	  }
+	cout << "-------------" << sfo_buffer.channels_bounds.second << "-----------------------------" << endl;
+	array< unsigned short, 1 > hardcoded_connections_midi = { 0 };
+	for( auto &m : hardcoded_connections_midi )
+	  {
+		  connections_list_midi_in.insert( pair< string, deque< string> >
+										(string( "commands_in_" ) + to_string( m ),
+										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
+	  }
+	for( auto &m : hardcoded_connections_midi )
+	  {
+		  connections_list_midi_out.insert( pair< string, deque< string> >
+										(string( "commands_out_" ) + to_string( m ),
+										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
+	  }
+  }
+
+  cout << sizeof( jack_default_audio_sample_t ) << endl;
+  // Everything is ready
+  if( is_open_b == true )
+	{
+	  client = jack_client_open( jack_peer.c_str(), options, &status, server_name );
+	  if ( client != nullptr )
+		{
+		  if( status & JackServerStarted )
+			cout <<"JACK server started ";
+		  if( status & JackNameNotUnique )
+			cout << "Unique name: " << jack_get_client_name( client ) << "assigned";
+		}else
+		is_open_b = false;
 	}
   if ( is_open_b )
 	{
    	  jack_set_process_callback( client, call_back_audio, this);
 	  
-	  // jack_on_shutdown
+	  // stop and throw an error message
+	  // jack_on_shutdown( client, call_back_jack_shutdown, this );
+
+	  // this is not handeled by the software then
+	  //   stop and throw an error message
+	  // jack_get_sample_rate_callback( client, call_back_samplerate_change, this ); 
 	  
 	  unsigned long jack_sr = jack_get_sample_rate( client );
 	  cout << jack_sr << endl;
@@ -192,28 +248,34 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
   }
   if ( is_open_b )
 	{
-	  for( unsigned char ind = 0; ind < 3 ; ind++)
-		//for( unsigned char ind = 0; ind < nbre_channels ; ind++)
+	  for( auto &m : connections_list_audio )
 		{
 		  output_ports.push_back( jack_port_register( client,
-													  ( string( "gene_" ) + to_string( ind )).c_str(),
+													  m.first.c_str(),
 													  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0 ));
 		  sfo_buffer.data.push_back( nullptr );
 		}
-	  //	  sfo_buffer.channels_bounds = pair<unsigned short, unsigned short>(0,nbre_channels);
-		  jack_port_register( client,
-							  "estim_cmd_out",
-							  JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 );
-		  jack_port_register( client,
-							  "estim_cmd_in",
-							  JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0 );
+	  for( auto &m : connections_list_midi_in )
+		{
+		  output_ports.push_back( jack_port_register( client,
+													  m.first.c_str(),
+													  JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0 ));
+		  sfo_buffer.data.push_back( nullptr );
+		}
+	  for( auto &m : connections_list_midi_out )
+		{
+		  output_ports.push_back( jack_port_register( client,
+													  m.first.c_str(),
+													  JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0 ));
+		  sfo_buffer.data.push_back( nullptr );
+		}
 	}
 
 }
 sound_file_output_jackaudio::~sound_file_output_jackaudio()
 {
-  cout << "Jackaudio NOT CLEANLY closed" << endl;
-  // Set here the code to close cleanly jackaudio
+  if ( is_open_b )
+	jack_client_close( client );
 }
 bool sound_file_output_jackaudio::is_ready()const
 {
@@ -222,34 +284,36 @@ bool sound_file_output_jackaudio::is_ready()const
 //sound_file_output_jackaudio::~sound_file_output_jackaudio()
 //{}
 // the code inside should go into the callback function
-void sound_file_output_jackaudio::pre_run()
+bool sound_file_output_jackaudio::pre_run()
 {
   if ( is_open_b )
 	{
 	  if ( jack_activate( client ) != 0 )
 		is_open_b = false;
 	}
-  const char **ports;
+  // From here, special care should be taken to not break the real time
+
   if ( is_open_b )
 	{
-	  ports = jack_get_ports( client, nullptr, nullptr, JackPortIsPhysical | JackPortIsInput );
-	  if ( ports == nullptr )
-		is_open_b = false;
+	  const char*port;
+	  for( auto &m : connections_list_audio )
+		for( auto &n : m.second )
+		  {
+			cout << "Connecting " << jack_peer << ":" << m.first.c_str() << " to " << n.c_str();
+			if ( jack_connect( client, ( jack_peer + ":" + m.first ).c_str(), n.c_str() ) != 0 )
+			cout << " Probem with the connection" << endl;
+		  else
+			cout << " Ok" << endl;
+		  }
 	}
-  if ( is_open_b )
-	{
-	  // open the file and connect as requested
-	  //	  if( jack_connect( client, jack_port_name( jackaudio_singleton_t::output_port ), ports[0]))
-	  //	is_open_b = false;
-	  free( ports );
-	}
+  return is_open_b;
 }
 
 #include <unistd.h>
 void sound_file_output_jackaudio::run()
 {
   bool the_loop( true );	  
-  if ( is_open_b )
+  if ( is_open_b == true )
 	{
 	  sound_started = true;
 	  while( the_loop )
@@ -266,10 +330,7 @@ void sound_file_output_jackaudio::run()
 
 
 sound_file_output_dry::sound_file_output_dry(const bool&follow_timebeat):
-  sound_file_output_base(  sound_file_output_buffer( pair<unsigned short,unsigned short>
-													 (numeric_limits<unsigned short>::min(),
-													  numeric_limits<unsigned short>::min()),
-													 2,true,
+  sound_file_output_base(  sound_file_output_buffer( 2,true,
 													 0,vector<void*>())),
   follow_timebeat(follow_timebeat),
   cumul_us_elapsed( 0 )
@@ -303,10 +364,7 @@ void sound_file_output_dry::run()
 
 sound_file_output_file::sound_file_output_file(const string& filename,
 											   const bool&follow_timebeat):
-  sound_file_output_base( sound_file_output_buffer( pair<unsigned short,unsigned short>
-													(numeric_limits<unsigned short>::min(),
-													 numeric_limits<unsigned short>::max()),
-													2,true,
+  sound_file_output_base( sound_file_output_buffer( 2,true,
 													19200,vector<void*>())),
 			  follow_timebeat(follow_timebeat),
   outputfile_stream( filename, ostream::binary | ostream::trunc )

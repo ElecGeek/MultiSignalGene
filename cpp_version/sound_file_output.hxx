@@ -61,7 +61,7 @@ public:
   void set_signals(main_loop*const&);
   sample_rate_list process_sample_rate(const sample_rate_list&)const;
   virtual bool is_ready()const;
-  virtual void pre_run();
+  virtual bool pre_run();
   virtual void run()=0;
 };
 
@@ -70,6 +70,8 @@ public:
 class sound_file_output_jackaudio: public sound_file_output_base
 {
   static int call_back_audio( jack_nframes_t nframes, void * arg );
+  static int call_back_jack_shutdown( void * arg );
+  static int call_back_samplerate_change( jack_nframes_t nframes, void * arg );
   vector<jack_port_t*>output_ports;
   jack_client_t *client;
   bool is_open_b;
@@ -78,12 +80,36 @@ class sound_file_output_jackaudio: public sound_file_output_base
   bool sound_started;
   bool shutdown_requested;
   // No sound_file_output_buffer as it is constructed on each call
-  // as one should not cache some data
+  // as one should not cache its pointer
+  /** Peer prefix in the jack connection system
+   */
+  string jack_peer;
+  /** \brief list of peers and connections
+   *
+   * Key: Peer name it is prefixed by "peer_prefix:" in the software
+   * Value: List of destinations to connect with their prefix.
+   *   Can contain 0 or more elements
+   */  
+  map< string, deque< string > >connections_list_audio;
+  /** \brief list of peers and connections
+   *
+   * Key: Peer name it is prefixed by "peer_prefix:" in the software
+   * Value: List of sources to connect with their prefix.
+   *   Can contain 0 or more elements
+   */  
+  map< string, deque< string > >connections_list_midi_in;
+  /** \brief list of peers and connections
+   *
+   * Key: Peer name it is prefixed by "peer_prefix:" in the software
+   * Value: List of destinations to connect with their prefix.
+   *   Can contain 0 or more elements
+   */  
+  map< string, deque< string > >connections_list_midi_out;
 public:
-  sound_file_output_jackaudio(const unsigned char&,const string& jack_peer);
+  sound_file_output_jackaudio(const unsigned char&,const string& jack_connections);
   ~sound_file_output_jackaudio();
   bool is_ready()const;
-  void pre_run();
+  bool pre_run();
   void run();
 };
 

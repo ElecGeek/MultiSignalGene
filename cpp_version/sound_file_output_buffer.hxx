@@ -20,7 +20,7 @@ using namespace std;
 struct sound_file_output_buffer
 {
   //! First and last supported channel by the output
-  const pair<unsigned short,unsigned short> channels_bounds;
+  pair<unsigned short,unsigned short> channels_bounds;
   //! Size of a sample 2=short, today the only one supported
   const unsigned short sample_size;
   //! True = data sent as frames of the channels, one after the other
@@ -30,8 +30,7 @@ struct sound_file_output_buffer
   size_t data_size;
   //! Data buffer pointer. To be cast according with the sample_size
   vector<void*>  data;
-  sound_file_output_buffer( const pair<unsigned short,unsigned short>&channels_bounds,
-							const unsigned short&sample_size,
+  sound_file_output_buffer( const unsigned short&sample_size,
 							const bool&interleave,
 							const size_t&data_size,
 							const vector<void*>&data);
