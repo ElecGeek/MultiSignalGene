@@ -100,10 +100,10 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 	  //    The goal is each buffer takes a set of outputs (with or without overlap)
 	  for_each ( buffer.data.begin(), buffer.data.end(), [&](void*buf_ptr){
 		  fill( static_cast<char*>(buf_ptr), static_cast<char*>(buf_ptr) + buffer.data_size , 0 );
-		});
-	  if( exec_actions() )
-	   	// ignore all the buffer members, simply tells the time (uS) supposed to elapsed
-		return 1000 / sample_rate_id;
+	  	});
+	  if ( exec_actions() == false )
+	   	// ignore all the buffer members, simply tells the time (10mS) supposed to elapsed
+		return 1000;
 	  else
 		// Run is finished, here there is no shutdown to handle, tell to leave now
 		return 0;
@@ -141,15 +141,28 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		  cout << "Excecution begin: "<< chan_begin <<", end: "<<chan_end;
 		  cout << ", size exec: " << frame_size_exec << ", size req: " << frame_size_requested<<endl;
 		}
+	  debug_once = true;
+
 	  bool no_more_input = true;
 
 	  // There are many copy and paste
 	  // Since this is a time critical part, I prefer to switch and to loop
 	  //   rather than to lopp and to switch
 
+	  if ( buffer.data.empty() )
+		{
+		  bool action_leave = false;
+		  for( unsigned short ind = 0; ind < samples_per_param_check; ind ++ ) 
+			if ( check_action() )
+			  action_leave = true;
+		  if( action_leave == false )
+			return 1000;
+		  else
+			return 0;
+		}
 	  unsigned long data_sent = 0;
 	  short sample_val;
-	  if ( buffer.data.empty() == false && buffer.interleave == true )
+	  if ( buffer.interleave == true )
 		{
 		  switch( buffer.sample_size )
 			{
@@ -209,9 +222,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 			  cerr << "NOT SUPPORTED" << endl;
 			  break;
 			}
-		}
-	  if ( buffer.data.empty() == false && buffer.interleave == false )
-		{
+		} else {
 		  unsigned short buffer_numbers = buffer.data.size();
 		  unsigned short buffer_n_exec = buffer_numbers;
 		  if ( frame_size_exec < buffer_n_exec )
@@ -267,7 +278,6 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 						fill( static_cast<char*>(buf_ptr), static_cast<char*>(buf_ptr) + buffer.data_size , 0 );
 						});*/
 		}
-	  debug_once = true;
 	  if( no_more_input )
 		return 0;
 	  else

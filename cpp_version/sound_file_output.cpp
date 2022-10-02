@@ -366,8 +366,9 @@ sound_file_output_file::sound_file_output_file(const string& filename,
 											   const bool&follow_timebeat):
   sound_file_output_base( sound_file_output_buffer( 2,true,
 													19200,vector<void*>())),
-			  follow_timebeat(follow_timebeat),
-  outputfile_stream( filename, ostream::binary | ostream::trunc )
+  follow_timebeat(follow_timebeat),
+  outputfile_stream( filename, ostream::binary | ostream::trunc ),
+  cumul_us_elapsed( 0 )
 {
   sfo_buffer.data.push_back( (void*)values );
 }
@@ -379,13 +380,26 @@ sound_file_output_file::~sound_file_output_file()
 void sound_file_output_file::run()
 {
   //unsigned short limit=0;
-  while( signals->send_to_sound_file_output( sfo_buffer ) > 0)
+  unsigned long microseconds_elapsed;
+  while( true )
 	{
+	  microseconds_elapsed = signals->send_to_sound_file_output( sfo_buffer );
 	  outputfile_stream.write( (const char*)sfo_buffer.data[0], sfo_buffer.data_size );
 	  outputfile_stream.flush();
-	  //limit++;
-	  //	  if( limit > 100000 )
-	  //	break;
+	  if ( microseconds_elapsed == 0 )
+		break;
+	  if ( follow_timebeat )
+		{
+		  cumul_us_elapsed += microseconds_elapsed;
+		  if( ( cumul_us_elapsed / 1000 ) != 0 )
+			{
+			  this_thread::sleep_for(chrono::milliseconds(cumul_us_elapsed / 1000));
+			  cumul_us_elapsed -= 1000 * ( cumul_us_elapsed / 1000);
+			  }
+		}
+	  // limit++;
+	  // if( limit > 200000 )
+	  //   break;
 	}
 }
 

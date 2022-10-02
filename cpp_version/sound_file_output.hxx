@@ -128,6 +128,7 @@ class sound_file_output_file: public sound_file_output_base
   ofstream outputfile_stream;
   signed short values[20000];
   const bool follow_timebeat;
+  unsigned long cumul_us_elapsed;
   // bool is_open_b;
 public:
   sound_file_output_file(const string& filename,
