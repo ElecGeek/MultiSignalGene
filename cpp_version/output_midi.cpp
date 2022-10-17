@@ -2,9 +2,10 @@
 
 
 output_params_txt::output_params_txt( ostream& o_str ):
-  o_str( o_str ),
-  output_params_base( 4800 )
-{}
+  o_str( o_str )
+{
+  samples_per_TS_unity = 4800;
+}
 void output_params_txt::cnv_2_note_velocity( const unsigned char&nbre_bits_expo,
 											 const unsigned short&value,
 											 unsigned char&note,

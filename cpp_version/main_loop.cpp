@@ -287,7 +287,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		}
 	}
 }
-bool main_loop::operator()(vector<signed short>&the_out)
+/*bool main_loop::operator()(vector<signed short>&the_out)
 {
   // First execute the parameters changes if so
   // Since there are more samples (48, 96 or 192KHz) than events
@@ -315,10 +315,11 @@ bool main_loop::operator()(vector<signed short>&the_out)
 	*s.it_out = (*s.its->second)();
   // If no output and ftb is set then wait
   return true;
-};
+  };*/
 
 bool main_loop::exec_actions()
 {
+  // Regardless to the sample rate, this is called every 1 mS
   bool more_input_params( false );
   bool more_output_params( false );
   // Check if at least one of them has not yet reached the eot. If so true is returned

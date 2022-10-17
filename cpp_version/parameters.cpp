@@ -11,14 +11,16 @@ signals_param_action::signals_param_action():
 {}
 
 
-input_params_base::input_params_base(const unsigned short&samples_per_TS):
+input_params_base::input_params_base():
   wait_for_next_TS( false ), cumul_time_stamp( 0 ),
   current_samples( 0 ),
-  samples_per_TS( samples_per_TS ),
+  samples_per_TS_unity( 5 ),
   clearing( c_unknown )
 {}
 bool input_params_base::check_next_event( const unsigned short&elapsed_samples, vector<signals_param_action>&actions)
 {
+  // Somewhere, the elapsed_samples is always 48 as the functions is called
+  // accordingly with the sample rate and 1mS is nice to avoid to break the real time
   bool do_leave( false );
   current_samples += elapsed_samples;
   while( do_leave == false )
@@ -45,7 +47,7 @@ bool input_params_base::check_next_event( const unsigned short&elapsed_samples, 
 		if( requested_time_stamp != 0xffffffff )
 		  {
 			// An event has been received. Computer the waiting time
-			requested_samples = samples_per_TS * requested_time_stamp; 
+			requested_samples = samples_per_TS_unity * requested_time_stamp; 
 			cumul_time_stamp += requested_time_stamp;
 			wait_for_next_TS = true;
 		  }
@@ -71,8 +73,8 @@ bool input_params_base::exec_loops(){
 }
 
 
-output_params_base::output_params_base(const unsigned short&samples_per_TS):
-  cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS( 4800 )
+output_params_base::output_params_base():
+  cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS_unity( 5 )
 {}
 bool output_params_base::check_next_event( const unsigned short&elapsed_samples,
 										   const vector<signals_param_action>&actions)
@@ -81,9 +83,9 @@ bool output_params_base::check_next_event( const unsigned short&elapsed_samples,
   if ( actions.size() > 0 )
 	{
 	    unsigned long diff_TS;
-		diff_TS = current_samples / samples_per_TS;
+		diff_TS = current_samples / samples_per_TS_unity;
 		cumul_time_stamp += diff_TS;
-		current_samples -= diff_TS * samples_per_TS;
+		current_samples -= diff_TS * samples_per_TS_unity;
 		for( vector<signals_param_action>::const_iterator it=actions.begin(); it!=actions.end(); ++it )
 		  {
 			export_next_event( cumul_time_stamp, diff_TS, *it );

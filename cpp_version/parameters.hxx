@@ -36,6 +36,11 @@ struct signals_param_action
   signals_param_action( const unsigned short&,const action_list&,const unsigned short&);
   friend ostream&operator<<(ostream&,const signals_param_action&);
 };
+class params_base
+{
+public:
+  const unsigned long samples_per_second_base = 48000;
+};
 /** \brief Base of the parameters control for all the possible methods
  *
  * The bundle class holds a list of this class, one per input channel/method\n
@@ -44,8 +49,7 @@ struct signals_param_action
  * Another goal is to read some multi track files in case each track appends the previous one
  *   (in such case the file is opened multiple times
  */
-class input_params_base {
-  input_params_base(void);
+class input_params_base : public params_base {
   bool wait_for_next_TS;
   unsigned long requested_samples;
   virtual unsigned long check_next_time_stamp(void) = 0;
@@ -54,9 +58,16 @@ class input_params_base {
   unsigned long cumul_time_stamp;
   unsigned long current_samples;
  protected:
-  unsigned short samples_per_TS;
+  unsigned short samples_per_TS_unity;
   ostringstream info_out_stream;
-  explicit input_params_base(const unsigned short&samples_per_TS);
+  /** \brief set some defaults values
+   *
+   * Sets samples_per_TS_unity to a small non 0 value\n
+   * The caller should set to its real value as soon as it is known\n
+   * (after opening inputs such as files)
+   * If the channel is an "ASAP" one, let the default
+   */
+  input_params_base();
  public:
   virtual ~input_params_base(void)=default;
   bool check_next_event( const unsigned short&elapsed_samples, vector<signals_param_action>&action );
@@ -65,16 +76,14 @@ class input_params_base {
   virtual bool exec_loops();
   enum clearing_t { c_unknown, c_end_of_data, c_abort, c_file_err, c_net_err, c_data_err } clearing;
 };
-/** \brief Base of the parameters control
- *         for all the possible methods
+/** \brief Base of the parameters control for all the possible methods
  *
  * The bundle class holds a list of this class, one per output channel/method\n
  * Many classes can be registered to allow more than one output\n
  * By this way the programmer of the UI can receive a feedback and display all the events\n
  * The goal is also run more than one specialized control input, one per type
  */
-class output_params_base {
-  output_params_base(void);
+class output_params_base : public params_base {
   virtual void export_next_event(const unsigned long&absolute_TS,
 								 const unsigned long&diff_TS,
 								 const signals_param_action&) = 0;
@@ -82,9 +91,16 @@ class output_params_base {
   unsigned long cumul_time_stamp;
   unsigned long current_samples;
  protected:
-  unsigned short samples_per_TS;
+  unsigned short samples_per_TS_unity;
   ostringstream info_out_stream;
-  explicit output_params_base(const unsigned short&samples_per_TS);
+  /** \brief set some defaults values
+   *
+   * Sets samples_per_TS_unity to a small non 0 value\n
+   * The caller should set to its real value as soon as it is known\n
+   * (after opening inputs such as files)
+   * If the channel is an "ASAP" one, let the default
+   */
+  output_params_base();
  public:
   virtual ~output_params_base(void)=default;
   bool check_next_event( const unsigned short&elapsed_samples, const vector<signals_param_action>&action );

@@ -44,7 +44,6 @@ class midi_event {
   //friend class parameters_midi_file;
   //friend class parameters_midi_connec;
 };
-
 /** \brief Base of the midi method to set the parameters
  *
  * Decodes the midi messages and sets the parameters.

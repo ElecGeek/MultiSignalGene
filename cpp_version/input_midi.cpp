@@ -143,7 +143,7 @@ unsigned long midi_event::get_value( const unsigned char&exponent_size, const un
 
 
 input_params_midi::input_params_midi(const bool&with_time_stamp):
-  midi_event( info_out_stream, with_time_stamp ),input_params_base( 4800 )
+  midi_event( info_out_stream, with_time_stamp )
 {}
 
 
@@ -341,6 +341,7 @@ bool input_params_midi_file::eot()const
 bool input_params_midi_file::is_ready()
 {
   unsigned char val_read;
+  bool QuaterNote_not_SMPTE;
 
   while( (if_str.eof() == false) && (status == warming_up) )
 	{
@@ -351,6 +352,73 @@ bool input_params_midi_file::is_ready()
 		case 1 : if ( val_read != 'T' ) status = end_track;  clearing = c_data_err;  break;
 		case 2 : if ( val_read != 'h' ) status = end_track;  clearing = c_data_err;  break;
 		case 3 : if ( val_read != 'd' ) status = end_track;  clearing = c_data_err;  break;
+		case 12 :
+		  if ( val_read < 128 )
+			{
+			  QuaterNote_not_SMPTE = true;
+			  // Since we are here, the high bit is always 0
+			  samples_per_TS_unity = static_cast<unsigned short>( val_read );			  
+			}
+		  else
+			{
+			  QuaterNote_not_SMPTE = false;
+			  samples_per_TS_unity = static_cast<unsigned short>( - static_cast<char>( val_read ));
+			  if ( samples_per_TS_unity != 10 &&
+				   samples_per_TS_unity != 24 &&
+				   samples_per_TS_unity != 25 &&
+				   samples_per_TS_unity != 29 &&
+				   samples_per_TS_unity != 30 )
+				{
+				  cerr << "Sorry the images per second should be 10(compatibility mode), 24, 25, 29 or 30" << endl;
+				  status = end_track;
+				  clearing = c_data_err;			  
+				}
+			}
+		  break;
+		case 13 :
+		  if ( QuaterNote_not_SMPTE )
+			{
+			  samples_per_TS_unity *= 128;
+			  samples_per_TS_unity += val_read;
+			  // Before execution of the next line,
+			  //   samples_per_TS_unity contains the number of ticks per quarter note
+			  // We assume a metronome at 60 (per minute)
+			  //   then the number of samples per tick
+			  //   is the samples per second divided by the ticks per second
+			  if ( samples_per_TS_unity > 0 )
+				{
+				  samples_per_TS_unity =
+					static_cast<unsigned short>( samples_per_second_base /
+												 samples_per_TS_unity );
+				  cout << "Sorry, the ticks per quarter note has not been tested" << endl;
+				}
+			  else
+				{
+				  samples_per_TS_unity = 30000;
+				  status = end_track;
+				  clearing = c_data_err;
+				}
+			}
+		  else
+			{
+			  // Before execution of the next line,
+			  //   sample_per_TS_unity holds the number of images per seconds 
+			  samples_per_TS_unity *= val_read;
+			  // Before execution of the next line,
+			  //   samples_per_TS_unity hold the number of ticks per second
+			  // The cast and the division are Ok as:
+			  //   * the number of images per second is at least 10 in compatibility mode
+			  //       or at least 24
+			  //   * the number of ticks per image is an integer at least 1
+			  //   * the samples_per_second_base should not exceed 655350
+			  //       even for 384KHz, use a lower base and the sample_rate multiplier
+			  samples_per_TS_unity =
+				static_cast<unsigned short>( samples_per_second_base /
+											 samples_per_TS_unity );
+			  // Now, samples_per_TS_unity holds the number of samples per tick
+			}
+		  cout << "Samples_per TS unity: " << samples_per_TS_unity << endl;
+		  break;
 		case 14 : if ( val_read != 'M' ) status = end_track;  clearing = c_data_err;  break;
 		case 15 : if ( val_read != 'T' ) status = end_track;  clearing = c_data_err;  break;
 		case 16 : if ( val_read != 'r' ) status = end_track;  clearing = c_data_err;  break;
