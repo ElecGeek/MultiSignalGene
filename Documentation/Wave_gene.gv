@@ -1,0 +1,109 @@
+digraph g {
+		comment=""
+		comment="Sorry my lisp installation of graphviz is broken. I hope to fix it ASAP"
+		comment=""
+		 fontname="Helvetica,Arial,sans-sherif"
+		 node [fontname="Helvetica,Arial,sans-sherif"]
+		 edge [fontname="Helvetica,Arial,sans-sherif"]
+		 graph [rankdir="LR"]
+
+		 subgraph cluster_sample_base {
+		 		 subgraph cluster_sample_frequency {
+		 		 		  node [shape=record]
+				 		  subgraph sample_base_frequency {
+				  				  node [label="<f0>base frequency||frequency: OF\nphase shift: OP\nphase reset: todo"] n_sample_base_frequency;
+					   }
+				  	   node [label="frequency_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_frequency_filename";
+					  label="base frequency";
+				  	}
+		 		 subgraph cluster_sample_amplitude {
+		 		 		  node [shape=record]
+				 		  subgraph sample_base_amplitude {
+				  				  node [label="<f0>base amplitude||amplitude: OA"] n_sample_amplitude_soft;
+				  				  node [label="<f0>slewrate|apply SR limitation|slewrate: OS"] n_sample_amplitude_slewrate;
+				  				  node [label="<f0>base volume\nfrom program||always max"] n_sample_volume_soft;
+				  				  node [label="<f0>base volume\nfrom hardware||"] n_sample_volume_hard;
+						}
+				  node [label="depends\nversion";shape=circle] "n_sample_amplitude_version";
+				  node [label="X"] "n_sample_amplitude_product";
+				  "n_sample_volume_soft":f0 -> "n_sample_amplitude_version" [arrowtail=odiamond];
+				  "n_sample_volume_hard":f0 -> "n_sample_amplitude_version";
+				  "n_sample_amplitude_version" -> "n_sample_amplitude_product";
+				  "n_sample_amplitude_soft":f0 -> "n_sample_amplitude_slewrate":f0;
+				  "n_sample_amplitude_slewrate":f0 -> "n_sample_amplitude_product"
+			       label = "Base amplitude";
+			  	   node [label="amplitude_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_amplitude_filename";
+		 		  }
+		 		  node [shape=record]
+				  subgraph sample_base_shapes {
+				  				  node [label="<f0>sine||argument: S"] n_sample_base_sine;
+				  				  node [label="<f0>pulse||argument: P"] n_sample_base_pulse;
+				  				  node [label="<f0>flatened triangle||argument: T"] n_sample_base_triangle;
+				  				  node [label="<f0>continuous||argument: D";color=red] n_sample_base_dc;
+				  }
+				  "n_sample_base_frequency" -> "n_sample_base_sine":f0;
+				  "n_sample_base_frequency" -> "n_sample_base_pulse":f0;
+				  "n_sample_base_frequency" -> "n_sample_base_triangle":f0;
+				  "n_sample_base_frequency" -> "n_sample_base_dc":f0;
+				  "n_sample_amplitude_product" -> "n_sample_base_sine":f0;
+				  "n_sample_amplitude_product" -> "n_sample_base_pulse":f0;
+				  "n_sample_amplitude_product" -> "n_sample_base_triangle":f0;
+				  "n_sample_amplitude_product" -> "n_sample_base_dc":f0;
+				  node [label="virtual\nbase";shape=circle] n_sample_base_virtual_base;
+				  "n_sample_base_sine":f0 -> "n_sample_base_virtual_base" [arrowtail=odiamond];
+				  "n_sample_base_pulse":f0 -> "n_sample_base_virtual_base";
+				  "n_sample_base_triangle":f0 -> "n_sample_base_virtual_base";
+				  "n_sample_base_dc":f0 -> "n_sample_base_virtual_base";
+				  
+				  label = "Base waveform";
+				  node [label="output";shape=ellipse] "n_sample_base_out";
+				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_base_filename";
+
+		 }
+
+		 subgraph cluster_sample_modulation {
+		 		  node [shape=record]
+		 		  node [label="<f0>sine 0 2.pi||frequency: AF\nphase shift: BP\nphase reset: todo"] "n_sample_modulation_1";
+				  "n_sample_modulation_1":f0 -> "n_sample_modulation_1":f0;
+				  label = "Sine modulation";
+				  node [label="output";shape=ellipse] "n_sample_modulation_out";
+				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_modulation_filename";
+		 }
+
+		 subgraph cluster_sample_pulse {
+		 		  subgraph sample_pulse_cycle {
+				  		 		  node [shape=record]
+		 		  				  node [label="<f0>sine -pi/2 pi/2||frequency: BF\nphase shift: BP\nphase reset: todo"] "n_sample_pulse_1";
+		 		  				  node [label="<f0>high hold||duration: BH"] "n_sample_pulse_2";
+		 		  				  node [label="<f0>sine pi/2 -pi/2||frequency: BF\nphase shift: BP\nphase reset: todo"] "n_sample_pulse_3";
+		 		  				  node [label="<f0>low hold||duration: BI"] "n_sample_pulse_4";
+				  }
+				  "n_sample_pulse_1":f0 -> "n_sample_pulse_2":f0;
+				  "n_sample_pulse_2":f0 -> "n_sample_pulse_3":f0;
+				  "n_sample_pulse_3":f0 -> "n_sample_pulse_4":f0;
+				  "n_sample_pulse_4":f0 -> "n_sample_pulse_1":f0;
+				  label = "Pulse modulation";
+				  node [label="output";shape=ellipse] "n_sample_pulse_out";
+				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_pulse_filename";
+		 }
+
+		 subgraph cluster_sample_bundle {
+  		 		  node [label="input from base";shape=ellipse] "n_sample_main_in";
+				  subgraph sample_bundle_process
+				  {
+						node [shape=record]
+		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AP"] "n_sample_pulse_depth";
+		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AA"] "n_sample_modulation_depth";
+				  		"n_sample_modulation_depth":f0 -> "n_sample_pulse_depth":f0;
+				  }
+				  "n_sample_main_in" -> "n_sample_modulation_depth":f0;
+				  node [label="output";shape=ellipse] "n_sample_main_out";
+				  "n_sample_pulse_depth":f0 -> "n_sample_main_out";
+				  label = "Main";
+				  node [label="main_loop.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_bundle_filename";
+		 }
+		 "n_sample_modulation_out" -> "n_sample_modulation_depth":f1;
+		 "n_sample_pulse_out" -> "n_sample_pulse_depth":f1;
+
+		 "n_sample_base_out" -> "n_sample_main_in";
+}
