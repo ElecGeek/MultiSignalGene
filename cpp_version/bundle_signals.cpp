@@ -31,6 +31,10 @@ signal_channel::signal_channel( const unsigned short&channel_id,
 	case 'E':
 	  the_step = new sample_step_triangle( frequency );
 	  break;
+	case 'c':
+	case 'C':
+	  the_step = new sample_step_continuous( frequency );
+	  break;
 	case 'd':
 	case 'D':
 	  return;

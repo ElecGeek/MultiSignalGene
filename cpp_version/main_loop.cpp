@@ -3,7 +3,7 @@
 #include <jack/jack.h>
 
 main_loop::main_loop( const unsigned char&sample_rate_id,
-					  const unsigned char&mode,
+					  const string&mode,
 					  const unsigned short&n_channels,
 					  const unsigned short samples_per_param_check,
 					  const unsigned long shutdown_length):
@@ -16,12 +16,13 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
 {
   samples_per_TS_unit = sample_rate_id * samples_per_param_check;
   //  cout << "SPTU " <<samples_per_TS_unit << endl;
+  auto mode_iter = mode.begin();
 
   for( unsigned short ind= 0 ; ind < n_channels; ind++ )
 	{
 	  unsigned char actual_mode;
 	  signal_channel*sc;
-	  if ( mode == 'b' || mode == 'B' )
+	  if ( *mode_iter == 'b' || *mode_iter == 'B' )
 		{
 		  if ((( ind / 2 ) * 2) == ind )
 			actual_mode = 's';
@@ -29,10 +30,13 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
 			actual_mode = 'p';
 		}
 	  else
-		actual_mode = mode;
+		actual_mode = *mode_iter;
 
 	  sc = new signal_channel( ind + 1, sample_rate_id, actual_mode );
 	  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
+
+	  if (( mode_iter + 1 ) != mode.end() )
+		mode_iter++;
 	}
 }
 main_loop::~main_loop()

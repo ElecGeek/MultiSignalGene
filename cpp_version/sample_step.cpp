@@ -153,6 +153,23 @@ signed short sample_step_triangle :: Run_Step(const unsigned short&amplitude)
 	}
   return (signed short)the_return;
 }
+sample_step_continuous :: sample_step_continuous( frequency_handler&frequency ):
+  sample_step( frequency )
+{}
+signed short sample_step_continuous :: Run_Step(const unsigned short&amplitude)
+{
+  // does not look like nice. But it is a light version of the triangle
+  // then the debug is more easy
+  signed long amplitude_r( amplitude );
+
+  frequency();
+  unsigned long angle = frequency.GetAngle();
+  signed long the_return;
+
+  the_return = amplitude_r >> 1;
+
+  return (signed short)the_return;
+}
 sample_step_pulse :: sample_step_pulse( frequency_handler&frequency, const unsigned short&length ):
 	sample_step( frequency ), state( 0 )
 {

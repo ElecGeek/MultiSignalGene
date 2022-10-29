@@ -40,7 +40,9 @@ string help()
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-K sine, pulses or triangle" << endl;
   ostrstm << "\tSpecifies the output signal file, raw and jackaudio (if so)." << endl;
-  ostrstm << "\ts=sine, p=pulses, e=triangle, b=both odd channels are sine, even are pulse, to be used for testing." << endl;
+  ostrstm << "\ts=sine, p=pulses, e=triangle, c=continuous or b=both" << endl;
+  ostrstm << "\t\tb and c is/are for test purposes" << endl;
+  ostrstm << "\t\tb=odd channels are sine, even are pulse. c=get the enveloppe" << endl;
   ostrstm << "\tIf not specified, the ";
 #ifdef __OUTPUT_SINE_MODE__
   ostrstm << "sine";
@@ -50,6 +52,9 @@ string help()
   ostrstm << "triangle";
 #endif
   ostrstm << " mode is used" << endl;
+  ostrstm << "\tIt is a string, each character for each channel." << endl;
+  ostrstm << "\t\tIn case of a single character or a string shorted than the number of channels," << endl;
+  ostrstm << "\t\tthe (last) character is replicated as many time as needed." << endl;
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-c number" << endl;
   ostrstm << "\tSpecifies the number of audio or raw file channels." << endl;

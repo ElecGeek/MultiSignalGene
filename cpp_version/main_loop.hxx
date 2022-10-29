@@ -31,8 +31,9 @@ class main_loop {
   main_loop(void);
  public:
   /** \brief Main actions list
-   *  It is built by all the parameters input modules
-   *  It is sent to all the output parameters modules
+   *
+   *  It is built by all the parameters input modules\n
+   *  It is sent to all the output parameters modules\n
    *  It is sent to the bundleler for all the output channels
    */
   vector<signals_param_action>actions;
@@ -62,7 +63,7 @@ class main_loop {
    *  \param shutdown_length Not yet implemented
   */
   main_loop( const unsigned char&sample_rate_id,
-			 const unsigned char&mode,
+			 const string&mode,
 			 const unsigned short&n_channels,
 			 const unsigned short samples_per_param_check = 48,
 			 const unsigned long shutdown_length = 1000);

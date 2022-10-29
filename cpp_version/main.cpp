@@ -40,9 +40,9 @@ int main(int argc,char *argv[] )
   sample_rate_list the_sr_list;
 
 #ifdef __OUTPUT_SINE_MODE__
-  char output_mode('s');
+  string output_mode("s");
 #elif __OUTPUT_PULSES_MODE__
-  char output_mode('p');
+  string output_mode("p");
 #else
   #error A default output mode should be specified
 #endif
@@ -73,7 +73,7 @@ int main(int argc,char *argv[] )
 		  has_output = true;
 		  break;
 		case 'K':
-		  output_mode = optarg[ 0 ];
+		  output_mode = string( optarg );
 		  break;
 		case 'c':
 		  channels_number = atoi( optarg );
@@ -141,18 +141,28 @@ int main(int argc,char *argv[] )
 	  exit( EXIT_FAILURE );
 	}
 
-  switch ( output_mode )
+  cout << output_mode << " = ";
+  for( auto om_it= output_mode.begin(); om_it != output_mode.end(); om_it++ )
 	{
-	case 's':
-	  cout << "Sine output mode is used" << endl;
-	  break;
-	case 'p':
-	  cout << "Pulses output mode is used" << endl;
-	  break;
-	case 'b':
-	  cout << "Both output mode is used" << endl;
-	  break;
+	  switch ( *om_it )
+		{
+		case 's':
+		  cout << "Sine output";
+			break;
+		case 'p':
+		  cout << "Pulses output";
+		  break;
+		case 'b':
+		  cout << "Both output";
+		  break;
+		case 't':
+		  cout << "Triangle output";
+		  break;
+		}
+	  if ( om_it != output_mode.end() )
+		cout << ", ";
 	}
+  cout << " is/are used" << endl;
 
   cout << "Opening the sound file output module "<< endl;
   sound_file_output_base * sfob; 
