@@ -1,8 +1,11 @@
 This project generates audio signals using some primitives.
 * An amplitude primitive handles a value and a slew-rate. Each time the actual amplitude is not equal to the requested amplitude, the module reaches it according with the slew-rate.
-* An amplitude modulation primitive is applied to the amplitude above. It is a sinusoidal based wave form. The depth is a parameter. When the sine value is +1, the output is the amplitude left untouched. When the sine is -1, the output is between 0 if the depth is 100% and the amplitude left untouched if the depth is 0%. It can hold for a certain time on the top of the period and for another time on the bottom.
+* An amplitude modulation primitive is applied to the amplitude above. It is a sinusoidal based wave form. The depth is a parameter. When the sine value is +1, the output is the amplitude left untouched. When the sine is -1, the output is between 0 if the depth is 100% and the amplitude left untouched if the depth is 0%.
+* A second amplitude modulation is applied to the output of above. In this one, the modulation can be hold for a certain time on the top of the period and for another time on the bottom.
 * An output module that generates a sinusoidal or a symmetrical pulse output. The amplitude is the output of the modulation module described above. In case of the sine, only one parameter defines the frequency. In case of the pulses, a parameter defines the frequency as another one defines the pulse width.
 * Future modules are going to modulate the frequency
+
+In the documantation folder, there is a graphical view. 
 
 The 2 sub-projects are
 * a pure IT project
@@ -14,7 +17,7 @@ The 2 sub-projects are
     Generate the sounds on the fly
 
 
-The base of the parameters format is the (music) midi notes. Each not and its velocity is mapped into a parameter and its value. There are many software on the Internet to edit mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
+The base of the parameters format is the (music) midi notes. Each note and its velocity is mapped into a parameter and its value. There are many software on the Internet to edit mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
 
 The documentation of the mapping between the notes and the parameters is in the midi_codes.h file located in software version folder. Is it human readable. The paragraph goes into the documentation after a doxygen run.
 
