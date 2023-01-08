@@ -10,7 +10,7 @@ A: Many little reasons.
      The electronic version requires a few resources (Ethernet or USB stacks consume all the FPGA)
      Interfaces like DTMF or a super DTMF should be possible for the video
 
-Q: Why a slow moving to the C++11?
+Q: Why a slow moving to the C++17?
 A: I need to run on an old compiler on an old machine. I don't know what is or is not
      properly supported. The features are tested one by one before production.
 
@@ -18,7 +18,7 @@ Q: Why so old minimum versions?
 A: I need to run it on an old machine. It had the 4.6.2 version of GCC
      Since I needed a newer version for many other purposes. I moved to the 5.5.0
      after 6 hours to compile the compiler.
-     Then now the software is C++11
+     Then, the software was C++11. Now the software is C++14
 
 Q: What is the purpose of the no operation instructions in the input command files?
 A: The examples of the early versions has been hand edited. Not all the reverse hex-dump software
