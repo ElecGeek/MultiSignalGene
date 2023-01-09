@@ -48,8 +48,8 @@ end entity sample_step_sine_test;
 architecture arch of sample_step_sine_test is
   signal CLK : std_logic := '0';
   signal RST : std_logic_vector( 5 downto 0 ) := ( others => '1' );
-  signal main_counter : std_logic_vector( 5 downto 0 ) := ( others => '0' );
-  constant main_counter_max : std_logic_vector( main_counter'range ) := "100010";
+  signal main_counter : unsigned( 5 downto 0 ) := ( others => '0' );
+  constant main_counter_max : unsigned( main_counter'range ) := "100010";
   signal sub_counter : std_logic_vector( sub_counter_size - 1 downto 0 ) := ( others => '0' );
   constant sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
   signal angle : std_logic_vector( 23 downto 0 );
@@ -112,11 +112,11 @@ begin
                 sub_counter <= std_logic_vector( unsigned( sub_counter ) + 1 );
               else
                 sub_counter <= ( others => '0' );
-                main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
+                main_counter <= main_counter + 1 ;
                 report "L " & integer'image( limit_calc ) & ", " &
                   "A " & integer'image( amplitude ) & ", " &
                   "SCS " & integer'image( sub_counter_size ) & ", " &
-                  integer'image( to_integer( unsigned( main_counter ))) & "/33 done";
+                  integer'image( to_integer( main_counter )) & "/33 done";
               end if;
             else
               start <= '0';
@@ -125,7 +125,7 @@ begin
             ind_count := main_counter'high - 1;
             for ind in angle'high downto angle'low loop
               if is_main then
-                angle( ind ) <= main_counter( ind_count );
+                angle( ind ) <= std_logic( main_counter( ind_count ));
                 if ind_count /= main_counter'low then
                   ind_count := ind_count - 1;
                 else
@@ -219,6 +219,10 @@ begin
         CLK <= not CLK;
         wait for 20 nS;
       else
+        -- This is a simple message to tell trhe simulation is over
+        -- In batch mode, it is among other messages from the other batches.
+        -- A more complete message will be displayed when all the batches complete
+        -- (see below)
         report "Limit: " & integer'image( limit_calc ) & ", " &
           "Amplitude: " & integer'image( amplitude ) &
           "sub counter size: " & integer'image( sub_counter_size ) & ", " &
@@ -228,6 +232,15 @@ begin
       end if;
     end process main_proc;
 
+      -- This displays a complete report
+      -- In case of the standalone mode, it is done after the simple message
+      -- (see above)
+      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- is not "thread safe"
+      -- * It is performed after the previous batch is done.
+      -- * When done, it sets a signal for the next one
+      -- The first one takes its signal from the "host process" that checks all
+      -- the batches have completed
     display : process
     begin
       wait until ( display_in = '1' or ( display_in = 'U' and simul_over_s = '1' ));
@@ -322,8 +335,8 @@ end entity sample_step_triangle_test;
 architecture arch of sample_step_triangle_test is
   signal CLK : std_logic := '0';
   signal RST : std_logic_vector( 5 downto 0 ) := ( others => '1' );
-  signal main_counter : std_logic_vector( 8 downto 0 ) := ( others => '0' );
-  constant main_counter_max : std_logic_vector( main_counter'range ) := "100000010";
+  signal main_counter : unsigned( 8 downto 0 ) := ( others => '0' );
+  constant main_counter_max : unsigned( main_counter'range ) := "100000010";
   signal sub_counter : std_logic_vector( sub_counter_size - 1 downto 0 ) := ( others => '0' );
   constant sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
   signal angle : std_logic_vector( 23 downto 0 );
@@ -362,10 +375,10 @@ begin
                 sub_counter <= std_logic_vector( unsigned( sub_counter ) + 1 );
               else
                 sub_counter <= ( others => '0' );
-                main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
+                main_counter <= main_counter + 1;
                 report "A " & integer'image( amplitude ) & ", " &
                   "SCS " & integer'image( sub_counter_size ) & ", " &
-                  integer'image( to_integer( unsigned( main_counter ))) & "/" &
+                  integer'image( to_integer( main_counter )) & "/" &
                   integer'image( 2 ** ( main_counter'length - 1 ) + 1 ) & " done";
               end if;
             else
@@ -375,7 +388,7 @@ begin
             ind_count := main_counter'high - 1;
             for ind in angle'high downto angle'low loop
               if is_main then
-                angle( ind ) <= main_counter( ind_count );
+                angle( ind ) <= std_logic( main_counter( ind_count ));
                 if ind_count /= main_counter'low then
                   ind_count := ind_count - 1;
                 else
@@ -410,6 +423,10 @@ begin
         CLK <= not CLK;
         wait for 20 nS;
       else
+        -- This is a simple message to tell trhe simulation is over
+        -- In batch mode, it is among other messages from the other batches.
+        -- A more complete message will be displayed when all the batches complete
+        -- (see below)
         report "Limit: " & integer'image( limit_calc ) & ", " &
           "Amplitude: " & integer'image( amplitude ) &
           "sub counter size: " & integer'image( sub_counter_size ) & ", " &
@@ -419,6 +436,15 @@ begin
         end if;
       end process main_proc;
 
+      -- This displays a complete report
+      -- In case of the standalone mode, it is done after the simple message
+      -- (see above)
+      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- is not "thread safe"
+      -- * It is performed after the previous batch is done.
+      -- * When done, it sets a signal for the next one
+      -- The first one takes its signal from the "host process" that checks all
+      -- the batches have completed
       display : process
     begin
       wait until ( display_in = '1' or ( display_in = 'U' and simul_over_s = '1' ));
@@ -481,8 +507,8 @@ end entity sample_step_pulse_test;
 architecture arch of sample_step_pulse_test is
   signal CLK : std_logic := '0';
   signal RST : std_logic_vector( 5 downto 0 ) := ( others => '1' );
-  signal main_counter : std_logic_vector( 7 downto 0 ) := ( others => '0' );
-  constant main_counter_max : std_logic_vector( main_counter'range ) := "11111111";
+  signal main_counter : unsigned( 7 downto 0 ) := ( others => '0' );
+  constant main_counter_max : unsigned( main_counter'range ) := "11111111";
   signal start_cycle : std_logic;
   signal completed,start : std_logic;
   signal started : std_logic := '0';
@@ -525,9 +551,9 @@ begin
             elsif completed = '1' then
               -- respawn imediately after a computation is over
               start <= '1';
-                main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
+                main_counter <= main_counter + 1;
               report "A " & integer'image( amplitude ) & ", " &
-                integer'image( to_integer( unsigned( main_counter ))) & "/33 done";
+                integer'image( to_integer( main_counter )) & "/33 done";
             else
               start <= '0';
             end if;
@@ -576,6 +602,10 @@ begin
         CLK <= not CLK;
         wait for 20 nS;
       else
+        -- This is a simple message to tell trhe simulation is over
+        -- In batch mode, it is among other messages from the other batches.
+        -- A more complete message will be displayed when all the batches complete
+        -- (see below)
         report 
           "Amplitude: " & integer'image( amplitude ) &
           "Simulation is over" severity note;
@@ -584,6 +614,15 @@ begin
       end if;
     end process main_proc;
 
+      -- This displays a complete report
+      -- In case of the standalone mode, it is done after the simple message
+      -- (see above)
+      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- is not "thread safe"
+      -- * It is performed after the previous batch is done.
+      -- * When done, it sets a signal for the next one
+      -- The first one takes its signal from the "host process" that checks all
+      -- the batches have completed
     display : process
     begin
       wait until ( display_in = '1' or ( display_in = 'U' and simul_over_s = '1' ));

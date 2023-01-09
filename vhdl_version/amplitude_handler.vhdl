@@ -6,21 +6,42 @@ use ieee.std_logic_1164.all,
 package amplitude_handler_pac is
   component amplitude_handler is
     generic (
-      sample_rate_id_pwr2 : integer range 0 to 3);
+      sample_rate_id_pwr2 : integer range 0 to 3;
+      --! Since the amplitude handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      write_prefix : in std_logic_vector);
     port (
       --! master clock
       CLK     :  in std_logic;
+      --! Low bit:\n
       --! Steps forward when is '1'. This is to control the amplitude
-      --! The result should be latched no later than one clock cycle
-      --! after the EN
-      EN      :  in std_logic; 
+      --! The result of the previous run should be latched no later
+      --! than one clock cycle after the EN\n
+      --! Other bits:\n
+      --! Since it is a state machine that acts "sometimes"
+      --!   it can handle more than 1 machine.
+      --! This tells which machine.
+      --! The number of machines should be a power of 2.
+      --! The size of the vector should be the same as parameter machine
+      EN_ADDR :  in std_logic_vector;
+      --! Similar as the EN_ADDR but tells the channel is available
+      --! There is no ready for next signal as this module is not able
+      --! to handle more than one channel at a time
+      cycle_completed : out std_logic_vector;
       RST       :  in std_logic;
       master_volume :  in std_logic_vector( 7 downto 0 );
       amplitude : in std_logic_vector( 7 downto 0 );
-      parameter :  in std_logic_vector( 15 downto 0 );
-      --! write the slewrate parameter
-      --! 1= set the slewrate
-      write_param : in std_logic;
+      parameter_data :  in std_logic_vector( 15 downto 0 );
+      --! Since the frequency handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      parameter_write_prefix : in std_logic_vector;
+      --! Low bit:\n
+      --! Write enable of a pramameter\n
+      --! Other bits:\n
+      --! Tells which channel
+      parmeter_channel :  in std_logic_vector;
+      --! 0000= set the slewrate
+      which_parameter : in std_logic_vector( 3 downto 0 );
       amplitude_out   : out std_logic_vector);
     end component amplitude_handler;
 end package amplitude_handler_pac;
@@ -31,22 +52,36 @@ use ieee.std_logic_1164.all,
 
 entity amplitude_handler is
   generic (
-    sample_rate_id_pwr2 : integer range 0 to 3);
+    sample_rate_id_pwr2 : integer range 0 to 3;
+      --! Since the amplitude handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      write_prefix : in std_logic_vector);
   port (
      --! master clock
     CLK     :  in std_logic;
+    --! Low bit:\n
     --! Steps forward when is '1'. This is to control the amplitude
-    --! The result should be latched no later than one clock cycle
-    --! after the EN
-    EN      :  in std_logic; 
+    --! The result of the previous run should be latched no later
+    --! than one clock cycle after the EN
+    --! Other bits:
+    --! Since it is a state machine that acts "sometimes"
+    --!   it can handle more than 1 machine.
+    --! This tells which machine.
+    --! The number of machines should be a power of 2.
+    --! The size of the vector should be the same as parameter machine
+    EN_ADDR :  in std_logic_vector;
+    --! Similar as the EN_ADDR but tells the channel is ready
+    cycle_completed : out std_logic_vector;
     RST       :  in std_logic;
     master_volume :  in std_logic_vector;
     amplitude : in std_logic_vector;
-    parameter :  in std_logic_vector( 15 downto 0 );
-    --! write the slewrate parameter
-    --! 1= set the slewrate
-    write_param : in std_logic;
-
+    parameter_data :  in std_logic_vector( 15 downto 0 );
+      --! Since the frequency handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      parameter_write_prefix : in std_logic_vector;
+    parmeter_channel :  in std_logic_vector;
+    --! 0000= set the slewrate
+    which_parameter : in std_logic_vector( 3 downto 0 );
     amplitude_out   : out std_logic_vector);
 end entity amplitude_handler;
 
@@ -62,6 +97,12 @@ architecture arch of amplitude_handler is
   signal amplitude_run : std_logic_vector( 23 + 2 downto 0 ) := ( others => 'L' );
   signal slewrate : std_logic_vector( 15 downto 0 );
 begin
+  assert EN_ADDR'length = parmeter_channel'length
+    report "EN_ADDR and parmeter_channel should have the same size"
+      severity failure;
+  assert EN_ADDR'length = cycle_completed'length
+    report "EN_ADDR and parmeter_channel should have the same size"
+      severity failure;
   assert sample_rate_id_pwr2 /= 3 report "Sample rate is 384, has never been tested" severity warning; 
   assert master_volume'length > 2 and master_volume'length < 13
     report "Size of master_volume (" & integer'image( master_volume'length ) & ") should be between 3 and 12"
@@ -87,12 +128,18 @@ begin
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        PARAM_IF : if write_param = '1' then
-          slewrate <= parameter;
-        end if PARAM_IF;
+        param_compo : if parmeter_channel( parmeter_channel'low ) = '1' and
+                         parameter_write_prefix = write_prefix then
+          if which_parameter = "0000" then
+            slewrate <= parameter_data;
+          end if;
+        end if param_compo;
         STATE_IF : if state = "1111" then
-          if EN = '1' then
+          if EN_ADDR( EN_ADDR'low ) = '1' then
             state <= "0000";
+            cycle_completed( cycle_completed'high downto cycle_completed'low + 1 ) <=
+              EN_ADDR( EN_ADDR'high downto EN_ADDR'low + 1 );
+            cycle_completed( cycle_completed'low ) <= '0';
           end if;
           req_amplitude <= ( others => '0' );
           req_volume <= master_volume;
@@ -145,11 +192,13 @@ begin
           state <= std_logic_vector( unsigned( state ) + 1 );
         else
           -- go to the end
+          cycle_completed( cycle_completed'low ) <= '1';
           state <= std_logic_vector( unsigned( state ) + 1 );
         end if STATE_IF;
       else
         STATE <= "1111";
         amplitude_run <= ( others => '0' );
+        cycle_completed( cycle_completed'low ) <= '0';
       end if RST_IF;
     end if;
   end process main_proc;
