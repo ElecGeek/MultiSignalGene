@@ -79,6 +79,13 @@ class frequency_handler
    * \param phsh 4 bits value, the unit is PI/8
    */
   void shift_phase( const unsigned char&phsh );
+  /** \brief Set the phase
+   *
+   * set definitively the phase
+   * This should be used with care, perhaps only if the volume is 0
+   * \param phsh 4 bits value, the unit is PI/8
+   */
+  void set_phase( const unsigned char&phsh );
   /** Run operator
    *
    * Runs the phase at each sample. To get the result, use the relevant function according with the mode

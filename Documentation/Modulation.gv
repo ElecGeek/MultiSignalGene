@@ -1,0 +1,63 @@
+digraph g {
+		 fontname="Helvetica,Arial,sans-sherif"
+		 node [fontname="Helvetica,Arial,sans-sherif"]
+		 edge [fontname="Helvetica,Arial,sans-sherif"]
+		 graph [rankdir="LR"]
+
+		 subgraph cluster_sample_base {
+				  label = "Base waveform";
+				  node [label="output";shape=ellipse] "n_sample_base_out";
+		 }
+
+		 subgraph cluster_sample_modulation {
+		 		  node [shape=record]
+		 		  node [label="<f0>sine 0 2.pi||frequency: AF\nphase shift: AP\nphase (re)set: AO"] "n_sample_modulation_1";
+		 		  node [label="<f0>modulation mode||mode: AM"] "n_sample_modulation_mode_1";
+				  "n_sample_modulation_1":f0 -> "n_sample_modulation_1":f0;
+				  label = "Sine modulation";
+				  node [label="output";shape=ellipse] "n_sample_modulation_out";
+				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_modulation_filename";
+		 }
+
+		 subgraph cluster_sample_pulse {
+		 		  subgraph sample_pulse_cycle {
+				  		 		  node [shape=record]
+		 		  				  node [label="<f0>sine -pi/2 pi/2||frequency: BF\nphase shift: BP\nphase (re)set: BO"] "n_sample_pulse_1";
+		 		  				  node [label="<f0>high hold||duration: BH"] "n_sample_pulse_2";
+		 		  				  node [label="<f0>sine pi/2 -pi/2||frequency: BF\nphase shift: BP\nphase (re)set: BO"] "n_sample_pulse_3";
+		 		  				  node [label="<f0>low hold||duration: BI"] "n_sample_pulse_4";
+				  }
+		 		  node [shape=record]
+		 		  node [label="<f0>modulation mode||mode: BM"] "n_sample_pulse_mode_1";
+				  "n_sample_pulse_1":f0 -> "n_sample_pulse_2":f0;
+				  "n_sample_pulse_2":f0 -> "n_sample_pulse_3":f0;
+				  "n_sample_pulse_3":f0 -> "n_sample_pulse_4":f0;
+				  "n_sample_pulse_4":f0 -> "n_sample_pulse_1":f0;
+				  label = "Pulse modulation";
+				  node [label="output";shape=ellipse] "n_sample_pulse_out";
+				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_pulse_filename";
+		 }
+
+		 subgraph cluster_sample_bundle {
+  		 		  node [label="input from base";shape=ellipse] "n_bundle_signals_in";
+				  subgraph sample_bundle_process
+				  {
+						node [shape=record]
+		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AP"] "n_sample_pulse_depth";
+		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AA"] "n_sample_modulation_depth";
+				  		"n_sample_modulation_depth":f0 -> "n_sample_pulse_depth":f0;
+				  }
+				  "n_bundle_signals_in" -> "n_sample_modulation_depth":f0;
+				  node [label="output";shape=ellipse] "n_bundle_signals_out";
+				  "n_sample_pulse_depth":f0 -> "n_bundle_signals_out";
+				  label = "Bundle_signals";
+				  node [label="bundle_signals.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_bundle_filename";
+				  node [label="modulation_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_modulator_filename";
+		 }
+		 "n_sample_modulation_out" -> "n_sample_modulation_depth":f1;
+		 "n_sample_pulse_out" -> "n_sample_pulse_depth":f1;
+
+		 "n_sample_base_out" -> "n_bundle_signals_in";
+
+
+}

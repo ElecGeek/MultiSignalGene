@@ -14,9 +14,16 @@
  * 0001 0011           na.           G0   /  Reserved\n
  * 0001 0100  0mmmmmmm c=1          G#0  AA  Amplitude modulation depth max = 127 step = 2\n
  * 0001 0101  0mmmmmmm c=1           A0  BA  Pulse depth                max = 127 step = 2\n
+ *                                           Modulates: using a sine from -1 to +1 trnaslated into 0 to +1 if mm = 00\n
+ *                                             using the absolute value of a sine from 0 to +1 if mm = 01, be careful freq is double!\n
+ * 0001 0110  000000mm c=0          A#0  BM  ... for the pulse signal\n
+ * 0001 0110  000001mm c=0          A#0  AM  ... for the amplitude modulation\n 
  * 0001 0110  0001mmmm c=0          A#0  OP  Phase shift of the base signal, use with caution\n
  * 0001 0110  0010mmmm c=0          A#0  BP  Phase shift of the pulse signal, use with caution\n
  * 0001 0110  0011mmmm c=0          A#0  AP  Phase shift of the amplitude modulation signal, use with caution\n
+ * 0001 0110  0101mmmm c=0          A#0  OO  Phase (re)set (overwrite) of the base signal, use with caution\n  
+ * 0001 0110  0110mmmm c=0          A#0  BO  Phase (re)set (overwrite) overwrite of the pulse signal, use with caution\n  
+ * 0001 0110  0111mmmm c=0          A#0  AO  Phase (re)set (overwrite) overwrite of the amplitude modulation signal, use with caution\n  
  * 0001 0111  0xxxxxxx               B0  NN  NOP\n
  * 0001 1eee  0mmmmmmm c=0    C1 to  G1  AF  Amplitude modulation freq  max = 186.035Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
  * 0010 00ee  0mmmmmmm c=0   G#1 to  B1  BF  Pulse frequency max = 106.306Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n

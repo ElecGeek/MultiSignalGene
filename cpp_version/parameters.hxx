@@ -24,10 +24,12 @@ using namespace std;
  */
 struct signals_param_action
 {
-  enum action_list { base_freq, base_phase_shift,
+  enum action_list { base_freq, base_phase_shift, base_phase_set,
 					 main_ampl_val, main_ampl_slewrate,
-					 pulse_freq, pulse_depth, pulse_high_hold, pulse_low_hold, pulse_phase_shift,
-					 ampl_modul_freq, ampl_modul_depth, ampl_modul_phase_shift,
+					 pulse_freq, pulse_depth, pulse_high_hold, pulse_low_hold,
+					 pulse_phase_shift, pulse_phase_set, pulse_modul_mode,
+					 ampl_modul_freq, ampl_modul_depth,
+					 ampl_modul_phase_shift, ampl_modul_phase_set, ampl_modul_modul_mode,
 					 user_volume, track_name, nop };
   unsigned short channel_id;
   action_list action;

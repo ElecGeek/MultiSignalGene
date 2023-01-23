@@ -1,0 +1,49 @@
+digraph g {
+		 fontname="Helvetica,Arial,sans-sherif"
+		 node [fontname="Helvetica,Arial,sans-sherif"]
+		 edge [fontname="Helvetica,Arial,sans-sherif"]
+		 graph [rankdir="LR"]
+
+		 subgraph cluster_bundle_signals {
+				  label = "Bundle_signals";
+				  node [label="output 1";shape=ellipse] "n_bundle_signals_out_1";
+				  node [label="output ...";shape=ellipse] "n_bundle_signals_out_3dots";
+				  node [label="output N";shape=ellipse] "n_bundle_signals_out_N";
+		 		  {
+						rank = same;
+						"n_bundle_signals_out_1", "n_bundle_signals_out_3dots", "n_bundle_signals_out_N";
+				  }
+		 }
+
+		 subgraph cluster_bundle_channels {
+		 		  node [shape=record];
+		 		  node [label="<f0>Channel 1"] "n_channel_1";
+		 		  node [label="<f0>Channel ..."] "n_channel_3dots";
+		 		  node [label="<f0>Channel N"] "n_channel_N";
+				  node [label="buffer\nwith interleave";shape=circle] "n_channels_with_interleave";
+				  node [label="buffer\nwithout interleave";shape=circle] "n_channels_no_interleave";
+				  "n_channel_1":f0 -> "n_channels_with_interleave";
+				  "n_channel_1":f0 -> "n_channels_no_interleave";
+				  "n_channel_3dots":f0 -> "n_channels_with_interleave";
+				  "n_channel_3dots":f0 -> "n_channels_no_interleave";
+				  "n_channel_N":f0 -> "n_channels_with_interleave";
+				  "n_channel_N":f0 -> "n_channels_no_interleave";
+				  node [label="main_loop.hxx";shape=diamond;style=filled;color=lightgrey] "n_main_loop_filename";
+				  label = "Channels bundle";
+		 }
+
+		 subgraph cluster_output_physical {
+				  label = "Output methods";
+				  node [label="Jackaudio";shape=ellipse] "n_output_jackaudio";
+				  node [label="dry run/dummy";shape=ellipse] "n_output_dryrun";
+				  node [label=".wav file";shape=ellipse] "n_output_file";
+				  node [label="sound_file_output.hxx";shape=diamond;style=filled;color=lightgrey] "n_output_filename";
+		 }
+
+		 "n_bundle_signals_out_1" -> "n_channel_1":f0;
+		 "n_bundle_signals_out_3dots" -> "n_channel_3dots":f0;
+		 "n_bundle_signals_out_N" -> "n_channel_N":f0;
+		 "n_channels_no_interleave" -> "n_output_jackaudio";
+		 "n_channels_with_interleave" -> "n_output_dryrun";
+		 "n_channels_with_interleave" -> "n_output_file";
+}

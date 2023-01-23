@@ -216,9 +216,25 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 			  action.value = get_value( 0, 0 );
 			  switch( action.value & 0x70 )
 				{
+				case 0x00:
+				  switch( action.value & 0x0c )
+					{
+					case 0x00:
+					  action.action = signals_param_action::pulse_modul_mode;
+					  // irrelevant action.value &= 0x03;
+					  break;
+					case 0x04:
+					  action.action = signals_param_action::ampl_modul_modul_mode;
+					  action.value &= 0x03;
+					  break;
+					}
+				  break;
 				case 0x10:  action.action = signals_param_action::base_phase_shift;  break;
 				case 0x20:  action.action = signals_param_action::pulse_phase_shift;  break;
 				case 0x30:  action.action = signals_param_action::ampl_modul_phase_shift;  break;
+				case 0x50:  action.action = signals_param_action::base_phase_set;  break;
+				case 0x60:  action.action = signals_param_action::pulse_phase_set;  break;
+				case 0x70:  action.action = signals_param_action::ampl_modul_phase_set;  break;
 				}
 			  action.value &= 0x0f;
 			  break;

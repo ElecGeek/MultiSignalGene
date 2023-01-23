@@ -8,10 +8,12 @@ signal_channel::signal_channel( const unsigned short&channel_id,
 								const unsigned char&mode):
   channel_id( channel_id ),
   frequency(sample_rate_id,1), amplitude(1),
-  ampl_modul_depth( 1 ), ampl_modul_freq(sample_rate_id,8),
+  ampl_modul(sample_rate_id, 8),
+  pulse_modul(sample_rate_id, 2)
+  /*  ampl_modul_depth( 1 ), ampl_modul_freq(sample_rate_id,8),
   pulse_depth( 1 ), pulse_freq(sample_rate_id,2),
   ampl_modul_step( ampl_modul_freq ), 
-  pulse_step( pulse_freq )
+  pulse_step( pulse_freq )*/
 {
   switch( mode )
 	{
@@ -48,63 +50,25 @@ signal_channel::~signal_channel()
 {
     delete the_step;
 }
+/** \brief Computes the final output value
+ *
+ * It considers the 2 modulations and the base to produce the final sample\n
+ * The documentation graph is drawn for clarity.
+ * However the "stream" is done while computing the base last.\n
+ * The advantage of the cordic algo is to perform, in one set of iterations,
+ * the sine (and cosine) and the multiplication by the amplitude\n
+ * Then the global amplitude followed by the 2 modulatiors follwed by the base signal
+ * are proceed.
+ */
 signed short signal_channel::operator()()
 {
-  // Primitive 1 the amplitude
+  // Set the global amplitude the amplitude
   unsigned long base_amplitude( amplitude() );
-  unsigned long pulse_amplitude = base_amplitude * pulse_depth();
-  // return to short
-  pulse_amplitude /= 65536;
-  if ( pulse_amplitude >= 65536 )
-	cerr << "Problems 1 in signal_channel::operator() PA:" << dec << pulse_amplitude << " BA:" << base_amplitude << endl;
-
-  // Primitive 2 pulse
-  // Get the sin of the pulse and divide by 2 for a range of signed -1/2 to +1/2
-  signed short pulse_run = pulse_step.Run_Step( (unsigned short)pulse_amplitude );
-  if ( pulse_run == -32768 )
-	cerr << "Problems 2 in signal_channel::operator()" << endl;
-  // Compute the pulse in a range of signed 0 +1
-  signed long pulse_run_0_1 = (signed long)pulse_amplitude / 2 - (signed long)pulse_run;
-  if ( pulse_run_0_1 < 0 )
-	{
-	  if ( pulse_run_0_1 < -3 )
-	  	cerr << "Problems 3 in signal_channel::operator()" << endl;
-	  pulse_run_0_1 = 0;
-	}
-  if ( (unsigned short)pulse_run_0_1 > base_amplitude )
-	cerr << "Problems 4 in signal_channel::operator()" << endl;
-  unsigned short pulse_output = base_amplitude - (unsigned short)pulse_run_0_1;
-
-  // Primitive 3 amplitude modulation
-  unsigned long modulation_amplitude = pulse_output * ampl_modul_depth();
-  // return to short
-  modulation_amplitude /= 65536;
-  if ( modulation_amplitude >= 65536 )
-	cerr << "Problems 1bis in signal_channel::operator() MA:" << dec << modulation_amplitude << " PO:" << pulse_output << endl;
-
-  // Get the sin of the amplitude modulation and divide by 2 for a range of signed -1/2 to +1/2
-  signed short ampl_modul_run = ampl_modul_step.Run_Step( (unsigned short)modulation_amplitude );
-  if ( ampl_modul_run == -32768 )
-	cerr << "Problems 5 in signal_channel::operator()" << endl;
-  // Compute the amplitude modulation in a range of signed 0 +1
-  signed long ampl_modul_run_0_1 = (signed long)modulation_amplitude / 2 - (signed long)ampl_modul_run;
-  if ( ampl_modul_run_0_1 < 0 )
-	{
-	  if ( ampl_modul_run_0_1 < -3 )
-	  	cerr << "Problems 6 in signal_channel::operator()" << endl;
-	  ampl_modul_run_0_1 = 0;
-	}
-  if ( (unsigned short)ampl_modul_run_0_1 > pulse_output )
-	{
-	  if ( debug_level >= 3 || ( debug_level >= 1 && (unsigned short)ampl_modul_run_0_1 > ( pulse_output + 1 )))
-		{
-		  cerr << "Problems 7 in signal_channel::operator()" << dec << (unsigned short)ampl_modul_run_0_1 << "  " << pulse_output << "\t" << endl;
-		}
-	  ampl_modul_run_0_1 = pulse_output;
-	}
-  unsigned short ampl_modul_output = pulse_output - (unsigned short)ampl_modul_run_0_1;
-  
-
+  // Modulation 1
+  unsigned short pulse_out = pulse_modul( base_amplitude );
+  // Modulation 2
+  unsigned short ampl_modul_output = ampl_modul(pulse_out);
+  // Run the base waveform
   return the_step->Run_Step(ampl_modul_output);
 }
 
@@ -121,6 +85,9 @@ void signal_channel::exec_next_event( const vector<signals_param_action>&spa )
  		case signals_param_action::base_phase_shift:
 		  frequency.shift_phase( (unsigned char)it->value );
 		  break;
+ 		case signals_param_action::base_phase_set:
+		  frequency.set_phase( (unsigned char)it->value );
+		  break;
 		case signals_param_action::main_ampl_val:
 		  amplitude.set_amplitude( (unsigned char)it->value);
 		  break;
@@ -128,28 +95,40 @@ void signal_channel::exec_next_event( const vector<signals_param_action>&spa )
 		  amplitude.set_slewrate( it->value );
 		  break;
 		case signals_param_action::ampl_modul_freq:
-		  ampl_modul_freq.set_frequency( (unsigned short)it->value );
+		  ampl_modul.frequency.set_frequency( (unsigned short)it->value );
 		  break;
 		case signals_param_action::ampl_modul_depth:
-		  ampl_modul_depth.set_amplitude( (unsigned char)it->value );
+		  ampl_modul.amplitude.set_amplitude( (unsigned char)it->value );
 		  break;
  		case signals_param_action::ampl_modul_phase_shift:
-		  ampl_modul_freq.shift_phase( (unsigned char)it->value );
+		  ampl_modul.frequency.shift_phase( (unsigned char)it->value );
+		  break;
+ 		case signals_param_action::ampl_modul_phase_set:
+		  ampl_modul.frequency.set_phase( (unsigned char)it->value );
+		  break;
+		case signals_param_action::ampl_modul_modul_mode:
+		  ampl_modul.modul_mode( (unsigned char)it->value );
 		  break;
 		case signals_param_action::pulse_freq:
-		  pulse_freq.set_frequency( (unsigned short)it->value );
+		  pulse_modul.frequency.set_frequency( (unsigned short)it->value );
 		  break;
 		case signals_param_action::pulse_depth:
-		  pulse_depth.set_amplitude( (unsigned char)it->value );
+		  pulse_modul.amplitude.set_amplitude( (unsigned char)it->value );
 		  break;
  		case signals_param_action::pulse_high_hold:
-		  pulse_freq.set_high_hold( (unsigned short)it->value );
+		  pulse_modul.frequency.set_high_hold( (unsigned short)it->value );
 		  break;
  		case signals_param_action::pulse_low_hold:
-		  pulse_freq.set_low_hold( (unsigned short)it->value );
+		  pulse_modul.frequency.set_low_hold( (unsigned short)it->value );
 		  break;
  		case signals_param_action::pulse_phase_shift:
-		  pulse_freq.shift_phase( (unsigned char)it->value );
+		  pulse_modul.frequency.shift_phase( (unsigned char)it->value );
+		  break;
+ 		case signals_param_action::pulse_phase_set:
+		  pulse_modul.frequency.set_phase( (unsigned char)it->value );
+		  break;
+		case signals_param_action::pulse_modul_mode:
+		  pulse_modul.modul_mode( (unsigned char)it->value );
 		  break;
 
 		}

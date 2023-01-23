@@ -3,14 +3,17 @@ CXXFLAGS?=-O2
 DEFAULTFLAGS?=-D__OUTPUT_SINE_MODE__
 CXX_Version?=-std=c++14
 
-estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o
-	$(CXX) $(CXXFLAGS) -o multisignalgene main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o -l jack
+estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o modulation_handler.o
+	$(CXX) $(CXXFLAGS) -o multisignalgene main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o modulation_handler.o -l jack
 
 main.o					:	main.cpp help_message.hxx sound_file_output.hxx main_loop.hxx
 	$(CXX) -c $(CXXFLAGS) $(DEFAULTFLAGS) $(CXX_Version) -o main.o main.cpp
 
 amplitude_handler.o		:	amplitude_handler.hxx		amplitude_handler.cpp
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o amplitude_handler.o amplitude_handler.cpp
+
+modulation_handler.o		:	modulation_handler.hxx		modulation_handler.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o modulation_handler.o modulation_handler.cpp
 
 frequency_handler.o		:	frequency_handler.hxx		frequency_handler.cpp
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o frequency_handler.o frequency_handler.cpp

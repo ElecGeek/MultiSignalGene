@@ -11,7 +11,7 @@ digraph g {
 		 		 subgraph cluster_sample_frequency {
 		 		 		  node [shape=record]
 				 		  subgraph sample_base_frequency {
-				  				  node [label="<f0>base frequency||frequency: OF\nphase shift: OP\nphase reset: todo"] n_sample_base_frequency;
+				  				  node [label="<f0>base frequency||frequency: OF\nphase shift: OP\nphase (re)set: OO"] n_sample_base_frequency;
 					   }
 				  	   node [label="frequency_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_frequency_filename";
 					  label="base frequency";
@@ -21,8 +21,8 @@ digraph g {
 				 		  subgraph sample_base_amplitude {
 				  				  node [label="<f0>base amplitude||amplitude: OA"] n_sample_amplitude_soft;
 				  				  node [label="<f0>slewrate|apply SR limitation|slewrate: OS"] n_sample_amplitude_slewrate;
-				  				  node [label="<f0>base volume\nfrom program||always max"] n_sample_volume_soft;
-				  				  node [label="<f0>base volume\nfrom hardware||"] n_sample_volume_hard;
+				  				  node [label="<f0>base volume, CPP||always max"] n_sample_volume_soft;
+				  				  node [label="<f0>base volume, VHDL||from hardware"] n_sample_volume_hard;
 						}
 				  node [label="depends\nversion";shape=circle] "n_sample_amplitude_version";
 				  node [label="X"] "n_sample_amplitude_product";
@@ -61,49 +61,9 @@ digraph g {
 
 		 }
 
-		 subgraph cluster_sample_modulation {
-		 		  node [shape=record]
-		 		  node [label="<f0>sine 0 2.pi||frequency: AF\nphase shift: BP\nphase reset: todo"] "n_sample_modulation_1";
-				  "n_sample_modulation_1":f0 -> "n_sample_modulation_1":f0;
-				  label = "Sine modulation";
-				  node [label="output";shape=ellipse] "n_sample_modulation_out";
-				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_modulation_filename";
-		 }
-
-		 subgraph cluster_sample_pulse {
-		 		  subgraph sample_pulse_cycle {
-				  		 		  node [shape=record]
-		 		  				  node [label="<f0>sine -pi/2 pi/2||frequency: BF\nphase shift: BP\nphase reset: todo"] "n_sample_pulse_1";
-		 		  				  node [label="<f0>high hold||duration: BH"] "n_sample_pulse_2";
-		 		  				  node [label="<f0>sine pi/2 -pi/2||frequency: BF\nphase shift: BP\nphase reset: todo"] "n_sample_pulse_3";
-		 		  				  node [label="<f0>low hold||duration: BI"] "n_sample_pulse_4";
-				  }
-				  "n_sample_pulse_1":f0 -> "n_sample_pulse_2":f0;
-				  "n_sample_pulse_2":f0 -> "n_sample_pulse_3":f0;
-				  "n_sample_pulse_3":f0 -> "n_sample_pulse_4":f0;
-				  "n_sample_pulse_4":f0 -> "n_sample_pulse_1":f0;
-				  label = "Pulse modulation";
-				  node [label="output";shape=ellipse] "n_sample_pulse_out";
-				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_pulse_filename";
-		 }
-
 		 subgraph cluster_sample_bundle {
-  		 		  node [label="input from base";shape=ellipse] "n_sample_main_in";
-				  subgraph sample_bundle_process
-				  {
-						node [shape=record]
-		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AP"] "n_sample_pulse_depth";
-		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AA"] "n_sample_modulation_depth";
-				  		"n_sample_modulation_depth":f0 -> "n_sample_pulse_depth":f0;
-				  }
-				  "n_sample_main_in" -> "n_sample_modulation_depth":f0;
-				  node [label="output";shape=ellipse] "n_sample_main_out";
-				  "n_sample_pulse_depth":f0 -> "n_sample_main_out";
-				  label = "Main";
-				  node [label="main_loop.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_bundle_filename";
+  		 		  node [label="input from base";shape=ellipse] "n_bundle_signals_in";
+ 				  label = "Bundle_signals";
 		 }
-		 "n_sample_modulation_out" -> "n_sample_modulation_depth":f1;
-		 "n_sample_pulse_out" -> "n_sample_pulse_depth":f1;
-
-		 "n_sample_base_out" -> "n_sample_main_in";
+		 "n_sample_base_out" -> "n_bundle_signals_in";
 }

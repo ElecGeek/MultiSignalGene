@@ -52,7 +52,7 @@ void frequency_handler::set_low_hold(const unsigned short&low_hold)
   this->low_hold *= global_rate;
   //  cout << "val low_hold " << 16 * low_hold * global_rate << endl;
 }
-/** \breif Shift the phase
+/** \brief Shift the phase
  *
  * Since the value is a shift between 0 and (excluded) 2.PI
  * and it is coded using 4 bits unsigned,
@@ -65,6 +65,20 @@ void frequency_handler::shift_phase(const unsigned char&shift)
   angle += shift_shifted;
   // cout << "shift of " << dec << (unsigned short)shift << ", means: " << shift_shifted << "  ";
   CheckHold();
+  // cout << hex << angle << endl;
+}
+/** \brief Shift the phase
+ *
+ * Since the value is a shift between 0 and (excluded) 2.PI
+ * and it is coded using 4 bits unsigned,
+ * A shift is performed to move into a 24 bits value
+ */ 
+void frequency_handler::set_phase(const unsigned char&shift)
+{
+  unsigned long shift_shifted( ((unsigned long)( 0x0f & shift )) << 20 );
+  // cout << hex << angle << "  ";
+  angle = shift_shifted;
+  // cout << "shift of " << dec << (unsigned short)shift << ", means: " << shift_shifted << "  ";
   // cout << hex << angle << endl;
 }
 /** \brief Computes when the sine reached the min or the max

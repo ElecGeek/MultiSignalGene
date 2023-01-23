@@ -87,6 +87,18 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	case signals_param_action::pulse_phase_shift:
 	  info_out_stream << "Shift the phase of the pulse " << dec << action.value << " PI/8" << endl;
 	  break;
+	case signals_param_action::ampl_modul_phase_set:
+	  info_out_stream << "Set the phase of the amplitude modulation " << dec << action.value << " PI/8" << endl;
+	  break;
+	case signals_param_action::pulse_phase_set:
+	  info_out_stream << "Set the phase of the pulse " << dec << action.value << " PI/8" << endl;
+	  break;
+	case signals_param_action::ampl_modul_modul_mode:
+	  info_out_stream << "Set the modulation mode of the amplitude modulation " << dec << action.value << " 1 = abs" << endl;
+	  break;
+	case signals_param_action::pulse_modul_mode:
+	  info_out_stream << "Set the modulation mode of the pulse " << dec << action.value << " 1 = abs" << endl;
+	  break;
 	case signals_param_action::user_volume:
 	  info_out_stream << "Sets the user_volume " << hex << action.value << ", dec: " << dec << action.value << endl;
 	  break;
