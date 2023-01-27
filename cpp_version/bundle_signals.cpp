@@ -75,60 +75,60 @@ signed short signal_channel::operator()()
 
 void signal_channel::exec_next_event( const vector<signals_param_action>&spa )
 {
-  for( vector<signals_param_action>::const_iterator it = spa.begin(); it != spa.end(); ++it )
-	if( (it->channel_id == 0) || (it->channel_id == channel_id) )
-	  switch( it->action )
+  for( const signals_param_action it : spa )
+	if( (it.channel_id == 0) || (it.channel_id == channel_id) )
+	  switch( it.action )
 		{
 		case signals_param_action::base_freq:
-		  frequency.set_frequency( (unsigned short)it->value );
+		  frequency.set_frequency( (unsigned short)it.value );
 		  break;
  		case signals_param_action::base_phase_shift:
-		  frequency.shift_phase( (unsigned char)it->value );
+		  frequency.shift_phase( (unsigned char)it.value );
 		  break;
  		case signals_param_action::base_phase_set:
-		  frequency.set_phase( (unsigned char)it->value );
+		  frequency.set_phase( (unsigned char)it.value );
 		  break;
 		case signals_param_action::main_ampl_val:
-		  amplitude.set_amplitude( (unsigned char)it->value);
+		  amplitude.set_amplitude( (unsigned char)it.value);
 		  break;
 		case signals_param_action::main_ampl_slewrate:
-		  amplitude.set_slewrate( it->value );
+		  amplitude.set_slewrate( it.value );
 		  break;
 		case signals_param_action::ampl_modul_freq:
-		  ampl_modul.frequency.set_frequency( (unsigned short)it->value );
+		  ampl_modul.frequency.set_frequency( (unsigned short)it.value );
 		  break;
 		case signals_param_action::ampl_modul_depth:
-		  ampl_modul.amplitude.set_amplitude( (unsigned char)it->value );
+		  ampl_modul.amplitude.set_amplitude( (unsigned char)it.value );
 		  break;
  		case signals_param_action::ampl_modul_phase_shift:
-		  ampl_modul.frequency.shift_phase( (unsigned char)it->value );
+		  ampl_modul.frequency.shift_phase( (unsigned char)it.value );
 		  break;
  		case signals_param_action::ampl_modul_phase_set:
-		  ampl_modul.frequency.set_phase( (unsigned char)it->value );
+		  ampl_modul.frequency.set_phase( (unsigned char)it.value );
 		  break;
 		case signals_param_action::ampl_modul_modul_mode:
-		  ampl_modul.modul_mode( (unsigned char)it->value );
+		  ampl_modul.modul_mode( (unsigned char)it.value );
 		  break;
 		case signals_param_action::pulse_freq:
-		  pulse_modul.frequency.set_frequency( (unsigned short)it->value );
+		  pulse_modul.frequency.set_frequency( (unsigned short)it.value );
 		  break;
 		case signals_param_action::pulse_depth:
-		  pulse_modul.amplitude.set_amplitude( (unsigned char)it->value );
+		  pulse_modul.amplitude.set_amplitude( (unsigned char)it.value );
 		  break;
  		case signals_param_action::pulse_high_hold:
-		  pulse_modul.frequency.set_high_hold( (unsigned short)it->value );
+		  pulse_modul.frequency.set_high_hold( (unsigned short)it.value );
 		  break;
  		case signals_param_action::pulse_low_hold:
-		  pulse_modul.frequency.set_low_hold( (unsigned short)it->value );
+		  pulse_modul.frequency.set_low_hold( (unsigned short)it.value );
 		  break;
  		case signals_param_action::pulse_phase_shift:
-		  pulse_modul.frequency.shift_phase( (unsigned char)it->value );
+		  pulse_modul.frequency.shift_phase( (unsigned char)it.value );
 		  break;
  		case signals_param_action::pulse_phase_set:
-		  pulse_modul.frequency.set_phase( (unsigned char)it->value );
+		  pulse_modul.frequency.set_phase( (unsigned char)it.value );
 		  break;
 		case signals_param_action::pulse_modul_mode:
-		  pulse_modul.modul_mode( (unsigned char)it->value );
+		  pulse_modul.modul_mode( (unsigned char)it.value );
 		  break;
 
 		}

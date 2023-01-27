@@ -86,9 +86,9 @@ bool output_params_base::check_next_event( const unsigned short&elapsed_samples,
 		diff_TS = current_samples / samples_per_TS_unity;
 		cumul_time_stamp += diff_TS;
 		current_samples -= diff_TS * samples_per_TS_unity;
-		for( vector<signals_param_action>::const_iterator it=actions.begin(); it!=actions.end(); ++it )
+		for( const signals_param_action& it : actions )
 		  {
-			export_next_event( cumul_time_stamp, diff_TS, *it );
+			export_next_event( cumul_time_stamp, diff_TS, it );
 			diff_TS = 0;
 		  }
 	}

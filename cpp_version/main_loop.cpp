@@ -44,10 +44,10 @@ main_loop::~main_loop()
   signal_channel*sc;
   for( map<unsigned short, signal_channel*>::const_iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
 	delete it->second;
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
-	delete *it;
-  for( deque<output_params_base*>::const_iterator it=params_output_list.begin(); it!=params_output_list.end(); ++it)
-	delete *it;
+  for( input_params_base* it : params_input_list )
+	delete it;
+  for( output_params_base* it: params_output_list )
+	delete it;
 }
 main_loop&main_loop::operator+=(input_params_base*const the_input)
 {
@@ -291,35 +291,6 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		}
 	}
 }
-/*bool main_loop::operator()(vector<signed short>&the_out)
-{
-  // First execute the parameters changes if so
-  // Since there are more samples (48, 96 or 192KHz) than events
-  //   don't laos the system for nothing
-  if ( samples_count != 0 )
-	samples_count -= 1;
-  else
-	{
-	  if( shutdown_count > 0 )
-		{
-		  if ( shutdown_count != shutdown_start )
-			shutdown_count += 1;
-		}else{
-		if ( exec_actions() == false )
-		  shutdown_count = 1;
-		samples_count = samples_per_TS_unit;
-	  }
-	}
-  // Second compute the samples
-  for( struct { map<unsigned short, signal_channel*>::const_iterator its;
-	vector<signed short>::iterator it_out; } s =
-	{ signal_list.begin(), the_out.begin() };
-	   s.its != signal_list.end() && s.it_out != the_out.end();
-	   ++s.its,++s.it_out)
-	*s.it_out = (*s.its->second)();
-  // If no output and ftb is set then wait
-  return true;
-  };*/
 
 bool main_loop::exec_actions()
 {
@@ -337,8 +308,8 @@ bool main_loop::exec_actions()
 					more_input_params = true;
 				}
 			});
-  for( deque<output_params_base*>::iterator it=params_output_list.begin(); it!=params_output_list.end(); ++it)
-	if ((*it)->check_next_event( samples_per_param_check, actions ) )
+  for( output_params_base* it : params_output_list )
+	if (it->check_next_event( samples_per_param_check, actions ) )
 	  more_output_params = true;
   for( map<unsigned short,signal_channel*>::iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
   	(it->second)->exec_next_event( actions );
@@ -346,30 +317,12 @@ bool main_loop::exec_actions()
 
   return more_input_params;
 }
-/*void main_loop::exec_actions(vector<signals_param_action>actions)
-{
-  for( vector<signals_param_action>::const_iterator ita=actions.begin(); ita!=actions.end(); ita++)
-	  for( map<unsigned short, signal_channel*>::const_iterator its=signal_list.begin();
-		   its != signal_list.end();
-		   its++)
-		if( ita->channel_id == 0 || ita-> channel_id == its->first )
-		  switch( ita->action )
-			{
-			case signals_param_action::base_freq: (*its->second).frequency.set_frequency( ita->value );break;
-			case signals_param_action::main_ampl_val: (*its->second).amplitude.set_amplitude( ita->value );break;
-			case signals_param_action::main_ampl_slewrate: (*its->second).amplitude.set_slewrate( ita->value );break;
-			case signals_param_action::ampl_modul_freq: break;
-			case signals_param_action::ampl_modul_depth: break;
-			case signals_param_action::user_volume: (*its->second).amplitude.set_volume( ita->value );break;
-			}
-}
-*/
 bool main_loop::is_all_ready()const
 {
   bool all_ready( true );
 
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
-	if ((*it)->is_ready() == false )
+  for( input_params_base* it : params_input_list )
+	if ( it->is_ready() == false )
 	  all_ready = false;
 
   return all_ready;
@@ -379,10 +332,10 @@ string main_loop::get_clearing()const
   ostringstream oss;
   bool all_ready( true );
 
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
+  for( input_params_base* it : params_input_list )
 	{
 	  oss << "Exit input parameyters channel: ";
-	  switch ((*it)->clearing )
+	  switch ( it->clearing )
 		{
 		case input_params_base::c_unknown: oss << "Unknown reason";  break;
 		case input_params_base::c_end_of_data: oss << "Data reached the end";  break;
