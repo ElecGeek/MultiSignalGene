@@ -1,0 +1,32 @@
+CPP version
+-----------
+
+The software is a standalone executable.
+There are no libraries.
+There are no default configuration files, all the parameters ( values or configuration files names ) are passed in the arguments
+
+The installation should be done by hand to place the executable where one wants
+
+All the files involved are in the same directory.
+A simple call to the "make" command builds the software from sources.
+
+There is no complex configure script. No C functions are used anymore. All the interfaces are handled via the C++ >=11. 
+
+The beginning of the "Makefile" file contains variables to run the build
+They contain standard values, but can be customized while editing the file or setting them as environment variable
+
+Mostly one can selects an alternative compiler or compiler flags to manage cross compilation
+
+In case of a strange crash after an update, a make clean and make again should fix the problem. The dependencies might be buggy.
+
+
+VHDL version
+------------
+
+A simple build script is planed for synthesis.
+
+Direct commands have to be issued for running the tests or the generic tests
+All tests automatically stop after all cases has been reached.
+Some progress information is sent via "report ... severity note" for long simulations.
+A report, containing summary data, is sent also via "report ... severity note".
+A chain strategy has been design for the generic tests in order to send all the summaries after the last simulation completed.
