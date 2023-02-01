@@ -25,6 +25,7 @@ class output_params_txt : public output_params_base, private midi_codes
   output_params_txt(void);
  public:
   explicit output_params_txt( ostream&o_str );
+  virtual ~output_params_txt();
   void export_next_event(const unsigned long&absolute_TS,
 						 const unsigned long&diff_TS,
 						 const signals_param_action&);
