@@ -7,13 +7,89 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  ubuntu-build:
+    name: Ubuntu build
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: environement
-      run: sudo apt-get install -y libjack-jackd2-dev
-    - name: make
-      run: make -f Makefile_cpp
+      - uses: actions/checkout@v3
+      - name: environement
+        run: sudo apt-get install -y libjack-jackd2-dev
+      - name: setup build folders
+        run: |
+          mkdir build
+          mkdir build/Ubuntu
+      - name: build
+        run: |
+          cd cpp_version
+          make BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=SINE
+          make BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=PULSES
+          make BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=TRIANGLES
+      - name: make things easy for the non devs
+        run: |
+          cd build/Ubuntu
+          tar -cf The_objects_files.tar *.o --remove-files
+      - name: return workflow as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: multisignalgene_build
+          path: build
+
+  macos-x-build:
+    runs-on: macOS-latest
+    needs: ubuntu-build
+    name: Mac OS X build
+    steps:
+      - uses: actions/checkout@v3
+      - name: environement
+        run: brew install jack
+      - name: setup build folders
+        run: |
+          mkdir build
+          mkdir build/MacOS
+      - name: get workflow as artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: multisignalgene_build
+          path: build
+      - name: build
+        run: |
+          cd cpp_version
+          make BUILDDIR=../build/MacOS/ DEFAULTWAVE=SINE
+          make BUILDDIR=../build/MacOS/ DEFAULTWAVE=PULSES
+          make BUILDDIR=../build/MacOS/ DEFAULTWAVE=TRIANGLES
+      - name: make things easy for the non devs
+        run: |
+          cd build/MacOS
+          tar -cf The_objects_files.tar *.o
+          rm *.o
+      - name: return workflow as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: multisignalgene_build
+          path: build
+
+  windows-build:
+    runs-on: macOS-latest
+    needs: macos-x-build
+    name: Windows build
+    steps:
+      - uses: actions/checkout@v3
+      - name: get workflow as artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: multisignalgene_build
+      - name: environement
+        run: sudo apt-get install -y libjack-jackd2-dev
+      - name: setup build folders
+        run: mkdir build/Windows
+      - name: build
+        run: |
+          cd cpp_version
+          make BUILDDIR=../build/Windows/
+      - name: return workflow as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: multisignalgene_build
+          path: build
+

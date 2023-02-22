@@ -3,7 +3,7 @@
 # To get more options, use the Makefile inside the cpp_version folder
 
 estim:
-	cd cpp_version && $(MAKE) estim
+	cd cpp_version && $(MAKE) multisignalgene
 
 clean:
 	cd cpp_version && $(MAKE) clean

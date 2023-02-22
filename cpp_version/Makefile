@@ -1,47 +1,47 @@
 CXX?=g++
 CXXFLAGS?=-O2
-DEFAULTFLAGS?=-D__OUTPUT_SINE_MODE__
+LDFLAGS?=
+DEFAULTWAVE?=SINE
 CXX_Version?=-std=c++14
+SRCDIR?=
+BUILDDIR?=
 
-estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o modulation_handler.o
-	$(CXX) $(CXXFLAGS) -o multisignalgene main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o sound_file_output.o amplitude_handler.o frequency_handler.o modulation_handler.o -l jack
+$(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE)			:	$(BUILDDIR)main_DW_$(DEFAULTWAVE).o $(BUILDDIR)main_loop.o $(BUILDDIR)bundle_signals.o $(BUILDDIR)input_midi.o $(BUILDDIR)output_midi.o $(BUILDDIR)parameters.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
+	$(CXX) $(CXXFLAGS) -o $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE) $(BUILDDIR)main_DW_$(DEFAULTWAVE).o $(BUILDDIR)main_loop.o $(BUILDDIR)bundle_signals.o $(BUILDDIR)input_midi.o $(BUILDDIR)output_midi.o $(BUILDDIR)parameters.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o -l jack
 
-main.o					:	main.cpp help_message.hxx sound_file_output.hxx main_loop.hxx
-	$(CXX) -c $(CXXFLAGS) $(DEFAULTFLAGS) $(CXX_Version) -o main.o main.cpp
+$(BUILDDIR)main_DW_$(DEFAULTWAVE).o					:	$(SRCDIR)main.cpp $(SRCDIR)help_message.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)main_loop.hxx
+	$(CXX) -c $(CXXFLAGS) -D__OUTPUT_$(DEFAULTWAVE)_MODE__ $(CXX_Version) -o $(BUILDDIR)main_DW_$(DEFAULTWAVE).o $(SRCDIR)main.cpp
 
-amplitude_handler.o		:	amplitude_handler.hxx		amplitude_handler.cpp
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o amplitude_handler.o amplitude_handler.cpp
+$(BUILDDIR)amplitude_handler.o		:	$(SRCDIR)amplitude_handler.hxx $(SRCDIR)amplitude_handler.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)amplitude_handler.o $(SRCDIR)amplitude_handler.cpp
 
-modulation_handler.o		:	modulation_handler.hxx		modulation_handler.cpp
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o modulation_handler.o modulation_handler.cpp
+$(BUILDDIR)modulation_handler.o		:	$(SRCDIR)modulation_handler.hxx $(SRCDIR)modulation_handler.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)modulation_handler.o $(SRCDIR)modulation_handler.cpp
 
-frequency_handler.o		:	frequency_handler.hxx		frequency_handler.cpp
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o frequency_handler.o frequency_handler.cpp
+$(BUILDDIR)frequency_handler.o		:	$(SRCDIR)frequency_handler.hxx $(SRCDIR)frequency_handler.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)frequency_handler.o $(SRCDIR)frequency_handler.cpp
 
-sample_step.o			:	sample_step.hxx	sample_step.cpp amplitude_handler.hxx frequency_handler.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o sample_step.o sample_step.cpp
+$(BUILDDIR)sample_step.o			:	$(SRCDIR)sample_step.hxx $(SRCDIR)sample_step.cpp $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)sample_step.o $(SRCDIR)sample_step.cpp
 
-bundle_signals.o		:	bundle_signals.hxx	bundle_signals.cpp sample_step.hxx parameters.hxx amplitude_handler.hxx frequency_handler.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o bundle_signals.o bundle_signals.cpp
+$(BUILDDIR)bundle_signals.o		:	$(SRCDIR)bundle_signals.hxx	$(SRCDIR)bundle_signals.cpp $(SRCDIR)sample_step.hxx $(SRCDIR)parameters.hxx $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)bundle_signals.o $(SRCDIR)bundle_signals.cpp
 
-main_loop.o		:	main_loop.hxx	main_loop.cpp sample_step.hxx parameters.hxx amplitude_handler.hxx frequency_handler.hxx sound_file_output.hxx sound_file_output_buffer.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o main_loop.o main_loop.cpp
+$(BUILDDIR)main_loop.o		:	$(SRCDIR)main_loop.hxx	$(SRCDIR)main_loop.cpp $(SRCDIR)sample_step.hxx $(SRCDIR)parameters.hxx $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)sound_file_output_buffer.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)main_loop.o $(SRCDIR)main_loop.cpp
 
-#global_run.o			:	global_run.hxx	global_run.cpp
-#	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o global_run.o global_run.cpp
+$(BUILDDIR)sound_file_output.o			:	$(SRCDIR)sound_file_output.hxx	$(SRCDIR)sound_file_output.cpp $(SRCDIR)sound_file_output_buffer.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)sound_file_output.o $(SRCDIR)sound_file_output.cpp
 
-sound_file_output.o			:	sound_file_output.hxx	sound_file_output.cpp sound_file_output_buffer.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o sound_file_output.o sound_file_output.cpp
+$(BUILDDIR)parameters.o			:	$(SRCDIR)parameters.hxx $(SRCDIR)parameters.cpp $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)parameters.o $(SRCDIR)parameters.cpp
 
-parameters.o			:	parameters.hxx parameters.cpp amplitude_handler.hxx frequency_handler.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o parameters.o parameters.cpp
+$(BUILDDIR)input_midi.o			:	$(SRCDIR)input_midi.hxx $(SRCDIR)input_midi.cpp $(SRCDIR)parameters.hxx $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)input_midi.o $(SRCDIR)input_midi.cpp
 
-input_midi.o			:	input_midi.hxx input_midi.cpp parameters.hxx amplitude_handler.hxx frequency_handler.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o input_midi.o input_midi.cpp
-
-output_midi.o			:	output_midi.hxx output_midi.cpp parameters.hxx amplitude_handler.hxx frequency_handler.hxx
-	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o output_midi.o output_midi.cpp
+$(BUILDDIR)output_midi.o			:	$(SRCDIR)output_midi.hxx $(SRCDIR)output_midi.cpp $(SRCDIR)parameters.hxx $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)output_midi.o $(SRCDIR)output_midi.cpp
 
 clean			:
-	rm -f *.o multisignalgene
+	rm -f $(BUILDDIR)*.o $(BUILDDIR)multisignalgene*
 

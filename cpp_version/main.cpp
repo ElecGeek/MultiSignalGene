@@ -43,6 +43,10 @@ int main(int argc,char *argv[] )
   string output_mode("s");
 #elif __OUTPUT_PULSES_MODE__
   string output_mode("p");
+#elif __OUTPUT_TRIANGLES_MODE__
+  string output_mode("e");
+#elif __OUTPUT_CONTINUOUS_MODE__
+  string output_mode("c");
 #else
   #error A default output mode should be specified
 #endif
