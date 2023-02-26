@@ -50,12 +50,15 @@ string help()
   ostrstm << "pulse";
 #elif __OUTPUT_TRIANGLE_MODE__
   ostrstm << "triangle";
+#elif __OUTPUT_CONTINUOUS_MODE__
+  ostrstm << "continuous";
 #endif
   ostrstm << " mode is used" << endl;
   ostrstm << "\tIt is a string, each character for each channel." << endl;
   ostrstm << "\t\tIn case of a single character or a string shorted than the number of channels," << endl;
   ostrstm << "\t\tthe (last) character is replicated as many time as needed." << endl;
-  ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
+  ostrstm << "\t\tIn case of a string longuer than the number of channels, the last characters are voided" << endl;
+  ostrstm << "\t0..1 MI: Each invokation is concatenated to each other" << endl;
   ostrstm << endl << "-c number" << endl;
   ostrstm << "\tSpecifies the number of audio or raw file channels." << endl;
   ostrstm << "\tThe value can be 0. In such case at least one output parameters channel should be defined" << endl;

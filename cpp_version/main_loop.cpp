@@ -14,29 +14,65 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
   shutdown_count( 0 ),
   debug_once(false)
 {
+#ifdef __OUTPUT_SINE_MODE__
+  unsigned char output_default('s');
+#elif __OUTPUT_PULSES_MODE__
+  unsigned char output_default('p');
+#elif __OUTPUT_TRIANGLES_MODE__
+  unsigned char output_default('e');
+#elif __OUTPUT_CONTINUOUS_MODE__
+  unsigned char output_default('c');
+#else
+  #error A default output mode should be specified
+#endif
+
+  output_waveform_info.reserve( 25 + 2 * n_channels );
+  output_waveform_info += "Output waves is(are):";
+
   samples_per_TS_unit = sample_rate_id * samples_per_param_check;
   //  cout << "SPTU " <<samples_per_TS_unit << endl;
   auto mode_iter = mode.begin();
 
-  for( unsigned short ind= 0 ; ind < n_channels; ind++ )
+  signal_channel*sc;
+  vector<unsigned char>chan_list( n_channels );
+  iota( chan_list.begin(), chan_list.end(), 0 );
+
+  if ( mode.empty() )
 	{
-	  unsigned char actual_mode;
-	  signal_channel*sc;
-	  if ( *mode_iter == 'b' || *mode_iter == 'B' )
+	  for ( auto const& ind : chan_list )
 		{
-		  if ((( ind / 2 ) * 2) == ind )
-			actual_mode = 's';
-		  else
-			actual_mode = 'p';
+		  sc = new signal_channel( ind + 1 , sample_rate_id, output_default );
+		  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
 		}
-	  else
-		actual_mode = *mode_iter;
+	  output_waveform_info += " all ";
+	  output_waveform_info += output_default;
+	}
+  else
+	{
+	  for( unsigned short ind= 0 ; ind < n_channels; ind++ )
+		{
+		  unsigned char actual_mode;
+		  if ( *mode_iter == 'b' || *mode_iter == 'B' )
+			{
+			  if ((( ind / 2 ) * 2) == ind )
+				actual_mode = 's';
+			  else
+				actual_mode = 'p';
+			}
+		  else if ( *mode_iter == '.' )
+			actual_mode = output_default;
+		  else
+			actual_mode = *mode_iter;
 
-	  sc = new signal_channel( ind + 1, sample_rate_id, actual_mode );
-	  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
+		  sc = new signal_channel( ind + 1, sample_rate_id, actual_mode );
+		  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
 
-	  if (( mode_iter + 1 ) != mode.end() )
-		mode_iter++;
+		  output_waveform_info += " ";
+		  output_waveform_info += actual_mode;
+
+		  if (( mode_iter + 1 ) != mode.end() )
+			mode_iter++;
+		}
 	}
 }
 main_loop::~main_loop()
@@ -350,3 +386,7 @@ string main_loop::get_clearing()const
   return oss.str();
 }
 
+string main_loop::get_output_waveform()const
+{
+  return output_waveform_info;
+}

@@ -38,18 +38,7 @@ int main(int argc,char *argv[] )
   int n_loops( 0 );
   int wait_for_start_in_sec( 0 );
   sample_rate_list the_sr_list;
-
-#ifdef __OUTPUT_SINE_MODE__
-  string output_mode("s");
-#elif __OUTPUT_PULSES_MODE__
-  string output_mode("p");
-#elif __OUTPUT_TRIANGLES_MODE__
-  string output_mode("e");
-#elif __OUTPUT_CONTINUOUS_MODE__
-  string output_mode("c");
-#else
-  #error A default output mode should be specified
-#endif
+  string output_mode;
 
   string filename;
   string jack_peername;
@@ -77,7 +66,7 @@ int main(int argc,char *argv[] )
 		  has_output = true;
 		  break;
 		case 'K':
-		  output_mode = string( optarg );
+		  output_mode += string( optarg );
 		  break;
 		case 'c':
 		  channels_number = atoi( optarg );
@@ -145,29 +134,6 @@ int main(int argc,char *argv[] )
 	  exit( EXIT_FAILURE );
 	}
 
-  cout << output_mode << " = ";
-  for( auto om_it= output_mode.begin(); om_it != output_mode.end(); om_it++ )
-	{
-	  switch ( *om_it )
-		{
-		case 's':
-		  cout << "Sine output";
-			break;
-		case 'p':
-		  cout << "Pulses output";
-		  break;
-		case 'b':
-		  cout << "Both output";
-		  break;
-		case 't':
-		  cout << "Triangle output";
-		  break;
-		}
-	  if ( om_it != output_mode.end() )
-		cout << ", ";
-	}
-  cout << " is/are used" << endl;
-
   cout << "Opening the sound file output module "<< endl;
   sound_file_output_base * sfob; 
   if ( filename.empty() )
@@ -203,6 +169,7 @@ int main(int argc,char *argv[] )
   cout << "with " << channels_number << "channels" << endl;
  
   main_loop signals(sample_rate_id,output_mode,channels_number);
+  cout << signals.get_output_waveform() << endl;
 
   for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
 	// Check here for pipes and other pckeyboard style files
@@ -224,9 +191,6 @@ int main(int argc,char *argv[] )
 	  cout << "Opening text output parameters console output " << endl;
 	  signals += new output_params_txt( cout );
 	}
-  
-  // global_run_file grf( signals, filename.c_str() );
-  //  global_run_single ers(signals);
   
   clock_t ticks( clock() );
   do

@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 using namespace std;
 
 
@@ -54,6 +55,8 @@ class main_loop {
   deque<input_params_base*>params_input_list;
   deque<output_params_base*>params_output_list;
   bool debug_once;
+  //! Text information about the output waveform of all the channels
+  string output_waveform_info;
  public:
   /** \brief Constructor
    *  \param sample_rate_id Sample rate 1=48KHz, 2=96KHz and 4 =192KHz
@@ -121,6 +124,7 @@ class main_loop {
   //  void exec_actions(vector<signals_param_action>actions);
   bool is_all_ready(void)const;
   string get_clearing(void)const;
+  string get_output_waveform(void)const;
 };
 
 #endif
