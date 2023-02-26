@@ -47,7 +47,7 @@ package modulator_pac is
       --! Write enable of a pramameter\n
       --! Other bits:\n
       --! Tells which chanel
-      parmeter_chanel : in std_logic_vector;
+      parameter_chanel : in std_logic_vector;
       --! 0000 = amplitude which is the modulation depth
       --! Depth of modulation unsigned.\n
       --! From others=>'0' for always 100% of the input\n
@@ -102,7 +102,7 @@ package modulator_pac is
       --! Write enable of a pramameter\n
       --! Other bits:\n
       --! Tells which chanel
-      parmeter_chanel : in std_logic_vector;
+      parameter_chanel : in std_logic_vector;
       --! 0001 = amplitude which is the modulation depth
       which_parameter :  in std_logic_vector( 3 downto 0 );
       --! Unsigned
@@ -164,7 +164,7 @@ entity modulator_pre is
     --! Write enable of a pramameter\n
     --! Other bits:\n
     --! Tells which chanel
-    parmeter_chanel : in std_logic_vector;
+    parameter_chanel : in std_logic_vector;
     --! 0000 = amplitude which is the modulation depth
     --! Depth of modulation unsigned.\n
     --! From others=>'0' for always 100% of the input\n
@@ -203,12 +203,12 @@ begin
   -- results sligthly negative. Then the arithmetic is done using signed
   -- sometimes the result is set to 0 and and error is reported
 
-  assert EN_ADDR'length = parmeter_chanel'length
-    report "EN_ADDR and parmeter_chanel should have the same size"
+  assert EN_ADDR'length = parameter_chanel'length
+    report "EN_ADDR and parameter_chanel should have the same size"
       severity failure;
   assert EN_ADDR'length = cycle_completed'length
     report "EN_ADDR (" & integer'image(EN_ADDR'length) &
-    ") and parmeter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
+    ") and parameter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
       severity failure;
   assert iter_depth_size < ( parameter_data'length + 1 )
     report "Size of depth should not be greater than the size of parameter_data"
@@ -224,7 +224,7 @@ begin
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        param_compo : if parmeter_chanel( parmeter_chanel'low ) = '1' and
+        param_compo : if parameter_chanel( parameter_chanel'low ) = '1' and
                         parameter_write_prefix = write_prefix then
           if which_parameter = "0000" then
             depth_value <=
@@ -317,7 +317,7 @@ entity modulator_post is
     --! Write enable of a pramameter\n
     --! Other bits:\n
     --! Tells which chanel
-    parmeter_chanel : in std_logic_vector;
+    parameter_chanel : in std_logic_vector;
     --! 0001 = amplitude which is the modulation depth
     which_parameter :  in std_logic_vector( 3 downto 0 );
     --! Unsigned
@@ -339,7 +339,7 @@ architecture arch of modulator_post is
 begin
   assert EN_ADDR'length = cycle_completed'length
     report "EN_ADDR (" & integer'image(EN_ADDR'length) &
-    ") and parmeter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
+    ") and parameter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
       severity failure;
   assert modul_after_sine'length = modul_before_sine'length
     report "modul_after_sine (" & integer'image(modul_after_sine'length) &
@@ -360,7 +360,7 @@ begin
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        param_compo : if parmeter_chanel( parmeter_chanel'low ) = '1' and
+        param_compo : if parameter_chanel( parameter_chanel'low ) = '1' and
                         parameter_write_prefix = write_prefix then
           if which_parameter = "0001" then
             abs_not_normal <=
@@ -445,9 +445,152 @@ end architecture arch;
 
 library ieee;
 use ieee.std_logic_1164.all,
-  ieee.numeric_std.all;
+  ieee.numeric_std.all,
+  work.modulator_pac.all,
+  work.ampl_freq_pacs.all,
+  work.signal_gene.sample_step_sine;
 
 entity modulator_bundle is
-
+    generic (
+      --! Possible size of the depth\n
+      --! Should not be greater than the parameter_data size.
+      --! Should be at least 3
+      iter_depth_size : integer range 3 to 16 := 16;
+      --! Since the frequency handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      write_prefix : in std_logic_vector);
+    port (
+      --! master clock
+      CLK     :  in std_logic;
+      RST     :  in std_logic;
+      --! Low bit:\n
+      --! Steps forward when is '1'. This is to control the amplitude
+      --! The result of the previous run should be latched no later
+      --! than one clock cycle after the EN\n
+      --! Other bits:\n
+      --! Since it is a state machine that acts "sometimes"
+      --!   it can handle more than 1 machine.
+      --! This tells which machine.
+      --! The number of machines should be a power of 2.
+      --! The size of the vector should be the same as parameter machine
+      --! Since the data is latched at the begining of a cycle,
+      --!   the data should be stable up to the next clk cycle only
+      EN_ADDR_mod :  in std_logic_vector;
+      --! Similar as the EN_ADDR but tells the chanel is available
+      --! Since this module is able to handle more than one (pipeline),
+      --! this tells a particular channel is available.\n
+      --! The data is still valid until at least
+      --!   a new cycle is required
+      cycle_completed_mod : out std_logic_vector;
+      --! Ready to accept a new input data
+      Ready_for_new_data :  out std_logic;
+      --! Input amplitude unsigned from others=>'0' to others=>'1'
+      input_amplitude :  in std_logic_vector;
+      parameter_data :  in std_logic_vector( 15 downto 0 );
+      --! Since the frequency handler can be instanciated more than one time
+      --! for a given channel, this is a predecode
+      parameter_write_prefix : in std_logic_vector;
+      --! Low bit:\n
+      --! Write enable of a pramameter\n
+      --! Other bits:\n
+      --! Tells which chanel
+      parameter_chanel : in std_logic_vector;
+      --! 0000 = amplitude which is the modulation depth
+      --! Depth of modulation unsigned.\n
+      --! From others=>'0' for always 100% of the input\n
+      --! To others=>'1' for maximum modulation of the input
+      which_parameter :  in std_logic_vector( 3 downto 0 );
+      --! Output amplitude multiplied by the depth
+      output_input_mul_depth : out std_logic_vector );
 end entity modulator_bundle;
 
+architecture arch of modulator_bundle is
+  signal EN_ADDR_pre : std_logic_vector( EN_ADDR_mod'range );
+  signal EN_ADDR_post : std_logic_vector( EN_ADDR_mod'range );
+  signal cycle_completed_pre : std_logic_vector( cycle_completed_mod'range );
+  signal cycle_completed_post : std_logic_vector( cycle_completed_mod'range );
+begin
+
+--modulator_pre_instanc : modulator_pre generic map(
+--  iter_depth_size => iter_depth_size,
+--  write_prefix => write_prefix)
+--  port map (
+--    CLK => CLK,
+--    RST => RST,
+--    EN_ADDR => EN_ADDR_pre,
+--    cycle_completed => cycle_completed_pre,
+--    Ready_for_new_data => open,
+--    input_amplitude => input_vector,
+--    parameter_data => parameter_data,
+--    parameter_write_prefix => parameter_write_prefix,
+--    parameter_chanel => parameter_chanel,
+--    which_parameter => which_parameter,
+--    output_input_mul_depth => output_input_mul_depth);
+
+--modulation_sine_ampl_instanc : amplitude_handler generic map (
+--  sample_rate_id_pwr2 => closed,
+--  write_prefix => write_prefix)
+--  port map (
+--    CLK => CLK,
+--    RST => RST,
+--    EN_ADDR => EN_ADDR_pre,
+--    cycle_completed => cycle_completed_pre,
+--    master_volume => "11111111",
+--    amplitude => close,
+--    parameter_data => parameter_data,
+--    parameter_write_prefix => parameter_write_prefix,
+--    parameter_chanel => parameter_chanel,
+--    which_parameter => which_parameter,
+--    amplitude_out => closed
+--    );
+
+--modulation_sine_freq_instanc : frequency_handler generic map (
+--  sample_rate_id_pwr2 => closed,
+--  division_rate_pwr2 => closed,
+--  hi_low_hold_always_0 => closed,
+--  write_prefix => write_prefix)
+--  port map (
+--    CLK => CLK,
+--    RST => RST,
+--    EN_ADDR => EN_ADDR_pre,
+--    parameter_data => parameter_data,
+--    parameter_write_prefix => parameter_write_prefix,
+--    parameter_chanel => parameter_chanel,
+--    which_parameter => which_parameter,
+--    start_cycle => open,
+--    angle_out => closed
+--    );
+
+--signal_sine_instanc : sample_step_sine generic map (
+--  limit_calc => iter_depth_size - 1 )
+--  port map (
+--    CLK => CLK,
+--    RST => RST,
+--    start_calc => closed,
+--    amplitude => closed,
+--    angle => closed,
+--    completed => closed,
+--    out_z => open,
+--    out_s => closed,
+--    out_c => open
+--    );
+
+--modulator_post_instanc : modulator_post generic map(
+--  write_prefix => write_prefix)
+--  port map(
+--    CLK => CLK,
+--    RST => RST,
+--    EN_ADDR => EN_ADDR_post,
+--    cycle_completed => cycle_completed_post,
+--    input_val => input_vector,
+--    modul_after_sine => modul_vector,
+--    modul_before_sine => output_input_mul_depth,
+--    parameter_data => parameter_data,
+--    parameter_write_prefix => parameter_write_prefix,
+--    parameter_chanel => parameter_chanel,
+--    which_parameter => which_parameter,
+--    output_modulated => output_modulated,
+--    error_data => error_data
+--);
+
+end architecture arch;

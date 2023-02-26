@@ -252,7 +252,7 @@ begin
         ", 11->10: " & integer'image( quadrant_trans( 14 )) &
         ", 10->00: " & integer'image( quadrant_trans( 8 )) &
         ", CW wrong 00->10->11->01->00: " & integer'image( quadrant_trans( 2 ) + quadrant_trans( 11 ) + quadrant_trans( 13 ) + quadrant_trans( 4 )) &
-        ", neg wrong 00->11, ~, 01->10, ~: " & integer'image( quadrant_trans( 3 ) + quadrant_trans( 12 ) + quadrant_trans( 6 ) + quadrant_trans( 9 )) &
+        ", neg wrong 00->11->00, 01->10->01: " & integer'image( quadrant_trans( 3 ) + quadrant_trans( 12 ) + quadrant_trans( 6 ) + quadrant_trans( 9 )) &
         ", Bad xy->xy: " & integer'image( quadrant_trans( 0 ) + quadrant_trans( 5 ) + quadrant_trans( 10 ) + quadrant_trans( 15 )) 
        severity note;
       -- Since the values are received signed, they are in fact coded on 15 bits

@@ -3,7 +3,7 @@ library ieee;
 use ieee.std_logic_1164.all,
   ieee.numeric_std.all,
   ieee.math_real.all,
-  work.amplitude_handler_pac.all;
+  work.ampl_freq_pacs.all;
 
 --! @brief This module runs a single test of amplitude_handler
 --!
