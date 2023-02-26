@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "bundle_signals.hxx"
-#include "output_midi.hxx"
-#include "input_midi.hxx"
+#include "params_output_txt.hxx"
+#include "params_output_mnemos.hxx"
+#include "params_input_midi.hxx"
 #include "sound_file_output.hxx"
 #include "help_message.hxx"
 
@@ -185,11 +186,22 @@ int main(int argc,char *argv[] )
   for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); ++it )
 	if ( (*it).compare( "-" ))
 	  {
+		// Temporary solution: open all the modes: txt, midi, mnemos, vhdl etc...
 		cout << "Opening text output parameters file " << *it << endl;
 		signals += new output_params_txt_file( *it );
+		signals += new output_params_mnemos_file( *it );
+		// not yet
+		// signals += new output_params_vhdl_file( *it );
+		// not yet
+		// signals += new output_params_midi_file( *it );
 	  } else {
 	  cout << "Opening text output parameters console output " << endl;
 	  signals += new output_params_txt( cout );
+	  signals += new output_params_mnemos( cout );
+	  // not yet
+	  // signals += new output_params_vhdl( cout );
+	  // not yet
+	  // signals += new output_params_midi( cout );
 	}
   
   clock_t ticks( clock() );

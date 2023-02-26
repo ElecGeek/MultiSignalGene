@@ -11,33 +11,33 @@
 using namespace std;
 
 
-#ifndef __OUTPUT_MIDI__
-#define __OUTPUT_MIDI__
+#ifndef __PARAMS_OUTPUT_MNEMOS__
+#define __PARAMS_OUTPUT_MNEMOS__
 
 #include "midi_codes.hxx"
 #include "parameters.hxx"
 
-class output_params_txt : public output_params_base, private midi_codes
+class output_params_mnemos : public output_params_base, private midi_codes
 {
   void cnv_2_note_velocity( const unsigned char&nbre_bits_expo,const unsigned short&value,
 					   unsigned char&note, unsigned char&velocity);
   ostream&o_str;
-  output_params_txt(void);
+  output_params_mnemos(void);
  public:
-  explicit output_params_txt( ostream&o_str );
-  virtual ~output_params_txt();
+  explicit output_params_mnemos( ostream&o_str );
+  virtual ~output_params_mnemos();
   void export_next_event(const unsigned long&absolute_TS,
 						 const unsigned long&diff_TS,
 						 const signals_param_action&);
-  friend ostream&operator<<(ostream&,const output_params_txt&);
+  friend ostream&operator<<(ostream&,const output_params_mnemos&);
 };
-class output_params_txt_file : public output_params_txt
+class output_params_mnemos_file : public output_params_mnemos
 {
   ofstream of_str;
-  output_params_txt_file(void);
+  output_params_mnemos_file(void);
  public:
-  explicit output_params_txt_file( const string& );
-  ~output_params_txt_file(void);
+  explicit output_params_mnemos_file( const string& );
+  ~output_params_mnemos_file(void);
 };
 
 

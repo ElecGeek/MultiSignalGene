@@ -1,4 +1,4 @@
-#include "input_midi.hxx"
+#include "params_input_midi.hxx"
 
 midi_event::midi_event(ostream&os,const bool&with_time_stamp ):
   info_out_str(os),with_time_stamp( with_time_stamp ),

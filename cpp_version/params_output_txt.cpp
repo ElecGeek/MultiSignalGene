@@ -1,4 +1,4 @@
-#include "output_midi.hxx"
+#include "params_output_txt.hxx"
 
 
 output_params_txt::output_params_txt( ostream& o_str ):
@@ -95,6 +95,9 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  break;
 	case signals_param_action::ampl_modul_phase_set:
 	  out_line << "Set the phase of the amplitude modulation " << dec << action.value << " PI/8" << endl;
+	  break;
+	case signals_param_action::base_phase_set:
+	  out_line << "Set the phase of the base " << dec << action.value << " PI/8" << endl;
 	  break;
 	case signals_param_action::pulse_phase_set:
 	  out_line << "Set the phase of the pulse " << dec << action.value << " PI/8" << endl;

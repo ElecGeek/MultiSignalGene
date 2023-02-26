@@ -8,8 +8,8 @@
 #include <sstream>
 using namespace std;
 
-#ifndef __INPUT_MIDI__
-#define __INPUT_MIDI__
+#ifndef __PARAMS_INPUT_MIDI__
+#define __PARAMS_INPUT_MIDI__
 
 #include "parameters.hxx"
 #include "midi_codes.hxx"
