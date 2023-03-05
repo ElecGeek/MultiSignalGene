@@ -76,9 +76,12 @@ string help()
   ostrstm << "\tThe same applies for the midi, prefixed by 'midi_in<tab>' or midi_out<tab>, also one per line" << endl;
   ostrstm << "\tThe empty lines are ignored. Everything after a # is ignored" << endl;
   ostrstm << "\tThe order of all the lines is not considered" << endl;
-  ostrstm << "\tPassing . as the filename uses the defult hardcoded configuration" << endl;
-  ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
-  ostrstm << "\tToday ONLY the defult works, TODO" << endl;
+  ostrstm << "\tPassing . as the filename uses a default hardcoded configuration" << endl;
+  ostrstm << "\t\tAudio outputs are connected to the system input in sequence. Midi are left unconnected" << endl;
+  ostrstm << "\tPassing - as the filename uses another default hardcoded" <<endl;
+  ostrstm << "\t\tAudio outputs are connected in sequence to the in of the x42-scope software" << endl;
+  ostrstm << "\t0..1 MI: The files are executed one after the other, Each default is processed only once" << endl;
+  ostrstm << "\tToday ONLY the 2 default work, TODO" << endl;
   ostrstm << endl << "-r"; ostrstm << endl;
   ostrstm << "\tSpecifies the sample rate" << endl;
   ostrstm << "\tOnly 1= 48KHz, 2= 96KHz and 4=192KHz are valid" << endl;

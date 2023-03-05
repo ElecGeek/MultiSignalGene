@@ -42,7 +42,7 @@ int main(int argc,char *argv[] )
   string output_mode;
 
   string filename;
-  string jack_peername;
+  deque<string> jack_data_list;
   char channels_number = 0;
 
   debug_level = 0;
@@ -74,7 +74,7 @@ int main(int argc,char *argv[] )
 		  break;
 		case 'j':
 		  has_output = true;
-		  jack_peername = string( optarg );
+		  jack_data_list.push_back( string( optarg ));
 		  break;
 		case 'r':
 		  switch ( atoi( optarg ) )
@@ -129,7 +129,7 @@ int main(int argc,char *argv[] )
   	  cout << "Debug set to: " << dec << (unsigned short)debug_level << endl;
 	}
 
-  if( filename.empty() == false && jack_peername.empty() == false )
+  if( filename.empty() == false && jack_data_list.empty() == false )
 	{
 	  cout << "Can NOT open both an audio and a file output " << endl;
 	  exit( EXIT_FAILURE );
@@ -139,14 +139,14 @@ int main(int argc,char *argv[] )
   sound_file_output_base * sfob; 
   if ( filename.empty() )
 	{
-	  if( jack_peername.empty() )
+	  if( jack_data_list.empty() )
 		sfob = (sound_file_output_base*) new sound_file_output_dry( follow_timebeat );
 	  else
-		sfob = (sound_file_output_base*) new sound_file_output_jackaudio( channels_number, jack_peername );
+		sfob = (sound_file_output_base*) new sound_file_output_jackaudio( channels_number, jack_data_list );
 	}
   else
 	{
-	  if( jack_peername.empty() )
+	  if( jack_data_list.empty() )
 		sfob = (sound_file_output_base*) new sound_file_output_file(filename, follow_timebeat );
 	  else
 		{

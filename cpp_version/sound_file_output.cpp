@@ -117,6 +117,58 @@ sample_rate_list sound_file_output_base::process_sample_rate(const sample_rate_l
 }
 
 
+void sound_jack_connections_data::insert_append( const string&peer, const string&dest )
+{
+  bool not_found = true;
+  for( auto&existing_peer : connections_list )
+	if( existing_peer.first == peer )
+	  {
+		existing_peer.second.push_back( dest );
+		not_found = false;
+		break;
+	  }
+  if ( not_found )
+	{
+	  // Add the peer
+	  connections_list.push_back( make_pair( peer, deque<string>{ dest }));
+	}
+}
+void sound_jack_connections_data::insert_append( const unsigned char&N,
+												const string& sce_peer,
+												const string&dest_app, const string&dest_peer,
+												const bool& stereo )
+{
+  short ind_peer = 0;
+  // exisitng sce peers: use them
+  for ( auto&existing_peer : connections_list )
+	{
+	// Idel peers could have been declared before
+	  if ( ind_peer < N )
+		{ 
+		  existing_peer.second.push_back( dest_app + string( ":" ) + dest_peer + to_string( ind_peer + 1 ));
+		  if ( ((ind_peer + 1 ) == N ) && stereo )
+			existing_peer.second.push_back( dest_app + string( ":" ) + dest_peer + to_string( ind_peer++ + 2 ));
+		  else
+			ind_peer += 1;
+		}
+	}
+  // now add peers if not all the connections has been done
+  for ( unsigned char ind_add = ind_peer; ind_add < N; ind_add++ )
+	{
+	  connections_list.push_back(make_pair(sce_peer + to_string( ind_add + 1 ),
+										   deque< string >{dest_app + string( ":" ) +
+											   dest_peer + to_string( ind_add + 1 )}));
+	  if ( ((ind_add + 1 ) == N ) && stereo )
+		connections_list.back().second.push_back( dest_app + string( ":" ) +
+			  dest_peer + to_string( ind_add + 2 ));
+	}
+}
+
+// C++17 is going to siplify the writing
+const deque< pair< string, deque< string> > >&sound_jack_connections_data::operator()()const
+{
+  return connections_list;
+}
 
 #include <cstring>
 
@@ -150,64 +202,79 @@ int sound_file_output_jackaudio::call_back_audio( jack_nframes_t nframes, void *
 
 
 sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbre_channels,
-														 const string&jack_connections):
+														 const deque<string>&jack_connections):
   sound_file_output_base(  sound_file_output_buffer( 4,false,
 													 0,vector<void*>())),
-  is_open_b( true ),is_started(false),sound_started(false),shutdown_requested(false)
+  is_started(false),sound_started(false),shutdown_requested(false)
 {
   // In the entire constructor, one does not have to take care about the real time
   //   as jack is not activated
   const char *server_name = nullptr;
   jack_options_t options = JackNullOption;
   jack_status_t status;
+  bool has_default_system = false;
+  bool has_default_x42_scope = false;
+  is_open_b = false;
 
-  // Get the file containing the jackaudio parameters
-  // if not "." then open the file and process it
-  //   else take the default values
-  if( jack_connections.compare(".") != 0 )
+  for ( const auto& connections_iter : jack_connections )
 	{
-	  // Read the connection file
-	  ifstream inputfile_stream( jack_connections, istream::binary );
-	  if ( inputfile_stream.is_open() == true )
+	  // Get the file containing the jackaudio parameters
+	  // if not "." then open the file and process it
+	  //   else take the default values
+	  if( connections_iter.compare(".") == 0 )
 		{
-		  cerr << "Sorry not yet implemented" << endl;
-		  // TODO
-		  inputfile_stream.close();
-		  is_open_b  = false;
-		}else
-		  is_open_b  = false;
-	} else {
-	// Or use the hardcoded default values
-	jack_peer = string( "estim" );
+		  has_default_system = true;
+		  is_open_b = true;
+		}
+	  else if ( connections_iter.compare("-") == 0 )
+		{
+		  has_default_x42_scope = true;
+		  is_open_b = true;
+		}
+	  else
+		{
+		  // Read the connection file
+		  // fill up the connections and peers
+		  ifstream inputfile_stream( connections_iter, istream::binary );
+		  if ( inputfile_stream.is_open() == true )
+			{
+			  cerr << "Sorry not yet implemented" << endl;
+			  // TODO
+			  inputfile_stream.close();
+			  //			  is_open_b  = true;
+			  is_open_b  = false;
+			}
+		}
+	}
+  if ( has_default_x42_scope )
+	{
+	  connections_list_audio.insert_append( nbre_channels,
+											string( "gene_" ),
+											string( "Simple Scope (4 channel)" ), string( "in" ),
+											false );
+	}
+  if ( has_default_system )
+	{
+	  connections_list_audio.insert_append( nbre_channels,
+											string( "gene_" ),
+											string( "system" ), string( "playback_" ),
+											true );
+	  connections_list_midi_in.insert_append( 1,
+											string( "commands_in_" ),
+											string( "system" ), string( "playback_" ),
+											false );
+	  connections_list_midi_out.insert_append( 1,
+											string( "commands_out_" ),
+											string( "system" ), string( "playback_" ),
+											false );
+	}
+
+	jack_peer = string( "MultiSignalsGene" );
 
 	sfo_buffer.channels_bounds.first = numeric_limits<unsigned short>::min();
-	sfo_buffer.channels_bounds.second = numeric_limits<unsigned short>::min();
-	array< unsigned short, 4 > hardcoded_connections_audio = { 0, 1, 2, 3 };
-	for( auto &m : hardcoded_connections_audio )
-	  {
-		if ( m != 3 )
-		  connections_list_audio.insert( pair< string, deque< string> >
-										(string( "gene_" ) + to_string( m ),
-										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
-		else
-		  connections_list_audio[ string( "gene_2" ) ].push_back( "system:playback_" + to_string( m + 1 )); 
-		sfo_buffer.channels_bounds.second += 1;
-	  }
-	cout << "-------------" << sfo_buffer.channels_bounds.second << "-----------------------------" << endl;
-	array< unsigned short, 1 > hardcoded_connections_midi = { 0 };
-	for( auto &m : hardcoded_connections_midi )
-	  {
-		  connections_list_midi_in.insert( pair< string, deque< string> >
-										(string( "commands_in_" ) + to_string( m ),
-										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
-	  }
-	for( auto &m : hardcoded_connections_midi )
-	  {
-		  connections_list_midi_out.insert( pair< string, deque< string> >
-										(string( "commands_out_" ) + to_string( m ),
-										 deque< string >{string( "system:playback_" ) + to_string( m + 1 )}));
-	  }
-  }
+	sfo_buffer.channels_bounds.second = numeric_limits<unsigned short>::min() +
+	  connections_list_audio().size();
+
 
   cout << sizeof( jack_default_audio_sample_t ) << endl;
   // Everything is ready
@@ -248,21 +315,21 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
   }
   if ( is_open_b )
 	{
-	  for( auto &m : connections_list_audio )
+	  for( auto &m : connections_list_audio() )
 		{
 		  output_ports.push_back( jack_port_register( client,
 													  m.first.c_str(),
 													  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0 ));
 		  sfo_buffer.data.push_back( nullptr );
 		}
-	  for( auto &m : connections_list_midi_in )
+	  for( auto &m : connections_list_midi_in() )
 		{
 		  output_ports.push_back( jack_port_register( client,
 													  m.first.c_str(),
 													  JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0 ));
 		  sfo_buffer.data.push_back( nullptr );
 		}
-	  for( auto &m : connections_list_midi_out )
+	  for( auto &m : connections_list_midi_out() )
 		{
 		  output_ports.push_back( jack_port_register( client,
 													  m.first.c_str(),
@@ -296,7 +363,7 @@ bool sound_file_output_jackaudio::pre_run()
   if ( is_open_b )
 	{
 	  const char*port;
-	  for( auto &m : connections_list_audio )
+	  for( auto &m : connections_list_audio() )
 		for( auto &n : m.second )
 		  {
 			cout << "Connecting " << jack_peer << ":" << m.first.c_str() << " to " << n.c_str();
