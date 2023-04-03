@@ -10,12 +10,12 @@ The installation should be done by hand to place the executable where one wants
 All the files involved are in the same directory.
 A simple call to the "make" command builds the software from sources.
 
-There is no complex configure script. No C functions are used anymore. All the interfaces are handled via the C++ >=11. 
+There is no complex configure script. No C functions are used any more. All the interfaces are handled via the C++ >=11. 
 
 The beginning of the "Makefile" file contains variables to run the build
 They contain standard values, but can be customized while editing the file or setting them as environment variable
 
-Mostly one can selects an alternative compiler or compiler flags to manage cross compilation
+Mostly one can select an alternative compiler or compiler flags to manage cross compilation
 
 In case of a strange crash after an update, a make clean and make again should fix the problem. The dependencies might be buggy.
 

@@ -276,9 +276,9 @@ main_proc : process ( CLK )
 end architecture arch;
 
 --! This architecture computes a very fast calculation 
---! to get a very fast behavior while verifying at a higher level.
---! The 4 high bits of the angle are considered, the other are voided.\n
---! PI/8 is the step of the the calculation
+--! to get a very fast behaviour while verifying at a higher level.
+--! The 4 high bits of the angle are considered, the others are voided.\n
+--! PI/8 is the step of the calculation
 architecture fast of sample_step_sine is
   subtype z_range is integer range 23 downto 0;
   subtype amplitude_range is integer range 23 downto 0;
@@ -416,10 +416,10 @@ use ieee.std_logic_1164.all,
 --! It does not know anything about the frequency\n
 --! It takes an unsigned 24 bits as the angle,
 --! low $0 = angle 0, high $ffffff = angle 2.PI - epsilon\n
---! It returns the triangle as an unconstrainst signed\n
+--! It returns the triangle as an unconstrained signed\n
 --! In run mode, the 16 bits is the standard.
 --! In debug mode, 24 bits is nice for some verifications\n
---! Since the precision is limited and symetry properties applied,\n
+--! Since the precision is limited and symmetry properties applied,\n
 --! the zero crossing is done with 2 samples at 0\n
 
 entity sample_step_triangle is
@@ -523,8 +523,8 @@ use ieee.std_logic_1164.all,
 --! It does not know anything about the frequency\n
 --! It takes a start_pulse signal, not an angle,
 --! It runs every start_calc until the end of the pulse.
---! It waits, sneding 0, until the next start
---! It returns the pulse as an unconstrainst signed\n
+--! It waits, sending 0, until the next start
+--! It returns the pulse as an unconstrained signed\n
 --! In run mode, the 16 bits is the standard.
 --! In debug mode, 24 bits is nice for some verifications\n
 --! More information is in the files located in the cpp_version folder

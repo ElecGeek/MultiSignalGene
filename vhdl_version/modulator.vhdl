@@ -9,8 +9,8 @@ package modulator_pac is
       --! Should not be greater than the parameter_data size.
       --! Should be at least 3
       iter_depth_size : integer range 3 to 16 := 16;
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       write_prefix : in std_logic_vector);
     port (
       --! master clock
@@ -26,10 +26,10 @@ package modulator_pac is
       --! This tells which machine.
       --! The number of machines should be a power of 2.
       --! The size of the vector should be the same as parameter machine
-      --! Since the data is latched at the begining of a cycle,
+      --! Since the data is latched at the beginning of a cycle,
       --!   the data should be stable up to the next clk cycle only
       EN_ADDR :  in std_logic_vector;
-      --! Similar as the EN_ADDR but tells the chanel is available
+      --! Similar as the EN_ADDR but tells the channel is available
       --! Since this module is able to handle more than one (pipeline),
       --! this tells a particular channel is available.\n
       --! The data is still valid until at least
@@ -40,14 +40,14 @@ package modulator_pac is
       --! Input amplitude unsigned from others=>'0' to others=>'1'
       input_amplitude :  in std_logic_vector;
       parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
       --! Low bit:\n
-      --! Write enable of a pramameter\n
+      --! Write enable of a parameter\n
       --! Other bits:\n
-      --! Tells which chanel
-      parameter_chanel : in std_logic_vector;
+      --! Tells which channel
+      parameter_channel : in std_logic_vector;
       --! 0000 = amplitude which is the modulation depth
       --! Depth of modulation unsigned.\n
       --! From others=>'0' for always 100% of the input\n
@@ -60,7 +60,7 @@ package modulator_pac is
   component modulator_post is
     generic (
       --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! for a given channel, this is a pre-decode
       write_prefix : in std_logic_vector);
     port (
       --! master clock
@@ -76,10 +76,10 @@ package modulator_pac is
       --! This tells which machine.
       --! The number of machines should be a power of 2.
       --! The size of the vector should be the same as parameter machine
-      --! Since the data is latched at the begining of a cycle,
+      --! Since the data is latched at the beginning of a cycle,
       --!   the data should be stable up to the next clk cycle only
       EN_ADDR :  in std_logic_vector;
-      --! Similar as the EN_ADDR but tells the chanel is available
+      --! Similar as the EN_ADDR but tells the channel is available
       --! Since this module is able to handle more than one (pipeline),
       --! this tells a particular channel is available.\n
       --! The data is still valid until at least
@@ -95,22 +95,22 @@ package modulator_pac is
       --! Input from the modulation sine value signed
       modul_after_sine :  in std_logic_vector;
       parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
       --! Low bit:\n
-      --! Write enable of a pramameter\n
+      --! Write enable of a parameter\n
       --! Other bits:\n
-      --! Tells which chanel
-      parameter_chanel : in std_logic_vector;
+      --! Tells which channel
+      parameter_channel : in std_logic_vector;
       --! 0001 = amplitude which is the modulation depth
       which_parameter :  in std_logic_vector( 3 downto 0 );
       --! Unsigned
       output_modulated : out std_logic_vector;
-      --! Returns an error if a result exceed the boundary\n
+      --! Returns an error if a result exceeds the boundary\n
       --! others=>'0' = no error, others=>'1' = error greater than the max,
-      --! accroding with the size of the vector, some details about
-      --! how much the value exceed the boudary is returned.
+      --! according with the size of the vector, some details about
+      --! how much the value exceed the boundary is returned.
       error_data       : out std_logic_vector
       );
   end component modulator_post;
@@ -136,17 +136,17 @@ entity modulator_pre is
     --! Should be at least 3
     iter_depth_size : integer range 3 to 16 := 16;
     --! Since the frequency handler can be instanciated more than one time
-    --! for a given channel, this is a predecode
+    --! for a given channel, this is a pre-decode
     write_prefix : in std_logic_vector);
   port (
      --! master clock
     CLK     :  in std_logic;
     RST     :  in std_logic;
     --! Start serial computation.\n
-    --! Since the data is latched at the begining of a cycle,
+    --! Since the data is latched at the beginning of a cycle,
     --!   the data should be stable up to the next clk cycle only
     EN_ADDR : in std_logic_vector;
-    --! Similar as the EN_ADDR but tells the chanel is available
+    --! Similar as the EN_ADDR but tells the channel is available
     --! Since this module is able to handle more than one (pipeline),
     --! this tells a particular channel is available.\n
     --! The data is still valid until at least
@@ -158,13 +158,13 @@ entity modulator_pre is
     input_amplitude :  in std_logic_vector;
     parameter_data :  in std_logic_vector( 15 downto 0 );
     --! Since the frequency handler can be instanciated more than one time
-    --! for a given channel, this is a predecode
+    --! for a given channel, this is a pre-decode
     parameter_write_prefix : in std_logic_vector;
     --! Low bit:\n
-    --! Write enable of a pramameter\n
+    --! Write enable of a parameter\n
     --! Other bits:\n
-    --! Tells which chanel
-    parameter_chanel : in std_logic_vector;
+    --! Tells which channel
+    parameter_channel : in std_logic_vector;
     --! 0000 = amplitude which is the modulation depth
     --! Depth of modulation unsigned.\n
     --! From others=>'0' for always 100% of the input\n
@@ -181,7 +181,7 @@ architecture arch of modulator_pre is
   signal depth_value_shift : std_logic_vector( iter_depth_size - 1 downto 0 );
   -- Only one additional bit is enough
   -- 1/2 + 1/4 + 1/8 etc... does never generate overflow,
-  --   regardles the number of iterations
+  --   regardless the number of iterations
   -- Since the number added are slightly lower than the 1/2^^N,
   --   (0).011..111 < (0).100..000  ( 1/2 )
   --   (0).001..111 < (0).010..000  ( 1/4 )
@@ -196,19 +196,19 @@ begin
   -- The input modulation should be also divided by 2,
   -- but it comes as a signed integer,
   -- then its absolute value is already divided by 2
-  -- Step 3        post: substract the result from the input amplitude
+  -- Step 3        post: subtract the result from the input amplitude
   -- The result should be unsigned
   --
   -- Some rounding in this computation or the sine may generate
-  -- results sligthly negative. Then the arithmetic is done using signed
-  -- sometimes the result is set to 0 and and error is reported
+  -- results slightly negative. Then the arithmetic is done using signed
+  -- sometimes the result is set to 0 and error is reported
 
-  assert EN_ADDR'length = parameter_chanel'length
-    report "EN_ADDR and parameter_chanel should have the same size"
+  assert EN_ADDR'length = parameter_channel'length
+    report "EN_ADDR and parameter_channel should have the same size"
       severity failure;
   assert EN_ADDR'length = cycle_completed'length
     report "EN_ADDR (" & integer'image(EN_ADDR'length) &
-    ") and parameter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
+    ") and parameter_channel (" & integer'image(cycle_completed'length) & ") should have the same size"
       severity failure;
   assert iter_depth_size < ( parameter_data'length + 1 )
     report "Size of depth should not be greater than the size of parameter_data"
@@ -224,7 +224,7 @@ begin
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        param_compo : if parameter_chanel( parameter_chanel'low ) = '1' and
+        param_compo : if parameter_channel( parameter_channel'low ) = '1' and
                         parameter_write_prefix = write_prefix then
           if which_parameter = "0000" then
             depth_value <=
@@ -274,8 +274,8 @@ use ieee.std_logic_1164.all,
 
 entity modulator_post is
   generic (
-    --! Since the frequency handler can be instanciated more than one time
-    --! for a given channel, this is a predecode
+    --! Since the frequency handler can be instantiated more than one time
+    --! for a given channel, this is a pre-decode
     write_prefix : in std_logic_vector);
   port (
     --! master clock
@@ -291,17 +291,17 @@ entity modulator_post is
     --! This tells which machine.
     --! The number of machines should be a power of 2.
     --! The size of the vector should be the same as parameter machine
-    --! Since the data is latched at the begining of a cycle,
+    --! Since the data is latched at the beginning of a cycle,
     --!   the data should be stable up to the next clk cycle only
     EN_ADDR :  in std_logic_vector;
-    --! Similar as the EN_ADDR but tells the chanel is available
+    --! Similar as the EN_ADDR but tells the channel is available
     --! Since this module is able to handle more than one (pipeline),
     --! this tells a particular channel is available.\n
     --! The data is still valid until at least
     --!   a new cycle is required
     cycle_completed : out std_logic_vector;
     --! There is no ready to accept a new input data\n
-    --!   because it is always faster then the pre in test mode \n
+    --!   because it is always faster than the pre in test mode \n
     --!   and always faster than the sine modulation
     --! Input value, the same than the one supplied to pre, unsigned
     input_val :  in std_logic_vector;
@@ -310,22 +310,22 @@ entity modulator_post is
     --! Input from the modulation sine value signed
     modul_after_sine :  in std_logic_vector;
     parameter_data :  in std_logic_vector( 15 downto 0 );
-    --! Since the frequency handler can be instanciated more than one time
-    --! for a given channel, this is a predecode
+    --! Since the frequency handler can be instantiated more than one time
+    --! for a given channel, this is a pre-decode
     parameter_write_prefix : in std_logic_vector;
     --! Low bit:\n
-    --! Write enable of a pramameter\n
+    --! Write enable of a parameter\n
     --! Other bits:\n
-    --! Tells which chanel
-    parameter_chanel : in std_logic_vector;
+    --! Tells which channel
+    parameter_channel : in std_logic_vector;
     --! 0001 = amplitude which is the modulation depth
     which_parameter :  in std_logic_vector( 3 downto 0 );
     --! Unsigned
     output_modulated : out std_logic_vector;
-    --! Returns an error if a result exceed the boundary\n
+    --! Returns an error if a result exceeds the boundary\n
     --! others=>'0' = no error, others=>'1' = error greater than the max,
-    --! accroding with the size of the vector, some details about
-    --! how much the value exceed the boudary is returned.
+    --! according to the size of the vector, some details about
+    --! how much the value exceed the boundary is returned.
     error_data       : out std_logic_vector
     );
 end entity modulator_post;
@@ -339,7 +339,7 @@ architecture arch of modulator_post is
 begin
   assert EN_ADDR'length = cycle_completed'length
     report "EN_ADDR (" & integer'image(EN_ADDR'length) &
-    ") and parameter_chanel (" & integer'image(cycle_completed'length) & ") should have the same size"
+    ") and parameter_channel (" & integer'image(cycle_completed'length) & ") should have the same size"
       severity failure;
   assert modul_after_sine'length = modul_before_sine'length
     report "modul_after_sine (" & integer'image(modul_after_sine'length) &
@@ -352,15 +352,15 @@ begin
     severity failure;
 
   main_proc : process( CLK )
-    variable substraction_padding_0 : std_logic_vector( 1 downto 0 );
-    variable substraction_abs_padding_0 : std_logic_vector( 0 downto 0 );
-    variable substraction_padding_s : std_logic_vector( 0 downto 0 );
+    variable subtraction_padding_0 : std_logic_vector( 1 downto 0 );
+    variable subtraction_abs_padding_0 : std_logic_vector( 0 downto 0 );
+    variable subtraction_padding_s : std_logic_vector( 0 downto 0 );
     variable padding_1_dsm_ed : std_logic_vector( diff_signal_modulated'length + error_data'length - 1 downto 0 );
     variable padding_0_dsm_ed : std_logic_vector( error_data'range );
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        param_compo : if parameter_chanel( parameter_chanel'low ) = '1' and
+        param_compo : if parameter_channel( parameter_channel'low ) = '1' and
                         parameter_write_prefix = write_prefix then
           if which_parameter = "0001" then
             abs_not_normal <=
@@ -374,25 +374,25 @@ begin
               input_val_s( input_val_s'high ) <= '0';
               input_val_s( input_val_s'high - 1 downto 0 ) <= input_val;
               if abs_not_normal = '1' then
-                substraction_abs_padding_0 := ( others => '0' );
+                subtraction_abs_padding_0 := ( others => '0' );
                 if modul_after_sine( modul_after_sine'high ) = '0' then
                   diff_signal_modulated <= std_logic_vector(
-                    signed( substraction_abs_padding_0 & modul_before_sine(
+                    signed( subtraction_abs_padding_0 & modul_before_sine(
                       modul_before_sine'high downto modul_before_sine'high - modul_after_sine'length + 1 )) -
                     signed( modul_after_sine & modul_after_sine(modul_after_sine'high - 1 )));
                 else
                   diff_signal_modulated <= std_logic_vector(
-                    signed( substraction_abs_padding_0 & modul_before_sine(
+                    signed( subtraction_abs_padding_0 & modul_before_sine(
                       modul_before_sine'high downto modul_before_sine'high - modul_after_sine'length + 1 )) +
                     signed( modul_after_sine & modul_after_sine(modul_after_sine'high - 1 )));
                 end if;
               else
-                substraction_padding_0 := ( others => '0' );
-                substraction_padding_s := ( others => modul_after_sine( modul_after_sine'high ));
+                subtraction_padding_0 := ( others => '0' );
+                subtraction_padding_s := ( others => modul_after_sine( modul_after_sine'high ));
                 diff_signal_modulated <= std_logic_vector(
-                  signed( substraction_padding_0 & modul_before_sine(
+                  signed( subtraction_padding_0 & modul_before_sine(
                     modul_before_sine'high downto modul_before_sine'high - modul_after_sine'length + 2 )) -
-                  signed( substraction_padding_s & modul_after_sine ));
+                  signed( subtraction_padding_s & modul_after_sine ));
               end if;
               cycle_completed( cycle_completed'high downto cycle_completed'low + 1 ) <=
                 EN_ADDR( EN_ADDR'high downto EN_ADDR'low + 1 );
@@ -456,8 +456,8 @@ entity modulator_bundle is
       --! Should not be greater than the parameter_data size.
       --! Should be at least 3
       iter_depth_size : integer range 3 to 16 := 16;
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       write_prefix : in std_logic_vector);
     port (
       --! master clock
@@ -473,10 +473,10 @@ entity modulator_bundle is
       --! This tells which machine.
       --! The number of machines should be a power of 2.
       --! The size of the vector should be the same as parameter machine
-      --! Since the data is latched at the begining of a cycle,
+      --! Since the data is latched at the beginning of a cycle,
       --!   the data should be stable up to the next clk cycle only
       EN_ADDR_mod :  in std_logic_vector;
-      --! Similar as the EN_ADDR but tells the chanel is available
+      --! Similar as the EN_ADDR but tells the channel is available
       --! Since this module is able to handle more than one (pipeline),
       --! this tells a particular channel is available.\n
       --! The data is still valid until at least
@@ -487,14 +487,14 @@ entity modulator_bundle is
       --! Input amplitude unsigned from others=>'0' to others=>'1'
       input_amplitude :  in std_logic_vector;
       parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
       --! Low bit:\n
-      --! Write enable of a pramameter\n
+      --! Write enable of a parameter\n
       --! Other bits:\n
-      --! Tells which chanel
-      parameter_chanel : in std_logic_vector;
+      --! Tells which channel
+      parameter_channel : in std_logic_vector;
       --! 0000 = amplitude which is the modulation depth
       --! Depth of modulation unsigned.\n
       --! From others=>'0' for always 100% of the input\n
@@ -523,7 +523,7 @@ begin
 --    input_amplitude => input_vector,
 --    parameter_data => parameter_data,
 --    parameter_write_prefix => parameter_write_prefix,
---    parameter_chanel => parameter_chanel,
+--    parameter_channel => parameter_channel,
 --    which_parameter => which_parameter,
 --    output_input_mul_depth => output_input_mul_depth);
 
@@ -539,7 +539,7 @@ begin
 --    amplitude => close,
 --    parameter_data => parameter_data,
 --    parameter_write_prefix => parameter_write_prefix,
---    parameter_chanel => parameter_chanel,
+--    parameter_channel => parameter_channel,
 --    which_parameter => which_parameter,
 --    amplitude_out => closed
 --    );
@@ -555,7 +555,7 @@ begin
 --    EN_ADDR => EN_ADDR_pre,
 --    parameter_data => parameter_data,
 --    parameter_write_prefix => parameter_write_prefix,
---    parameter_chanel => parameter_chanel,
+--    parameter_channel => parameter_channel,
 --    which_parameter => which_parameter,
 --    start_cycle => open,
 --    angle_out => closed
@@ -587,7 +587,7 @@ begin
 --    modul_before_sine => output_input_mul_depth,
 --    parameter_data => parameter_data,
 --    parameter_write_prefix => parameter_write_prefix,
---    parameter_chanel => parameter_chanel,
+--    parameter_channel => parameter_channel,
 --    which_parameter => which_parameter,
 --    output_modulated => output_modulated,
 --    error_data => error_data

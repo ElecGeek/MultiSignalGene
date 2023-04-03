@@ -5,13 +5,13 @@ use ieee.std_logic_1164.all,
 entity amplitude_handler is
   generic (
     sample_rate_id_pwr2 : integer range 0 to 3;
-      --! Since the amplitude handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the amplitude handler can be instantiated more than one time.
+      --! For a given channel, this is a pre-decode.
       write_prefix : in std_logic_vector);
   port (
-     --! master clock
+     --! master clock.
     CLK     :  in std_logic;
-    --! Low bit:\n
+    --! Low bit:.\n
     --! Steps forward when is '1'. This is to control the amplitude
     --! The result of the previous run should be latched no later
     --! than one clock cycle after the EN
@@ -28,17 +28,17 @@ entity amplitude_handler is
     master_volume :  in std_logic_vector;
     amplitude : in std_logic_vector;
     parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
-    parmeter_channel :  in std_logic_vector;
+    parameter_channel :  in std_logic_vector;
     --! 0000= set the slewrate
     which_parameter : in std_logic_vector( 3 downto 0 );
     amplitude_out   : out std_logic_vector);
 end entity amplitude_handler;
 
 architecture arch of amplitude_handler is
-  --! The multiplications, addition and compare are done sequencially.
+  --! The multiplications, addition and compare are done sequentially.
   --! After each EN pulse, the system computes the next value,
   --! and keep it ready for reading.\n
   --! This adds a latency of maximum 2 read cycles.
@@ -49,11 +49,11 @@ architecture arch of amplitude_handler is
   signal amplitude_run : std_logic_vector( 23 + 2 downto 0 ) := ( others => 'L' );
   signal slewrate : std_logic_vector( 15 downto 0 );
 begin
-  assert EN_ADDR'length = parmeter_channel'length
-    report "EN_ADDR and parmeter_channel should have the same size"
+  assert EN_ADDR'length = parameter_channel'length
+    report "EN_ADDR and parameter_channel should have the same size"
       severity failure;
   assert EN_ADDR'length = cycle_completed'length
-    report "EN_ADDR and parmeter_channel should have the same size"
+    report "EN_ADDR and parameter_channel should have the same size"
       severity failure;
   assert sample_rate_id_pwr2 /= 3 report "Sample rate is 384, has never been tested" severity warning; 
   assert master_volume'length > 2 and master_volume'length < 13
@@ -80,7 +80,7 @@ begin
   begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
-        param_compo : if parmeter_channel( parmeter_channel'low ) = '1' and
+        param_compo : if parameter_channel( parameter_channel'low ) = '1' and
                          parameter_write_prefix = write_prefix then
           if which_parameter = "0000" then
             slewrate <= parameter_data;

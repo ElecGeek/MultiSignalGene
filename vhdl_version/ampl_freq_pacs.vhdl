@@ -7,8 +7,8 @@ package ampl_freq_pacs is
   component amplitude_handler is
     generic (
       sample_rate_id_pwr2 : integer range 0 to 3;
-      --! Since the amplitude handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the amplitude handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       write_prefix : in std_logic_vector);
     port (
       --! master clock
@@ -32,14 +32,14 @@ package ampl_freq_pacs is
       master_volume :  in std_logic_vector( 7 downto 0 );
       amplitude : in std_logic_vector( 7 downto 0 );
       parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
       --! Low bit:\n
-      --! Write enable of a pramameter\n
+      --! Write enable of a parameter\n
       --! Other bits:\n
       --! Tells which channel
-      parmeter_channel :  in std_logic_vector;
+      parameter_channel :  in std_logic_vector;
       --! 0000= set the slewrate
       which_parameter : in std_logic_vector( 3 downto 0 );
       amplitude_out   : out std_logic_vector);
@@ -53,11 +53,11 @@ package ampl_freq_pacs is
       --! See in the cpp version
       division_rate_pwr2 : integer range 0 to 5;
       --! This prevents the high or low to be set
-      --! By this way, the optimiser eliminate the according logic
-      --! Otherwyse, it can not know the parameter is never set
+      --! By this way, the optimizer eliminates the according logic
+      --! Otherwise, it can not know the parameter is never set
       hi_low_hold_always_0 : boolean := false;
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       write_prefix : in std_logic_vector);
     port (
       --! master clock
@@ -75,14 +75,14 @@ package ampl_freq_pacs is
       --! as it is always completed in one CLK cycle
       EN_ADDR :  in std_logic_vector;
       parameter_data :  in std_logic_vector( 15 downto 0 );
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
       parameter_write_prefix : in std_logic_vector;
       --! Low bit:\n
-      --! Write enable of a pramameter\n
+      --! Write enable of a parameter\n
       --! Other bits:\n
-      --! Tells which chanel
-      parmeter_chanel :  in std_logic_vector;
+      --! Tells which channel
+      parameter_channel :  in std_logic_vector;
       --! writes only one parameter at a time
       --! 0100=set frequency, TODO steps and limits
       --! 0101=set high hold, 0110=set low hold, TODO steps and limits

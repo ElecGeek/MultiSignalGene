@@ -8,27 +8,27 @@ use ieee.std_logic_1164.all,
 --! @brief This module runs a single test of modulator
 --!
 --! \n
---! This test is perform using a dummy sine generator.
---! It is intended to test, in depth, the arithmetics around.
+--! This test is performed using a dummy sine generator.
+--! It is intended to test, in depth, the arithmetic around.
 --! For a global test, including the parameters handling in depth,
 --!   use modulator_bundle_test
 --! For every value, the size of the counters is set separately 
 --! to the size of the vector value.\n
 --! The vector value is set by the design.\n
 --! The counter is set to an equal or lower size of fast tests. 
---! In such case, a barel counter populates the lower bits
+--! In such case, a barrel counter populates the lower bits
 --! to ensure a rail to rail simulation.\n
 --! For long simulation a progress data is sent regularly\n
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations has terminated. This is to avoid to mix the progress with the
+--! instantiations have terminated. This is to avoid mixing the progress with the
 --! reported data.
 entity modulator_test is
   generic (
     -- to increase this value, review the size of the subcounter
     iter_depth_size    : integer range 3 to 28 := 10;
-    nbre_chanels_pwr2 : natural := 2;
+    nbre_channels_pwr2 : natural := 2;
     modul_counter_size : integer range 3 to 30 := 5;
     modul_vector_size  : integer range 3 to 30 := 8;
     input_counter_size : integer range 3 to 30 := 5;
@@ -108,7 +108,7 @@ architecture arch of modulator_test is
     a_vector_view <= unsigned( a_vector_v );
   end procedure update_vector_real_signed;
                                 
-  signal EN_ADDR_pre : std_logic_vector( nbre_chanels_pwr2 downto 0 ) := ( others => '0' );
+  signal EN_ADDR_pre : std_logic_vector( nbre_channels_pwr2 downto 0 ) := ( others => '0' );
   signal EN_ADDR_post : std_logic_vector( EN_ADDR_pre'range ) := ( others => '0' );
   signal cycle_compl_pre : std_logic_vector( EN_ADDR_pre'range ) := ( others => '0' );
   signal cycle_compl_post : std_logic_vector( EN_ADDR_pre'range ) := ( others => '0' );
@@ -136,7 +136,7 @@ architecture arch of modulator_test is
   constant sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
 
   signal val_param : std_logic_vector( 15 downto 0) := "1000000000000000";
-  signal parameter_chanel : std_logic_vector( nbre_chanels_pwr2 downto 0 ) := ( others => '0' );
+  signal parameter_channel : std_logic_vector( nbre_channels_pwr2 downto 0 ) := ( others => '0' );
   signal which_parameter : std_logic_vector( 3 downto 0 ) := ( others => '0' );
   
   signal error_data : std_logic_vector( 6 downto 0 );
@@ -314,16 +314,16 @@ begin
                   val_param <= depth_vector;
                   which_parameter <= "0000";
                 when "00010" =>
-                  parameter_chanel( parameter_chanel'low ) <= '1';
+                  parameter_channel( parameter_channel'low ) <= '1';
                 when "00011" =>
-                  parameter_chanel( parameter_chanel'low ) <= '0';
+                  parameter_channel( parameter_channel'low ) <= '0';
                 when "00100" =>
                   val_param( val_param'low ) <= main_counter( main_counter'low );
                   which_parameter <= "0001";
                 when "00101" =>
-                  parameter_chanel( parameter_chanel'low ) <= '1';
+                  parameter_channel( parameter_channel'low ) <= '1';
                 when "00110" =>
-                  parameter_chanel( parameter_chanel'low ) <= '0';
+                  parameter_channel( parameter_channel'low ) <= '0';
                 when "00111" =>
                   EN_ADDR_pre( EN_ADDR_pre'low ) <= '1';
                   EN_ADDR_post( EN_ADDR_post'low ) <= cycle_compl_pre( cycle_compl_pre'low );
@@ -375,7 +375,7 @@ modulator_pre_instanc : modulator_pre generic map(
     input_amplitude => input_vector,
     parameter_data =>    val_param,
     parameter_write_prefix => "00001111",
-    parameter_chanel => parameter_chanel,
+    parameter_channel => parameter_channel,
     which_parameter => which_parameter,
     output_input_mul_depth => output_input_mul_depth);
 
@@ -391,7 +391,7 @@ modulator_post_instanc : modulator_post generic map(
     modul_before_sine => output_input_mul_depth,
     parameter_data =>    val_param,
     parameter_write_prefix => "00001111",
-    parameter_chanel => parameter_chanel,
+    parameter_channel => parameter_channel,
     which_parameter => which_parameter,
     output_modulated => output_modulated,
     error_data => error_data
@@ -412,9 +412,9 @@ use ieee.std_logic_1164.all,
 --! @brief This module runs a single test of modulator
 --!
 --! \n
---! This test is perform using the real sine generator.
---! It is intended to test, in depth, the arithmetics around.
---! For an in-depth test of the arithmetics,
+--! This test is performed using the real sine generator.
+--! It is intended to test, in depth, the arithmetic around.
+--! For an in-depth test of the arithmetic,
 --!   use modulator_test
 entity modulator_bundle_test is
   port (

@@ -9,14 +9,14 @@ entity frequency_handler is
     --! See in the cpp version
     division_rate_pwr2 : integer range 0 to 5;
     --! This prevents the high or low to be set
-    --! By this way, the optimiser eliminate the according logic
-    --! Otherwyse, it can not know the parameter is never set
+    --! By this way, the optimizer eliminates the according logic
+    --! Otherwise, it can not know the parameter is never set
     hi_low_hold_always_0 : boolean := false;
-      --! Since the frequency handler can be instanciated more than one time
-      --! for a given channel, this is a predecode
+      --! Since the frequency handler can be instantiated more than one time
+      --! for a given channel, this is a pre-decode
     write_prefix : in std_logic_vector);
   port (
-     --! master clock
+     --! Master clock
     CLK     :  in std_logic;
     --! Low bit:\n
     --! Steps forward when is '1'. This is to control the frequency\n
@@ -33,7 +33,7 @@ entity frequency_handler is
     --! Since the frequency handler can be instanciated more than one time
     --! for a given channel, this is a predecode
     parameter_write_prefix : in std_logic_vector;
-    parmeter_chanel :  in std_logic_vector;
+    parameter_channel :  in std_logic_vector;
     --! writes only one parameter at a time
     --! 0100=set frequency, TODO steps and limits
     --! 0101=set high hold, 0110=set low hold, TODO steps and limits
@@ -54,8 +54,8 @@ architecture arch of frequency_handler is
   signal angle : std_logic_vector( frequency'range );
   constant padding_low_PS : std_logic_vector( angle'high - 4 downto angle'low ) := ( others => '0' );
 begin
-  assert EN_ADDR'length = parmeter_chanel'length
-    report "EN_ADDR and parmeter_chanel should have the same size"
+  assert EN_ADDR'length = parameter_channel'length
+    report "EN_ADDR and parameter_channel should have the same size"
       severity failure;
   assert sample_rate_id_pwr2 /= 3 report "Sample rate is 384, has never been tested" severity warning; 
   angle_out <= angle;
@@ -68,7 +68,7 @@ begin
     if rising_edge( CLK ) then
       RST_IF : if RST = '0' then
         angle_v := angle;
-        param_compo : if parmeter_chanel( parmeter_chanel'low ) = '1' and
+        param_compo : if parameter_channel( parameter_channel'low ) = '1' and
                          parameter_write_prefix = write_prefix then
           case which_parameter is
             when "0100" =>

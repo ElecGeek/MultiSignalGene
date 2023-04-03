@@ -16,18 +16,18 @@ work.signal_gene.all;
 --! * the sum sine2 plus cosine2 is close to 1
 --! * some counting of the quadrant change of the sine and cosine
 --! Since the test is supposed to generate one period plus a residual,
---! only one change clockwyse should be seen.
+--! only one change clockwise should be seen.
 --! * the sum of the squares of the derivatives is close to 1\n
 --! The 2 first ones should give a result as close as the requested precision
 --! is high.
---! The 2 last ones are more tricky if the precisions is low and/or
+--! The 2 last ones are more tricky if the precision is low and/or
 --! the sharpness is low\n
 --! \n
 --! For long simulation a progress data is sent regularly\n
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations has terminated. This is to avoid to mix the progress with the
+--! instantiations have terminated. This is to avoid mixing the progress with the
 --! reported data.
 entity sample_step_sine_test is
   generic (
@@ -235,7 +235,7 @@ begin
       -- This displays a complete report
       -- In case of the standalone mode, it is done after the simple message
       -- (see above)
-      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- In case of the batch mode, the goal is to avoid mixing messages as it
       -- is not "thread safe"
       -- * It is performed after the previous batch is done.
       -- * When done, it sets a signal for the next one
@@ -273,7 +273,7 @@ begin
         integer'image( integer( round( real( 2 ** 23 ) / real( min_residual_z )))) &
         ", max = 1/" & integer'image( integer( round( real( 2 ** 23 ) / real( max_residual_z ))) ) severity note;
       else
-        report "Residual z is 0, perhaps the fast behavior architecftue has been used" severity note;
+        report "Residual z is 0, perhaps the fast behaviour architecftue has been used" severity note;
       end if;
       display_out_s <= '1';
     end process display;
@@ -301,13 +301,13 @@ configuration sample_step_sine_rtl_test of sample_step_sine_test is
   end for;
 end configuration sample_step_sine_rtl_test;
 
-configuration sample_step_sine_iobehavior_test of sample_step_sine_test is
+configuration sample_step_sine_iobehaviour_test of sample_step_sine_test is
   for arch
     for sample_step_sine_instanc : sample_step_sine
       use entity work.sample_step_sine( fast );
     end for;
   end for;
-end configuration sample_step_sine_iobehavior_test;
+end configuration sample_step_sine_iobehaviour_test;
 
 --! Use standard library
 library ieee;
@@ -423,7 +423,7 @@ begin
         CLK <= not CLK;
         wait for 20 nS;
       else
-        -- This is a simple message to tell trhe simulation is over
+        -- This is a simple message to tell the simulation is over
         -- In batch mode, it is among other messages from the other batches.
         -- A more complete message will be displayed when all the batches complete
         -- (see below)
@@ -439,7 +439,7 @@ begin
       -- This displays a complete report
       -- In case of the standalone mode, it is done after the simple message
       -- (see above)
-      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- In case of the batch mode, the goal is to avoid mixing messages as it
       -- is not "thread safe"
       -- * It is performed after the previous batch is done.
       -- * When done, it sets a signal for the next one
@@ -481,7 +481,7 @@ work.signal_gene.all;
 --! \n
 --! Four verifications are done\n
 --! * the integration of the cycle is close to zero
---! * some counting of the signess change.
+--! * some counting of the signs change.
 --! The pulse should change only one time from 0 to +1, from +1 to 0,
 --! from 0 to -1 and from -1 to 0
 --! * the integration of x ** 2 .sgn( x ) is close to 0\n
@@ -490,7 +490,7 @@ work.signal_gene.all;
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations has terminated. This is to avoid to mix the progress with the
+--! instantiations have terminated. This is to avoid mixing the progress with the
 --! reported data.
 entity sample_step_pulse_test is
   generic (
@@ -602,7 +602,7 @@ begin
         CLK <= not CLK;
         wait for 20 nS;
       else
-        -- This is a simple message to tell trhe simulation is over
+        -- This is a simple message to tell the simulation is over
         -- In batch mode, it is among other messages from the other batches.
         -- A more complete message will be displayed when all the batches complete
         -- (see below)
@@ -617,7 +617,7 @@ begin
       -- This displays a complete report
       -- In case of the standalone mode, it is done after the simple message
       -- (see above)
-      -- In case of the batch mode, the goal is to avoid to mix messages as it
+      -- In case of the batch mode, the goal is to avoid mixing messages as it
       -- is not "thread safe"
       -- * It is performed after the previous batch is done.
       -- * When done, it sets a signal for the next one

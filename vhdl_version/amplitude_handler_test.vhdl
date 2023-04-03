@@ -12,7 +12,7 @@ use ieee.std_logic_1164.all,
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations has terminated. This is to avoid to mix the progress with the
+--! instantiations have terminated. This is to avoid mixing the progress with the
 --! reported data.
 entity amplitude_handler_test is
   generic (
@@ -142,7 +142,7 @@ begin
       RST => RST( RST'low ),
       parameter_data => val_param,
       parameter_write_prefix => "1010111",
-      parmeter_channel => parameter_channel,
+      parameter_channel => parameter_channel,
       which_parameter => which_parameter,
       master_volume => master_volume,
       amplitude => amplitude,

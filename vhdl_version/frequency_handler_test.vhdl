@@ -12,7 +12,7 @@ use ieee.std_logic_1164.all,
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations has terminated. This is to avoid to mix the progress with the
+--! instantiations has terminated. This is to avoid mixing the progress with the
 --! reported data.
 entity frequency_handler_test is
   generic (
@@ -39,7 +39,7 @@ architecture arch of frequency_handler_test is
   signal start_cycle : std_logic;
   signal val_param : std_logic_vector( 15 downto 0);
   signal EN_ADDR : std_logic_vector( 2 ** nbre_channels_pwr2 - 1 downto 0 ) := ( others => '0' );
-  signal chanel_param : std_logic_vector( 2 ** nbre_channels_pwr2 - 1 downto 0 ) := ( others => '0' );
+  signal channel_param : std_logic_vector( 2 ** nbre_channels_pwr2 - 1 downto 0 ) := ( others => '0' );
   signal which_parameter : std_logic_vector( 3 downto 0 );
   signal simul_over_s : std_logic := '0';
   signal display_out_s : std_logic := '0';
@@ -80,10 +80,10 @@ begin
                 which_parameter <= "0100";
                 writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
               when "0001" | "0100" | "0111" =>
-                chanel_param( chanel_param'low ) <= '1';
+                channel_param( channel_param'low ) <= '1';
                 writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
               when "0010" | "0101" | "1000" =>
-                chanel_param( chanel_param'low ) <= '0';
+                channel_param( channel_param'low ) <= '0';
                 writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
               when others =>  
                 if sub_counter /= sub_counter_max then
@@ -132,7 +132,7 @@ begin
       RST => RST( RST'low ),
       parameter_data => val_param,
       parameter_write_prefix => "01110",
-      parmeter_chanel => chanel_param,
+      parameter_channel => channel_param,
       which_parameter => which_parameter,
       start_cycle => start_cycle,
       angle_out => angle);

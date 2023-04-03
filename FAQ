@@ -6,7 +6,7 @@ A: Some part of the software is a proof of concept and verification
 Q: Why the midi codes?
 A: Many little reasons.
      They are supper short messages which make easy interfaces over networks
-     Many software can edit them
+     A lot of software can edit them
      The electronic version requires a few resources (Ethernet or USB stacks consume all the FPGA)
      Interfaces like DTMF or a super DTMF should be possible for the video
 
@@ -18,9 +18,9 @@ Q: Why so old minimum versions?
 A: I need to run it on an old machine. It had the 4.6.2 version of GCC
      Since I needed a newer version for many other purposes. I moved to the 5.5.0
      after 6 hours to compile the compiler.
-     Then, the software was C++11. Now the software is C++14
+     Then, the software was C++03. Now the software is C++14
 
 Q: What is the purpose of the no operation instructions in the input command files?
 A: The examples of the early versions has been hand edited. Not all the reverse hex-dump software
      accepts (text) files without addresses. An insertion needs to update all the file.
-     The NOP allows to keep some room.
+     The NOP allows keeping some room.
