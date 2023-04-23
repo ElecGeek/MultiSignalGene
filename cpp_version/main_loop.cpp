@@ -95,6 +95,12 @@ main_loop&main_loop::operator+=(output_params_base*const the_output)
   params_output_list.push_back( the_output );
   return*this;
 };
+main_loop&main_loop::operator+=(const deque<output_params_base*>& the_output)
+{
+  for( auto& il : the_output )
+	params_output_list.push_back( il );
+  return*this;
+};
 unsigned short main_loop::GetSamplesSize()const
 {
   return (short)signal_list.size();
@@ -370,7 +376,7 @@ string main_loop::get_clearing()const
 
   for( input_params_base* it : params_input_list )
 	{
-	  oss << "Exit input parameyters channel: ";
+	  oss << "Exit input parameters channel: ";
 	  switch ( it->clearing )
 		{
 		case input_params_base::c_unknown: oss << "Unknown reason";  break;

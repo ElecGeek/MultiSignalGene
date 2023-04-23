@@ -53,9 +53,8 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	  break;
 	case signals_param_action::main_ampl_slewrate:
 	  val_float = 16777216.0 / ( (float)action.value * 48000 * 4.0 );
-	  out_line << "OS " << hex << action.value;
-	  out_line << ", means " << val_float;
-	  out_line << "s 0-255 (step: 1/" << (16777216.0 /( 48000.0 * 4.0 )) << ")" << endl;
+	  out_line << "OS " << val_float;
+	  out_line << "S" << endl;
 	  break;
 	case signals_param_action::ampl_modul_freq:
 	  val_float = (float)action.value * 48000.0 * 4.0 / 16777216.0;
@@ -104,13 +103,14 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "BO " << dec << action.value * 45 << endl;
 	  break;
 	case signals_param_action::ampl_modul_modul_mode:
-	  out_line << "AM " << dec << action.value << " 1 = abs" << endl;
+	  out_line << "AM " << dec << action.value << endl;
 	  break;
 	case signals_param_action::pulse_modul_mode:
-	  out_line << "BM " << dec << action.value << " 1 = abs" << endl;
+	  out_line << "BM " << dec << action.value << endl;
 	  break;
 	case signals_param_action::user_volume:
-	  out_line << "Sets the user_volume " << hex << action.value << ", dec: " << dec << action.value << endl;
+	  out_line << "Sets the user_volume " << ( action.value * 100 )/255;
+	  out_line << "%" << endl;
 	  break;
 	case signals_param_action::nop:
 	  out_line << "NN 0" << endl;
@@ -124,10 +124,10 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 }
 
 
-output_params_mnemos_file::output_params_mnemos_file( const string&filename ):
+output_params_mnemos_file::output_params_mnemos_file( ofstream& o ):
   output_params_mnemos( of_str )
 {
-  of_str.open( filename.c_str(), ios_base::out );
+  of_str = move( o );
 }
 output_params_mnemos_file::~output_params_mnemos_file()
 {

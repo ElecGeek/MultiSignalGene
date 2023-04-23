@@ -36,7 +36,7 @@ class output_params_mnemos_file : public output_params_mnemos
   ofstream of_str;
   output_params_mnemos_file(void);
  public:
-  explicit output_params_mnemos_file( const string& );
+  explicit output_params_mnemos_file( ofstream& );
   ~output_params_mnemos_file(void);
 };
 

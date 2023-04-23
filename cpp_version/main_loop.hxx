@@ -75,6 +75,7 @@ class main_loop {
   main_loop&operator+=(input_params_base*const);
   //! Adds an output parameters interface
   main_loop&operator+=(output_params_base*const);
+  main_loop&operator+=(const deque<output_params_base*>&);
   /** Get the size of a sample output
 	  \return The size unit is the number of signed short elements
   */

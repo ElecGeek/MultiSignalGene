@@ -119,14 +119,13 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  break;
 	}
   o_str << out_line.str();
-  //  o_str.flush();
 }
 
 
-output_params_txt_file::output_params_txt_file( const string&filename ):
-  output_params_txt( of_str )
+output_params_txt_file::output_params_txt_file( ofstream& o ):
+output_params_txt( of_str )
 {
-  of_str.open( filename.c_str(), ios_base::out );
+  of_str = move( o );
 }
 output_params_txt_file::~output_params_txt_file()
 {

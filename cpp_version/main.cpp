@@ -7,6 +7,7 @@
 #include "params_output_mnemos.hxx"
 #include "params_input_midi.hxx"
 #include "sound_file_output.hxx"
+#include "params_io_handler.hxx"
 #include "help_message.hxx"
 
 #include <deque>
@@ -27,6 +28,8 @@ unsigned char debug_level;
 int main(int argc,char *argv[] )
 {
   int opt;
+  params_io_handler params_io;
+  // To be removed when the params handler classes are in full production
   deque<string>file_inputs;
   deque<string>file_outputs;
   bool run_dummy( false );
@@ -47,7 +50,7 @@ int main(int argc,char *argv[] )
 
   debug_level = 0;
 
-  while (( opt= getopt( argc, argv, "d:o:i:K:f:c:tj:r:l:w:hv" )) != EOF ) 
+  while (( opt= getopt( argc, argv, "d:o:i:F:K:f:c:tj:r:l:w:hv" )) != EOF ) 
 	{
 	  switch ( opt )
 		{
@@ -55,12 +58,16 @@ int main(int argc,char *argv[] )
 		  debug_level = atoi( optarg );
 		  break;
 		case 'o':
+		  params_io.SetOption( opt, string( optarg ));
 		  file_outputs.push_back( string( optarg ));
-		  has_output = true;
 		  break;
 		case 'i':
+		  params_io.SetOption( opt, string( optarg ));
 		  file_inputs.push_back( string( optarg ));
 		  has_input = true;
+		  break;
+		case 'F':
+		  params_io.SetOption( opt, string( optarg ));
 		  break;
 		case 'f':
 		  filename = string( optarg );
@@ -104,6 +111,11 @@ int main(int argc,char *argv[] )
 		  break;
 		}
 	}
+  params_io.FlushOptions();
+
+  cout << params_io.GetInfos();
+  has_input |= params_io.hasInputChannels();
+  has_output |= params_io.hasOutputChannels();
   if ( (has_input == false) && (has_output == false) )
 	{
 	  if ( has_hv )
@@ -183,7 +195,7 @@ int main(int argc,char *argv[] )
 	  signals += new input_params_midi_pckeyboard( cin );
 	}
   // signals+=new output_params_txt;
-  for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); ++it )
+  /*  for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); ++it )
 	if ( (*it).compare( "-" ))
 	  {
 		// Temporary solution: open all the modes: txt, midi, mnemos, vhdl etc...
@@ -202,7 +214,15 @@ int main(int argc,char *argv[] )
 	  // signals += new output_params_vhdl( cout );
 	  // not yet
 	  // signals += new output_params_midi( cout );
-	}
+	  }*/
+
+  params_io.EnvironementNeeds();
+  this_thread::sleep_for(chrono::milliseconds( 200 ));
+  cout << "Creating input and output parameters channels" << endl;
+  params_io.CreateChannels();
+  cout << params_io.GetInfos();
+  signals += params_io.GetOutputChannels();
+  //  signals += params_io.GetInputChannels();
   
   clock_t ticks( clock() );
   do

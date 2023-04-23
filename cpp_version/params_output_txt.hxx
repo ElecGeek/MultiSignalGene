@@ -36,7 +36,7 @@ class output_params_txt_file : public output_params_txt
   ofstream of_str;
   output_params_txt_file(void);
  public:
-  explicit output_params_txt_file( const string& );
+  explicit output_params_txt_file( ofstream& );
   ~output_params_txt_file(void);
 };
 

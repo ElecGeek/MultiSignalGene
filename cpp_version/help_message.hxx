@@ -7,11 +7,11 @@ string help()
 {
   ostringstream ostrstm;
 
-  ostrstm << "Usage: estim <options>. Returns when no input parameters channel are active anymore (or on error)" << endl;
+  ostrstm << "Usage: estim <options>. Returns when no input parameters channel are active any more (or on error)" << endl;
   ostrstm << "At least one output parameters channel OR one raw file OR one audio output is compulsory" << endl;
   ostrstm << "COMMAND LINE OPTIONS" << endl;
-  ostrstm << "The option order is not significant unless otherwyse" << endl;
-  ostrstm << "Details the options with concurrency and with multiple invocation (MI) behavior:" << endl;
+  ostrstm << "The option order is not significant unless otherwise" << endl;
+  ostrstm << "Details the options with concurrency and with multiple invocation (MI) behaviour:" << endl;
   ostrstm << endl << "-h" << endl;
   ostrstm << "\tDisplays this help. Quit if no other options (other than -v) are specified" << endl;
   ostrstm << "\tMI: The help is displayed multiple times" << endl;
@@ -21,10 +21,13 @@ string help()
   ostrstm << endl << "-d" << endl;
   ostrstm << "\tSet the debug level" << endl;
   ostrstm << "\tThe default is 0: no debug messages sent to the std output. MI: Only the last usage is considered" << endl;
-  ostrstm << endl << "-M" << endl;
-  ostrstm << "\tSwitch the format of the input or output parameters into midi mapped notes" << endl;
-  ostrstm << "\tShould be placed before a -o or a -i option" << endl;
-  ostrstm << "\tIt is the defult one for the -i option. MI: Only the last usage is considered" << endl;
+  ostrstm << endl << "-F format" << endl;
+  ostrstm << "\tSwitch the format of the input or output parameters." << endl;
+  ostrstm << "\tShould be placed everywhere after a -o or a -i option, but before the next -i or -o." << endl;
+  ostrstm << "\tFor input commands, if this option is specified, the format should be strictly the one specified." << endl;
+  ostrstm << "\tIf the option is not specified, the software tries to autodetect." << endl;
+  ostrstm << "\tFor output commands, if the option is not specified, a default applies." << endl;
+  ostrstm << "\tMI: Only the last usage is considered" << endl;
   ostrstm << endl << "-o filename" << endl;
   ostrstm << "\tSpecifies an output parameters channel to export text data about the values and the midi code"<< endl;
   ostrstm << "\tA filename can be given, use - for the console output" << endl;
@@ -42,7 +45,7 @@ string help()
   ostrstm << "\tSpecifies the output signal file, raw and jackaudio (if so)." << endl;
   ostrstm << "\ts=sine, p=pulses, e=triangle, c=continuous or b=both" << endl;
   ostrstm << "\t\tb and c is/are for test purposes" << endl;
-  ostrstm << "\t\tb=odd channels are sine, even are pulse. c=get the enveloppe" << endl;
+  ostrstm << "\t\tb=odd channels are sine, even are pulse. c=get the envelope" << endl;
   ostrstm << "\tIf not specified, the ";
 #ifdef __OUTPUT_SINE_MODE__
   ostrstm << "sine";
@@ -56,9 +59,9 @@ string help()
   ostrstm << " mode is used" << endl;
   ostrstm << "\tIt is a string, each character for each channel." << endl;
   ostrstm << "\t\tIn case of a single character or a string shorted than the number of channels," << endl;
-  ostrstm << "\t\tthe (last) character is replicated as many time as needed." << endl;
-  ostrstm << "\t\tIn case of a string longuer than the number of channels, the last characters are voided" << endl;
-  ostrstm << "\t0..1 MI: Each invokation is concatenated to each other" << endl;
+  ostrstm << "\t\tthe (last) character is replicated as many times as needed." << endl;
+  ostrstm << "\t\tIn case of a string longer than the number of channels, the last characters are voided" << endl;
+  ostrstm << "\t0..1 MI: Each invocation is concatenated to each other" << endl;
   ostrstm << endl << "-c number" << endl;
   ostrstm << "\tSpecifies the number of audio or raw file channels." << endl;
   ostrstm << "\tThe value can be 0. In such case at least one output parameters channel should be defined" << endl;
@@ -86,13 +89,13 @@ string help()
   ostrstm << "\tSpecifies the sample rate" << endl;
   ostrstm << "\tOnly 1= 48KHz, 2= 96KHz and 4=192KHz are valid" << endl;
   ostrstm << "\tIf not involved, let the output module choose or default" << endl;
-  ostrstm << "\tMI: specifies a list submited to the output module" << endl;
+  ostrstm << "\tMI: specifies a list submitted to the output module" << endl;
   ostrstm << endl << "-l"; ostrstm << endl;
   ostrstm << "\tSpecifies how much time the input is re-executed" << endl;
   ostrstm << "\tWorks only with file or other seekable input" << endl;
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-w"; ostrstm << endl;
-  ostrstm << "\tSpecifies, in seconds, a wainting time between the initialisation" << endl;
+  ostrstm << "\tSpecifies, in seconds, a waiting time between the initialization" << endl;
   ostrstm << "\tand the start of the sequence. Useful to connect to the jackaudio outputs" << endl;
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
   return ostrstm.str();

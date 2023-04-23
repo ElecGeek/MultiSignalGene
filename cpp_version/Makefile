@@ -6,10 +6,10 @@ CXX_Version?=-std=c++14
 SRCDIR?=
 BUILDDIR?=
 
-$(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE)			:	$(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
-	$(CXX) $(CXXFLAGS) -o $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE) $(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o -l jack
+$(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE)			:	$(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)params_io_handler.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
+	$(CXX) $(CXXFLAGS) -o $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE) $(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)params_io_handler.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o -l jack
 
-$(BUILDDIR)main.o					:	$(SRCDIR)main.cpp $(SRCDIR)help_message.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)main_loop.hxx
+$(BUILDDIR)main.o					:	$(SRCDIR)main.cpp $(SRCDIR)help_message.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)main_loop.hxx $(SRCDIR)params_io_handler.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)main.o $(SRCDIR)main.cpp
 
 $(BUILDDIR)amplitude_handler.o		:	$(SRCDIR)amplitude_handler.hxx $(SRCDIR)amplitude_handler.cpp
@@ -32,6 +32,9 @@ $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o		:	$(SRCDIR)main_loop.hxx	$(SRCDIR)main
 
 $(BUILDDIR)sound_file_output.o			:	$(SRCDIR)sound_file_output.hxx	$(SRCDIR)sound_file_output.cpp $(SRCDIR)sound_file_output_buffer.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)sound_file_output.o $(SRCDIR)sound_file_output.cpp
+
+$(BUILDDIR)params_io_handler.o			:	$(SRCDIR)parameters.hxx $(SRCDIR)params_io_handler.hxx $(SRCDIR)params_io_handler.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_io_handler.o $(SRCDIR)params_io_handler.cpp
 
 $(BUILDDIR)parameters.o			:	$(SRCDIR)parameters.hxx $(SRCDIR)parameters.cpp $(SRCDIR)amplitude_handler.hxx $(SRCDIR)frequency_handler.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)parameters.o $(SRCDIR)parameters.cpp
