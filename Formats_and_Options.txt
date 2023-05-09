@@ -1,0 +1,114 @@
+1) Sound output
+Each sound output module is enabled when its options are specified.
+More than one can be specified. If none is specified, at least one output parameters module should be enabled.
+
+1-1) Jackaudio output
+While using at least one -j option <data>, Jackaudio is enabled.
+If more than one -j option is specified, all their data are concatenated.
+The sample rate of all the outputs is the Jackaudio one. If a sample rate option is specified, it should match.
+The data contains the list of peers and their connections. See the specialized documentations file.
+Two special data are defined. The -j - connects to the 42scope software inputs. The -j . connects to the N first inputs of the system peers.
+
+1-2) Raw data wave file
+While using the -f <filename> option, the raw data is sent into the <filename> file.
+If more than one -f option is specified, the last one is kept, the previous ones are ignored.
+The sample rate is the one coming from Jackaudio or an option. If none of them, 48KHz is used.
+The number of channels is the one specified with the -c <channels> option. The size is always 16 bits.
+
+
+
+2) Parameters output
+Each parameters output module is enabled when a -o <data> is specified.
+The data is the file or connection data. The - is supported as the standard output for most of the modes.
+More specific options to a module, including the format, should be specified after the -o option and before the next -o or -i option.
+More than one module can be specified. If none is specified, at least one output sound module should be enabled.
+Until a new handler, the channel 0 specifies all the channels. Positive numbers specify a specific channel.
+
+2-1) No format specified
+A default format chosen at compilation time applies. In future versions, the default may be configurable in the Makefile for users that compile themselves.
+
+2-2) Text mode
+The -F text or -F txt selects a kind of debug mode. It is intended to be as readable as possible.
+Each input command generates one line. They may be not flushed immediately.
+It specifies the timestamp, the channel, the action, its values and some comment, generally about the steps and the limits
+The timestamp is milliseconds since the beginning.
+
+2-3) Memonic mode
+The -F mnemo selects the mnemonics mode. It is a more restrictive text mode but designed to be easily used as input parameters.
+Each input command generates one line. They may be not flushed immediately.
+It specifies the timestamp, the channel, the mnemonic, its values but nothing else.
+The timestamp is seconds since the previous (non comment) line. Some latency may apply. The system handles the commands at regular schedules, actually 1mS. Some extravagant bloc sizes defined in jack (e.g. 48KHz -p 2048 -> 40mS) increases the schedule.
+
+2-4) Network mode
+Not yet
+
+2-5) Midi commands sent via Jackaudio
+Not yet
+
+2-6) Midi commands sent into a .mid file
+Not yet
+
+
+3) Parameters input
+Each parameters output module is enabled when a -i <data> is specified.
+The data is the file or connection data. The - is supported as the standard input for most of the modes.
+More specific options to a module, including the format, should be specified after the -o option and before the next -o or -i option.
+More than one module can be specified.
+Until a new handler, the channel 0 specifies all the channels. Positive numbers specify a specific channel.
+
+3-1) No format specified.
+The software tries to guess the format with the data passed in the -i option.
+
+3-2) The format is specified.
+The software makes some sanity checks for strictly this format and discard the input if failed,
+
+3-2-1) Memonic mode
+The -F mnemo selects the mnemonics mode.
+It specifies the timestamp, the channel, the mnemonic, its values. Extravagant values can see them set to a minimum, a maximum or a rounded value.
+The timestamp is seconds since the previous (non comment) line. Thousands separators should not be used as both point and comma can be used for the decimal separator.
+Some latency may apply. The system handles the commands at regular schedules, actually 1mS. Some extravagant bloc sizes defined in jack (e.g. 48KHz -p 2048 -> 42.67mS) increases the schedule. However, accurate values are always stored. Some commands may be executed a little bit late, but there is no large delay due to cumulative rounding.
+
+3-2-2) Network mode
+Not yet
+
+3-2-3) Midi commands sent via Jackaudio
+Not yet
+
+3-2-4) Midi commands sent into a .mid file
+The -F midi selects the midi .mid file mode.
+Only the note on are executed. Note off are voided, their timestamps are executed. The instrument codes are mapped to the channel. That limits to 15 channels (+ the all channels). The commands are mapped to midi notes and their velocity.
+The latencies, as described above still apply. Some additional latency may apply due to the .mid format (natural integers only). As defined in the .mid files specifications, the timestamp is relative to the previous command. The support of the "music style" timestamps (Nth of M beat per minute) may not be complete. The support of the "cinema style" timestamps (Nth of M images per second) are supported for 10, 24 and 25.
+
+
+
+4) Miscellaneous options
+
+4-1) Options usable with file style inputs
+These options apply for inputs that can be rewindable or seekable.
+
+4-1-1) Delay
+The -w <N> option waits for N seconds before starting. If omitted, it starts ASAP. 
+
+4-1-2) Loop back
+The -l <N> option tells how many times the inputs are played. If omitted, it is played once. If 0, it is played indefinitely.
+
+4-2) Options usable with stream style inputs
+These options apply for inputs that can not be rewinded.
+
+4-3) Options usable for both
+
+4-3-1) Number of channels
+The -c <N> option specifies how many channels are used.
+If the input tries to access to more channels, it is voided. If the input tries to access to fewer channels, some channels plays blank.
+********** today, if it is omitted, the software may crash **********
+
+4-3-2) Sample rate.
+The option -r <N> specify the sample rate used for the Jackaudio or raw file sound outputs.
+If Jackaudio is used, it should match, otherwise the software quits.
+
+4-3-3) Waveform
+The -K <data> option specifies which base waveform is used. Today, the choices are sinus, pulses, continuous (the output hardware should support) or flattened triangle.
+The data string is a set of single chars, one per channel. If the string is too short, the last one is replicated as many times as needed. If the string is too long, the last characters are omitted.
+ 
+4-3-4) Miscellaneous
+Some more classics software options enable debug mode, displays help, version etc... 
