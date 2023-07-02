@@ -46,6 +46,7 @@ architecture arch of frequency_handler_test is
   signal writing_parameter : std_logic_vector( 3 downto 0 ) := "0000";
 begin
   simul_over <= simul_over_s;
+  display_out <= display_out_s;
   
   main_proc : process
   begin

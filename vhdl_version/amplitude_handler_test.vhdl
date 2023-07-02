@@ -52,6 +52,7 @@ architecture arch of amplitude_handler_test is
   signal display_out_s : std_logic := '0';
 begin
   simul_over <= simul_over_s;
+  display_out <= display_out_s;
   
   main_proc : process
     variable ind_counter : integer;

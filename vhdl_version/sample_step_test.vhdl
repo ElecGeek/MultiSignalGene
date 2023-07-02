@@ -351,6 +351,9 @@ architecture arch of sample_step_triangle_test is
   signal simul_over_s : std_logic := '0';
   signal display_out_s : std_logic := '0';
 begin
+  simul_over <= simul_over_s;
+  display_out <= display_out_s;
+  
   main_proc : process
     variable is_main : boolean;
     variable ind_count : integer;
