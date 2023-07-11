@@ -8,6 +8,14 @@ params_input_handler::params_input_handler():
   planned_formats({{params_io_mnemos, "mnemo"},{params_io_mnemos,"MNEMO"},
 								  {params_io_midi_connec,"jmidi"},{params_io_midi_connec,"JMIDI"}})
 {}
+/* @breif Validate options in the current channel
+ *
+ * Each time the software receives a new input (-i), a new output (-o)
+ * or a flush (calling parameters are over), the pending input options are tested and
+ * if everythingare is correct, a structure is added to the input channels list.
+ * If something is wrong, the options of this input are discarded.
+ * That does NOT prevent the usage of other input channels
+ */
 void params_input_handler::AddChannelOptions( const options_list_t  & opts_list )
 {
   bool valid = false;
@@ -45,7 +53,7 @@ void params_input_handler::AddChannelOptions( const options_list_t  & opts_list 
   // no format info, add it and check later
   channels_list.push_back( make_pair( params_io_unknown, opts_list ));
 }
-void params_input_handler::CreateInputChannels(void)
+void params_input_handler::CreateInputChannels(const unsigned short&loop_counter)
 {
   // For the input channels there is a sanity check.
   // If the type is explicitely defined, the check verifies the input. If false, the input is omitted.
@@ -53,22 +61,24 @@ void params_input_handler::CreateInputChannels(void)
   for( auto& chan : channels_list )
 	{
 	  options_list_t::const_iterator in_opt_name;
+	  in_opt_name = chan.second.find( 'i' );
 	  switch( chan.first )
 		{
 		  // We have open the input and to check which one is a good candidate
 		case params_io_unknown:
-
+		  if( (*in_opt_name).second.compare( "-" ))
+			info_in_params << "Format auto detection to be done" << endl;
+		  else
+			info_in_params << "Format auto detection not allowed for standard input" << endl;
 		  break; 
 		case params_io_mnemos:
 		case params_io_midi_file:
-		  in_opt_name = chan.second.find( 'i' );
 		  if ( in_opt_name != chan.second.end() )
 			{
 			  ifstream input_stream;
 			  if( (*in_opt_name).second.compare( "-" ))
 				{
-				  // Make it crashing as the software is still using the old (midi file only) input system
-				  //				  input_stream.open( (*in_opt_name).second, ios_base::in );
+		   		  input_stream.open( (*in_opt_name).second, ios_base::in );
 				  if( input_stream.is_open() )
 					{
 					  switch( chan.first )
@@ -76,7 +86,7 @@ void params_input_handler::CreateInputChannels(void)
 						case params_io_midi_file:
 						  if ( CheckMidiFile( input_stream ) )
 							{
-						  //					  IPB_list.push_back( new input_params_midi_file( input_stream ));
+							  IPB_list.push_back( new input_params_midi_file( input_stream, loop_counter ));
 							  info_in_params << "Opening midi file mode input parameters file ";
 							  info_in_params << (*in_opt_name).second << " Ok" << endl;
 							}
@@ -122,7 +132,7 @@ void params_input_handler::CreateInputChannels(void)
 			  break;
 			}
 		  else
-			cout << "INTERNAL ERROR Output params name" << endl;
+			cout << "INTERNAL ERROR Input params name" << endl;
 		  break;
 		case params_io_midi_connec:
 
@@ -160,6 +170,14 @@ params_output_handler::params_output_handler():
 												  {params_io_midi_connec,"jmidi"},{params_io_midi_connec,"JMIDI"},
 								{params_io_vhdl_test,"vhdl"},{params_io_vhdl_test,"VHDL"}})
 {}
+/* @breif Validate options in the current channel
+ *
+ * Each time the software receives a new input (-i), a new output (-o)
+ * or a flush (calling parameters are over), the pending output options are tested and
+ * if everythingare is correct, a structure is added to the output channels list.
+ * If something is wrong, the options of this output are discarded.
+ * That does NOT prevent the usage of other output channels
+ */
 void params_output_handler::AddChannelOptions( const options_list_t  & opts_list )
 {
   bool valid = false;
@@ -363,12 +381,16 @@ void params_io_handler::EnvironementNeeds(void)
 }
 void params_io_handler::CreateChannels(void)
 {
-  p_in_h.CreateInputChannels();
+  p_in_h.CreateInputChannels(0);
   p_out_h.CreateOutputChannels();
 }
 bool params_io_handler::hasInputChannels()const
 {
   return !p_in_h.channels_list.empty();
+}
+bool params_io_handler::stillHasInputChannels()const
+{
+  return !p_in_h.IPB_list.empty();
 }
 bool params_io_handler::hasOutputChannels()const
 {

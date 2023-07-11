@@ -14,10 +14,10 @@ using namespace std;
 #ifndef __PARAMS_OUTPUT_TXT__
 #define __PARAMS_OUTPUT_TXT__
 
-#include "midi_codes.hxx"
+#include "params_codes.hxx"
 #include "parameters.hxx"
 
-class output_params_txt : public output_params_base, private midi_codes
+class output_params_txt : public output_params_base, private mnemo_event
 {
   void cnv_2_note_velocity( const unsigned char&nbre_bits_expo,const unsigned short&value,
 					   unsigned char&note, unsigned char&velocity);
@@ -36,7 +36,7 @@ class output_params_txt_file : public output_params_txt
   ofstream of_str;
   output_params_txt_file(void);
  public:
-  explicit output_params_txt_file( ofstream& );
+  explicit output_params_txt_file( ofstream&of_str );
   ~output_params_txt_file(void);
 };
 

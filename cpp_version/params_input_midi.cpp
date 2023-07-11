@@ -1,12 +1,18 @@
 #include "params_input_midi.hxx"
 
-midi_event::midi_event(ostream&os,const bool&with_time_stamp ):
-  info_out_str(os),with_time_stamp( with_time_stamp ),
-  status( warming_up ), timestamp_construct( 0 ),
-  code( 0 ), key( 0 ), value( 0 ), track_tellg( 0 ),
-  state( state_end ), header( 0 )
+midi_event::midi_event():
+  code( 0 ), key( 0 ), value( 0 ),
+  status( warming_up )
 {}
-bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
+
+midi_bytes_stream::midi_bytes_stream(ostream&os,const bool&with_time_stamp, input_params_base::clearing_t&clearing ):
+  info_out_str(os),with_time_stamp( with_time_stamp ),
+  timestamp_construct( 0 ),
+  track_tellg( 0 ),
+  state( state_end ), header( 0 ),
+  mbs_clearing( clearing )
+{}
+bool midi_bytes_stream::get_event(istream&i_stm)
 {
   unsigned char val_read;
   
@@ -22,9 +28,9 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
 	  user_str = string();
 	}
 
-  while( (i_str.eof() == false) && (status != end_track) && (state != state_end) )
+  while( (i_stm.eof() == false) && (status != end_track) && (state != state_end) )
 	{
-	  i_str.read( (char*)(&val_read) , 1 );
+	  i_stm.read( (char*)(&val_read) , 1 );
 	  // For future error plain text display
 	  track_tellg += 1;
 	  // info_out_str << hex << (unsigned short)val_read << '\t';
@@ -79,7 +85,7 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
 			  break;
 			case 0x2f:
 			  status = end_track;
-			  clearing = input_params_midi::c_end_of_data;
+			  mbs_clearing = input_params_base::c_end_of_data;
 			  state = state_end;
 			  break;
 			default:
@@ -110,7 +116,7 @@ bool midi_event::get_event(istream&i_str,input_params_base::clearing_t&clearing)
 	}
 }
 
-ostream& operator<<( ostream&the_out , const midi_event&me )
+ostream& operator<<( ostream&the_out , const midi_bytes_stream&me )
 {
   the_out << "Timestamp: " << hex << me.timestamp_construct << ", code: " << (unsigned short)me.code;
   the_out << ", key/note: " << (unsigned short)me.key;
@@ -118,8 +124,18 @@ ostream& operator<<( ostream&the_out , const midi_event&me )
   return the_out;
 }
 
-unsigned long midi_event::get_value( const unsigned char&exponent_size, const unsigned char&exponent_const )const{
-  unsigned long val( value );
+input_params_midi_2_action::input_params_midi_2_action(const midi_event&the_event,
+													   input_params_base::clearing_t&clearing,
+													   midi_event::status_t&status):
+  the_event( the_event ),
+  ipm2a_clearing( clearing ),
+  ipm2a_status( status )
+{}
+
+
+unsigned long input_params_midi_2_action::get_value( const unsigned char&exponent_size,
+													 const unsigned char&exponent_const )const{
+  unsigned long val( the_event.value );
 
   if ( exponent_const > 0 )
 	{
@@ -136,33 +152,26 @@ unsigned long midi_event::get_value( const unsigned char&exponent_size, const un
   
   // info_out_str << "  ___ " << (unsigned short)exponent_size << " _ " << (unsigned short)expo_mask << " _ ";
   // info_out_str << (unsigned short)exponent_const << " ___  ";
-  val <<= (expo_mask & key); 
+  val <<= (expo_mask & the_event.key); 
  
   return val;
 }
 
 
-input_params_midi::input_params_midi(const bool&with_time_stamp):
-  midi_event( info_out_stream, with_time_stamp )
-{}
-
-
-
-void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
+void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&actions)
 {
   // float val_float;
   unsigned long long_value;
-  // info_out_stream << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
   signals_param_action action;
   
-  action.channel_id = code & 0x0f;
-  switch( code & 0xf0 )
+  action.channel_id = the_event.code & 0x0f;
+  switch( the_event.code & 0xf0 )
 	{
 	case 0x80:
 	  // info_out_stream << "Note off, only for handling the time stamp" << endl;
 	  break;
 	case 0x90:
-	  switch( key & 0xf8 )
+	  switch( the_event.key & 0xf8 )
 		{
 		case 0x00:
 		  long_value = get_value( 3, 1 );
@@ -182,7 +191,7 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 		  action.value = long_value;
 		  break;
 		case 0x10:
-		  switch( key & 0x7 )
+		  switch( the_event.key & 0x7 )
 			{
 			case 0x00:
 			case 0x01:
@@ -193,8 +202,8 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 			  break;
 			case 0x02:
 			  // Abort
-			  status = end_track;
-			  clearing = c_abort;
+			  ipm2a_status = midi_event::end_track;
+			  ipm2a_clearing = input_params_base::c_abort;
 			  break;
 			case 0x04:
 			  long_value = get_value( 0, 1 );
@@ -253,7 +262,7 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 		  action.value = long_value;
 		  break;
 		case 0x20:
-		  if ( ( key & 0x04 ) == 0x0 )
+		  if ( ( the_event.key & 0x04 ) == 0x0 )
 			{
 			  long_value = get_value( 2, 0 );
 			  // info_out_stream << "Sets the pulse data " << hex << long_value;
@@ -269,7 +278,7 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 		  }
 		  break;		  
 		case 0x28:
-		  if ( ( key & 0x04 ) == 0x0 )
+		  if ( ( the_event.key & 0x04 ) == 0x0 )
 			{
 			  long_value = get_value( 2, 6 );
 			  // info_out_stream << "Sets the pulse data " << hex << long_value;
@@ -291,9 +300,9 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 	  actions.push_back( action );
 	  break;
 	case 0xf0:
-	  if ( code == 0xff )
+	  if ( the_event.code == 0xff )
 		{
-		  switch ( key )
+		  switch ( the_event.key )
 			{
 			case 0x03:
 			  // info_out_stream << "Name of track: " << user_str << endl;
@@ -312,7 +321,33 @@ void input_params_midi::exec_next_event(vector<signals_param_action>&actions)
 	}			  
 }
 
-ostream&operator<<(ostream&the_out,const input_params_midi&)
+
+input_params_midi_byte_stream::input_params_midi_byte_stream(istream&i_stm, const bool&with_time_stamp):
+  i_stm( i_stm ),
+  midi_bytes_stream( info_out_stream, with_time_stamp, ((input_params_base*)this)->clearing ),
+  input_params_midi_2_action( *((midi_event*)this), ((input_params_base*)this)->clearing, status )
+{}
+
+
+void input_params_midi_byte_stream::exec_next_event(vector<signals_param_action>&actions)
+{
+  midi_2_action_run( actions );
+}
+
+unsigned long input_params_midi_byte_stream::check_next_time_stamp()
+{
+  if ( get_event( i_stm ) )
+	{
+	  // Something read
+	  //	  info_out_stream<< (*this);
+	  return timestamp_construct;
+	}else
+	// Input is "starving" nothing has been received or is not complete
+	return 0xffffffff;
+}
+
+
+ostream&operator<<(ostream&the_out,const input_params_midi_byte_stream&)
 {
   
 
@@ -320,13 +355,13 @@ ostream&operator<<(ostream&the_out,const input_params_midi&)
 }
 
 
-input_params_midi_file::input_params_midi_file( const string&filename, const unsigned short&loops_counter ):
-  input_params_midi( true ),loops_counter( loops_counter )
+input_params_midi_file::input_params_midi_file( ifstream&input_stream, const unsigned short&loops_counter ):
+  input_params_midi_2_action( *((midi_event*)this), ((input_params_base*)this)->clearing, status ),
+  midi_bytes_stream( info_out_stream, true, ((input_params_base*)this)->clearing ),
+  loops_counter( loops_counter ),
+  if_stm( move( input_stream ))
 {
-  //  unsigned long midi_header( 22 );
-  if_str.open( filename.c_str(), ios_base::binary );
-  // if_str.seekg( midi_header );
-  if ( if_str.is_open() == false )
+  if ( if_stm.is_open() == false )
 	{
 	  status = end_track;
 	  clearing = c_file_err;
@@ -335,16 +370,24 @@ input_params_midi_file::input_params_midi_file( const string&filename, const uns
 input_params_midi_file::~input_params_midi_file()
 {
   // TODO check here if the length is the declared length. if not report a warning
-  if_str.close();
+  if_stm.close();
 }
 
+void input_params_midi_file::exec_next_event(vector<signals_param_action>&actions)
+{
+  //cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
+  //cout << (unsigned short)key ;
+
+  midi_2_action_run( actions );
+}
 
 unsigned long input_params_midi_file::check_next_time_stamp()
 {
-  if ( get_event( if_str, clearing ) )
+  if ( get_event( if_stm ) )
 	{
 	  // Something read
 	  //	  info_out_stream<< (*this);
+	  // cout << (unsigned short)key ;
 	  return timestamp_construct;
 	}else
 	// Input is "starving" nothing has been received or is not complete
@@ -359,9 +402,9 @@ bool input_params_midi_file::is_ready()
   unsigned char val_read;
   bool QuaterNote_not_SMPTE;
 
-  while( (if_str.eof() == false) && (status == warming_up) )
+  while( (if_stm.eof() == false) && (status == warming_up) )
 	{
-	  if_str.read( (char*)(&val_read) , 1 );
+	  if_stm.read( (char*)(&val_read) , 1 );
 	  switch( header )
 		{
 		case 0 : if ( val_read != 'M' ) status = end_track;  clearing = c_data_err;  break;
@@ -460,7 +503,7 @@ bool input_params_midi_file::exec_loops(){
   cout << "Checking loop" << endl;
   if( loops_counter > 0 )
 	{
-	  if_str.seekg( 22 );
+	  if_stm.seekg( 22 );
 	  status = running;
 	  loops_counter -= 1;
 	  return true;
@@ -469,41 +512,9 @@ bool input_params_midi_file::exec_loops(){
 }
 
 
-input_params_midi_pckeyboard::input_params_midi_pckeyboard( istream&i_str ):
-  input_params_midi( true ), i_str( i_str )
-{
-
-}
-
-
-unsigned long input_params_midi_pckeyboard::check_next_time_stamp()
-{
-  // TODO read and convert here
-	return 0xffffffff;
-}
-
-bool input_params_midi_pckeyboard::eot()const
-{
-  return status == end_track;
-}
-bool input_params_midi_pckeyboard::is_ready()
-{
-  return status != warming_up;
-}
-
-input_params_midi_pckeyboard_file::input_params_midi_pckeyboard_file( const string&filename ):
-  input_params_midi_pckeyboard( if_str )
-{
-  if_str.open( filename.c_str(), ios_base::binary );
-}
-input_params_midi_pckeyboard_file::~input_params_midi_pckeyboard_file()
-{
-  if_str.close();
-}
 
 	
-input_params_midi_connec::input_params_midi_connec():
-  input_params_midi( false )
+input_params_midi_connec::input_params_midi_connec()
 {
 }
 unsigned long input_params_midi_connec::check_next_time_stamp()
@@ -515,11 +526,3 @@ bool input_params_midi_connec::eot()const
   return true;
 }
 
-unsigned long input_params_UI::check_next_time_stamp()
-{
-  return 0xffffffff;
-}
-void input_params_UI::export_next_event(const unsigned long&absolute_TS,
-										const unsigned long&diff_TS,
-										const signals_param_action&)
-{}

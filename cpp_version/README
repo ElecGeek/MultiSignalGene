@@ -7,7 +7,6 @@ It is designed to:
 * change on the fly the parameters without resetting the output
 * be controlled by one or more input parameters modules
 * run one or more export parameters module
-* output raw files or audio devices
 * be cross-plateform
 * be compiled on older machines with C++14
 * run on older machines
@@ -25,6 +24,6 @@ The parameters are entered using two modes:
   This mode is intended to be used with manual or remote (later) control. The output signal is an audio device, a raw file or nothing (channel number = 0). The last option is intended to debug the software or the scenario while declaring an export parameters channel.
   In such case, the software is used to convert a format into another one
 
-If a raw data file only is defined, the software generates the data as fast as possible or while following the timestamps (-d option) (not yet). The first case is intended to create files used later.
+If a raw data file only is defined, the software generates the data as fast as possible or while following the timestamps (-d option). The first case is intended to create files used later.
 
  

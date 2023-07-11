@@ -48,7 +48,7 @@ public:
    * For each set of options, construct the channel
    * and perform the last checks
    */
-  void CreateInputChannels(void);
+  void CreateInputChannels(const unsigned short&);
   /** @brief environement needs
    *
    * Make the list of environement needs
@@ -159,7 +159,13 @@ public:
    *
    * Tells if there is at least one input that passed the first sanity check.\n
    * That is not a guarantee there is at least one valid channel
-   * @return true if there is atr least one
+   * @return true if there is at least one
+   */ 
+  bool stillHasInputChannels()const;
+  /** @brief Has input channels
+   *
+   * Tells if there is at least one input that passed the last sanity check.\n
+   * @return true if there is at least one
    */ 
   bool hasInputChannels()const;
   /** @brief Has output channels

@@ -1,5 +1,5 @@
-#ifndef __MIDI_CODES__
-#define __MIDI_CODES__
+#ifndef __PARAMS_CODES__
+#define __PARAMS_CODES__
 
 /* Designed for the documentation tools */
 /** \brief Base of the midi input and output method
@@ -34,8 +34,25 @@
  * 1xxx xxxx xxxxxxxx     Can not be used as it is not a midi note code
  */ 
 
-class midi_codes
-{};
+
+struct midi_event {
+  unsigned char code;
+  unsigned char key;
+  unsigned char value;
+  midi_event();
+ public:
+  enum status_t{ warming_up, running, end_track } status;
+};
+struct mnemo_event {
+  string code;
+  string key;
+  string value;
+  string value_unit;
+  //  mnemo_event();
+ public:
+  enum status_t{ warming_up, running, end_track } status;
+};
+
 
 
 #endif

@@ -73,6 +73,7 @@ class main_loop {
   ~main_loop(void);
   //! Adds an input parameters interface
   main_loop&operator+=(input_params_base*const);
+  main_loop&operator+=(const deque<input_params_base*>&);
   //! Adds an output parameters interface
   main_loop&operator+=(output_params_base*const);
   main_loop&operator+=(const deque<output_params_base*>&);

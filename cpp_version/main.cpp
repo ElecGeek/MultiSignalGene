@@ -64,7 +64,6 @@ int main(int argc,char *argv[] )
 		case 'i':
 		  params_io.SetOption( opt, string( optarg ));
 		  file_inputs.push_back( string( optarg ));
-		  has_input = true;
 		  break;
 		case 'F':
 		  params_io.SetOption( opt, string( optarg ));
@@ -114,7 +113,7 @@ int main(int argc,char *argv[] )
   params_io.FlushOptions();
 
   cout << params_io.GetInfos();
-  has_input |= params_io.hasInputChannels();
+  has_input = params_io.hasInputChannels();
   has_output |= params_io.hasOutputChannels();
   if ( (has_input == false) && (has_output == false) )
 	{
@@ -184,7 +183,7 @@ int main(int argc,char *argv[] )
   main_loop signals(sample_rate_id,output_mode,channels_number);
   cout << signals.get_output_waveform() << endl;
 
-  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
+  /*  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
 	// Check here for pipes and other pckeyboard style files
 	if ( (*it).compare( "-" ) != 0 )
 	  {
@@ -194,36 +193,20 @@ int main(int argc,char *argv[] )
 	  cout << "Opening midi input keyboard" << endl;
 	  signals += new input_params_midi_pckeyboard( cin );
 	}
-  // signals+=new output_params_txt;
-  /*  for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); ++it )
-	if ( (*it).compare( "-" ))
-	  {
-		// Temporary solution: open all the modes: txt, midi, mnemos, vhdl etc...
-		cout << "Opening text output parameters file " << *it << endl;
-		signals += new output_params_txt_file( *it );
-		signals += new output_params_mnemos_file( *it );
-		// not yet
-		// signals += new output_params_vhdl_file( *it );
-		// not yet
-		// signals += new output_params_midi_file( *it );
-	  } else {
-	  cout << "Opening text output parameters console output " << endl;
-	  signals += new output_params_txt( cout );
-	  signals += new output_params_mnemos( cout );
-	  // not yet
-	  // signals += new output_params_vhdl( cout );
-	  // not yet
-	  // signals += new output_params_midi( cout );
-	  }*/
-
+  */
   params_io.EnvironementNeeds();
   this_thread::sleep_for(chrono::milliseconds( 200 ));
   cout << "Creating input and output parameters channels" << endl;
   params_io.CreateChannels();
   cout << params_io.GetInfos();
+  if ( params_io.stillHasInputChannels() == false )
+	{
+	  cout << "There was(were) input channel(s), but they has(have) been rejected" << endl;
+	  exit( EXIT_FAILURE ); 
+	}
   signals += params_io.GetOutputChannels();
-  //  signals += params_io.GetInputChannels();
-  
+  signals += params_io.GetInputChannels();
+
   clock_t ticks( clock() );
   do
 	{

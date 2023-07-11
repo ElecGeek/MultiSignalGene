@@ -123,10 +123,8 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 
 
 output_params_txt_file::output_params_txt_file( ofstream& o ):
-output_params_txt( of_str )
-{
-  of_str = move( o );
-}
+  of_str( move( o )),output_params_txt( of_str )
+{}
 output_params_txt_file::~output_params_txt_file()
 {
   of_str.close();

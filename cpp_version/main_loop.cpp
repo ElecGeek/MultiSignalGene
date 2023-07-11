@@ -95,6 +95,12 @@ main_loop&main_loop::operator+=(output_params_base*const the_output)
   params_output_list.push_back( the_output );
   return*this;
 };
+main_loop&main_loop::operator+=(const deque<input_params_base*>& the_input)
+{
+  for( auto& il : the_input )
+	params_input_list.push_back( il );
+  return*this;
+};
 main_loop&main_loop::operator+=(const deque<output_params_base*>& the_output)
 {
   for( auto& il : the_output )
