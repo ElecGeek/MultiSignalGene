@@ -25,10 +25,17 @@ void params_input_handler::AddChannelOptions( const options_list_t  & opts_list 
   in_format = opts_list.find( 'F' );
   if ( in_format != opts_list.end() )
 	{
-	  for( auto it : supported_formats )
-		if( it.second == in_format->second )
+	  decltype( supported_formats )::const_iterator supported_formats_iter;
+	  supported_formats_iter = find_if( supported_formats.begin(),supported_formats.end(),
+										[&]( decltype(supported_formats)::const_reference a ) -> bool {
+										  return a.second == in_format->second;
+										});
+	  if ( supported_formats_iter != supported_formats.end() )
+		//	  for( auto it : supported_formats )
+		//if( it.second == in_format->second )
 		  {
-			channels_list.push_back( make_pair( it.first, opts_list ));
+			//			channels_list.push_back( make_pair( it.first, opts_list ));
+			channels_list.push_back( make_pair( supported_formats_iter->first, opts_list ));
 			info_in_params << "Input commands option "<<in_format->second << " OK"<< endl;;
 			return;
 		  }

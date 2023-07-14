@@ -7,7 +7,7 @@ string help()
 {
   ostringstream ostrstm;
 
-  ostrstm << "Usage: estim <options>. Returns when no input parameters channel are active any more (or on error)" << endl;
+  ostrstm << "Usage: multisignalgene <options>. Returns when no input parameters channel are active any more (or on error)" << endl;
   ostrstm << "At least one output parameters channel OR one raw file OR one audio output is compulsory" << endl;
   ostrstm << "COMMAND LINE OPTIONS" << endl;
   ostrstm << "The option order is not significant unless otherwise" << endl;
@@ -68,9 +68,10 @@ string help()
   ostrstm << "\tThis option is mostly used to convert a parameter format into another one" << endl; 
   ostrstm << "\tIf not involved, 0 is the default MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-t" << endl;
-  ostrstm << "\tFollow the time beat, even if no audio output is selected" << endl;
-  ostrstm << "\tIf no option to define an audio output is defined, the software computes as fast as the machine can do" << endl;
-  ostrstm << "\tThis option execute the time stamps and plays as an audio output would have do" << endl;
+  ostrstm << "\tFollow the time beat" << endl;
+  ostrstm << "\tIf an audio device output is specified, this option does not change anything. The timebeat is followed" << endl;
+  ostrstm << "\tIf no audio device output is specified, the software computes as fast as the machine can do," << endl;
+  ostrstm << "\t\tunless this option is specified to follow the timebeat." << endl;
   ostrstm << endl << "-j configuration-file" << endl;
   ostrstm << "\tUse jackaudio as audio channel" << endl;
   ostrstm << "\tThe configuration file contains:" << endl;

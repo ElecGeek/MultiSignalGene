@@ -78,8 +78,8 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
 main_loop::~main_loop()
 {
   signal_channel*sc;
-  for( map<unsigned short, signal_channel*>::const_iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
-	delete it->second;
+  for( auto it : signal_list)
+	delete it.second;
   for( input_params_base* it : params_input_list )
 	delete it;
   for( output_params_base* it: params_output_list )
@@ -153,7 +153,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 	  for_each ( buffer.data.begin(), buffer.data.end(), [&](void*buf_ptr){
 		  fill( static_cast<char*>(buf_ptr), static_cast<char*>(buf_ptr) + buffer.data_size , 0 );
 	  	});
-	  if ( exec_actions() == false )
+	  if ( exec_actions() )
 	   	// ignore all the buffer members, simply tells the time (10mS) supposed to elapsed
 		return 1000;
 	  else
@@ -360,9 +360,8 @@ bool main_loop::exec_actions()
 	if (it->check_next_event( samples_per_param_check, actions ) )
 	  more_output_params = true;
   for( map<unsigned short,signal_channel*>::iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
-  	(it->second)->exec_next_event( actions );
+	(it->second)->exec_next_event( actions );
   actions.clear();
-
   return more_input_params;
 }
 bool main_loop::is_all_ready()const

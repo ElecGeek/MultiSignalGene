@@ -105,7 +105,7 @@ int main(int argc,char *argv[] )
 		  has_hv = true;
 		  break;
 		case 'v':
-		  cout << "estim v0.2" << endl;
+		  cout << "multisignalgene v0.4" << endl;
 		  has_hv = true;
 		  break;
 		}

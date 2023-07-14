@@ -401,16 +401,16 @@ bool input_params_midi_file::is_ready()
 {
   unsigned char val_read;
   bool QuaterNote_not_SMPTE;
-
   while( (if_stm.eof() == false) && (status == warming_up) )
 	{
 	  if_stm.read( (char*)(&val_read) , 1 );
+	 
 	  switch( header )
 		{
-		case 0 : if ( val_read != 'M' ) status = end_track;  clearing = c_data_err;  break;
-		case 1 : if ( val_read != 'T' ) status = end_track;  clearing = c_data_err;  break;
-		case 2 : if ( val_read != 'h' ) status = end_track;  clearing = c_data_err;  break;
-		case 3 : if ( val_read != 'd' ) status = end_track;  clearing = c_data_err;  break;
+		case 0 : if ( val_read != 'M' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 1 : if ( val_read != 'T' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 2 : if ( val_read != 'h' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 3 : if ( val_read != 'd' ) { status = end_track;  clearing = c_data_err;  } break;
 		case 12 :
 		  if ( val_read < 128 )
 			{
@@ -478,10 +478,10 @@ bool input_params_midi_file::is_ready()
 			}
 		  cout << "Samples_per TS unity: " << samples_per_TS_unity << endl;
 		  break;
-		case 14 : if ( val_read != 'M' ) status = end_track;  clearing = c_data_err;  break;
-		case 15 : if ( val_read != 'T' ) status = end_track;  clearing = c_data_err;  break;
-		case 16 : if ( val_read != 'r' ) status = end_track;  clearing = c_data_err;  break;
-		case 17 : if ( val_read != 'k' ) status = end_track;  clearing = c_data_err;  break;
+		case 14 : if ( val_read != 'M' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 15 : if ( val_read != 'T' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 16 : if ( val_read != 'r' ) { status = end_track;  clearing = c_data_err;  } break;
+		case 17 : if ( val_read != 'k' ) { status = end_track;  clearing = c_data_err;  } break;
 		  // TODO complete the header checking
 		  // In order to run with beats others than code 6
 		}

@@ -47,6 +47,7 @@ struct mnemo_event {
   string code;
   string key;
   string value;
+  string value_decimal;
   string value_unit;
   //  mnemo_event();
  public:
