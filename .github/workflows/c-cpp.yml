@@ -70,7 +70,7 @@ jobs:
           path: build
 
   windows-build:
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     needs: macos-x-build
     name: Windows build
     steps:
@@ -81,12 +81,17 @@ jobs:
           name: multisignalgene_build
       - name: environement
         run: sudo apt-get install -y libjack-jackd2-dev
+      - name: Windows env
+        run: |
+          sudo apt-get install mingw-w64
       - name: setup build folders
-        run: mkdir build/Windows
+        run: |
+          mkdir build
+          mkdir build/Windows
       - name: build
         run: |
           cd cpp_version
-          make BUILDDIR=../build/Windows/
+          make CXX=x86_64-w64-mingw32-gcc BUILDDIR=../build/Windows/
       - name: return workflow as artifacts
         uses: actions/upload-artifact@v3
         with:
