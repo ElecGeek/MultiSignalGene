@@ -197,7 +197,7 @@ int main(int argc,char *argv[] )
   params_io.EnvironementNeeds();
   this_thread::sleep_for(chrono::milliseconds( 200 ));
   cout << "Creating input and output parameters channels" << endl;
-  params_io.CreateChannels();
+  params_io.CreateChannels(n_loops);
   cout << params_io.GetInfos();
   if ( params_io.stillHasInputChannels() == false )
 	{

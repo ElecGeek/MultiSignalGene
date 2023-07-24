@@ -11,7 +11,7 @@
 #include "parameters.hxx"
 #include "params_output_txt.hxx"
 #include "params_output_mnemos.hxx"
-// #include "params_input_mnemos.hxx"
+#include "params_input_mnemos.hxx"
 #include "params_input_midi.hxx"
 
 using namespace std;
@@ -21,7 +21,8 @@ enum params_io_format { params_io_unknown = 0,
 						params_io_text = 2,
 						params_io_mnemos = 3,
 						params_io_midi_connec = 4,
-						params_io_vhdl_test = 5 };
+						params_io_vhdl_test = 5,
+						params_io_test = 6};
 /** @brief Handles all the interfaces of all the input channels
  *
  *
@@ -148,7 +149,7 @@ public:
    * For each set of options, construct the channel
    * and perform the last checks
    */
-  void CreateChannels(void);
+  void CreateChannels(const unsigned short&n_loops);
   /** @brief environement needs
    *
    * Make the list of environement needs

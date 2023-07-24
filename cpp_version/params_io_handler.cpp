@@ -1,12 +1,13 @@
 #include "params_io_handler.hxx"
 
 params_input_handler::params_input_handler():
-  supported_formats({{params_io_midi_file, "mid"},{params_io_midi_file,"MID"}}),
+  supported_formats({{params_io_midi_file, "mid"},{params_io_midi_file,"MID"},
+					 {params_io_mnemos, "mnemo"},{params_io_mnemos,"MNEMO"},
+                     {params_io_test, "test"},{params_io_test,"TEST"}}),
   unsupported_formats({{params_io_text, "txt"},{params_io_text,"TXT"},
 												 {params_io_text,"text"},{params_io_text,"TEXT"},
 												 {params_io_vhdl_test,"vhdl"},{params_io_vhdl_test,"VHDL"}}),
-  planned_formats({{params_io_mnemos, "mnemo"},{params_io_mnemos,"MNEMO"},
-								  {params_io_midi_connec,"jmidi"},{params_io_midi_connec,"JMIDI"}})
+  planned_formats({{params_io_midi_connec,"jmidi"},{params_io_midi_connec,"JMIDI"}})
 {}
 /* @breif Validate options in the current channel
  *
@@ -93,7 +94,7 @@ void params_input_handler::CreateInputChannels(const unsigned short&loop_counter
 						case params_io_midi_file:
 						  if ( CheckMidiFile( input_stream ) )
 							{
-							  IPB_list.push_back( new input_params_midi_file( input_stream, loop_counter ));
+							  IPB_list.push_back( new input_params_midi_file( cout, input_stream, loop_counter ));
 							  info_in_params << "Opening midi file mode input parameters file ";
 							  info_in_params << (*in_opt_name).second << " Ok" << endl;
 							}
@@ -106,7 +107,7 @@ void params_input_handler::CreateInputChannels(const unsigned short&loop_counter
 						case params_io_mnemos:
 						  if ( CheckMnemos( input_stream ) )
 							{
-							  //				  IPB_list.push_back( new input_params_mnemos_file( input_stream ));
+					   		  IPB_list.push_back( new input_params_mnemos_file( cout, input_stream, loop_counter ));
 							  info_in_params << "Opening mnemos mode input parameters file ";
 							  info_in_params << (*in_opt_name).second << " Ok" << endl;
 							}
@@ -128,18 +129,23 @@ void params_input_handler::CreateInputChannels(const unsigned short&loop_counter
 				switch( chan.first )
 				  {
 				  case params_io_midi_file:
-					info_in_params << "Opening midi file mode input parameters on standard out NOT allowed.";
-					info_in_params << " The channel should be seekable" << endl;
+					info_in_params << "Opening midi file mode input parameters on standard input NOT allowed.";
+					info_in_params << " The channel should be binary" << endl;
 					break;
 				  case params_io_mnemos:
-					// IPB_list.push_back( new input_params_mnemos( cout ));
-					info_in_params << "Opening mnemo mode output parameters on standard out Ok" << endl;
+					IPB_list.push_back( new input_params_mnemos_byte_stream( cout, cin, false ));
+					info_in_params << "Opening mnemo mode input parameters on standard input Ok" << endl;
 					break;
 				  }
 			  break;
 			}
 		  else
 			cout << "INTERNAL ERROR Input params name" << endl;
+		  break;
+		case params_io_test:
+		  IPB_list.push_back( new input_params_mnemos_hardcoded( cout ));
+		  info_in_params << "Opening test mode input parameters file ";
+		  info_in_params << "Filename " << (*in_opt_name).second << " Omitted" << endl;
 		  break;
 		case params_io_midi_connec:
 
@@ -386,9 +392,9 @@ void params_io_handler::EnvironementNeeds(void)
   jack_status_t status;
   // jack_client_open( "MSG_parameters", options, &status, server_name );
 }
-void params_io_handler::CreateChannels(void)
+void params_io_handler::CreateChannels(const unsigned short&n_loops)
 {
-  p_in_h.CreateInputChannels(0);
+  p_in_h.CreateInputChannels(n_loops);
   p_out_h.CreateOutputChannels();
 }
 bool params_io_handler::hasInputChannels()const

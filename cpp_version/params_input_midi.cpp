@@ -14,6 +14,10 @@ midi_bytes_stream::midi_bytes_stream(ostream&os,const bool&with_time_stamp, inpu
 {}
 bool midi_bytes_stream::get_event(istream&i_stm)
 {
+  // Since it is a stream char iterator, this function checks for the eof before each read
+  // The file might be finish or the stream is temporarely starving.
+  // In such case, the function does not read anything and returns
+  //   until the eof "is fixed"
   unsigned char val_read;
   
   if( state == state_end )
@@ -124,9 +128,11 @@ ostream& operator<<( ostream&the_out , const midi_bytes_stream&me )
   return the_out;
 }
 
-input_params_midi_2_action::input_params_midi_2_action(const midi_event&the_event,
+input_params_midi_2_action::input_params_midi_2_action(ostream&info_out_str,
+													   const midi_event&the_event,
 													   input_params_base::clearing_t&clearing,
 													   midi_event::status_t&status):
+  info_out_str( info_out_str ),
   the_event( the_event ),
   ipm2a_clearing( clearing ),
   ipm2a_status( status )
@@ -322,11 +328,14 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 }
 
 
-input_params_midi_byte_stream::input_params_midi_byte_stream(istream&i_stm, const bool&with_time_stamp):
+input_params_midi_byte_stream::input_params_midi_byte_stream(ostream&,istream&i_stm, const bool&with_time_stamp):
   i_stm( i_stm ),
-  midi_bytes_stream( info_out_stream, with_time_stamp, ((input_params_base*)this)->clearing ),
-  input_params_midi_2_action( *((midi_event*)this), ((input_params_base*)this)->clearing, status )
-{}
+  info_out_str_stream( ioss ),
+  midi_bytes_stream( info_out_str_stream, with_time_stamp, ((input_params_base*)this)->clearing ),
+  input_params_midi_2_action( info_out_str_stream, *((midi_event*)this), ((input_params_base*)this)->clearing, status )
+{
+  ioss.reserve(100);
+}
 
 
 void input_params_midi_byte_stream::exec_next_event(vector<signals_param_action>&actions)
@@ -336,6 +345,10 @@ void input_params_midi_byte_stream::exec_next_event(vector<signals_param_action>
 
 unsigned long input_params_midi_byte_stream::check_next_time_stamp()
 {
+  // get_event is called without check if eof.
+  // Since it is going to read more than one caracter, the eof might occur in its loop.
+  // The channel may temporarely starving as well.
+  // Then, checking here is irelevant
   if ( get_event( i_stm ) )
 	{
 	  // Something read
@@ -355,9 +368,10 @@ ostream&operator<<(ostream&the_out,const input_params_midi_byte_stream&)
 }
 
 
-input_params_midi_file::input_params_midi_file( ifstream&input_stream, const unsigned short&loops_counter ):
-  input_params_midi_2_action( *((midi_event*)this), ((input_params_base*)this)->clearing, status ),
-  midi_bytes_stream( info_out_stream, true, ((input_params_base*)this)->clearing ),
+input_params_midi_file::input_params_midi_file( ostream&, ifstream&input_stream, const unsigned short&loops_counter ):
+  info_out_str_stream( ioss ),
+  midi_bytes_stream( info_out_str_stream, true, ((input_params_base*)this)->clearing ),
+  input_params_midi_2_action( info_out_str_stream,*((midi_event*)this), ((input_params_base*)this)->clearing, status ),
   loops_counter( loops_counter ),
   if_stm( move( input_stream ))
 {
@@ -383,6 +397,10 @@ void input_params_midi_file::exec_next_event(vector<signals_param_action>&action
 
 unsigned long input_params_midi_file::check_next_time_stamp()
 {
+  // get_event is called without check if eof.
+  // Since it is going to read more than one caracter, the eof might occur in its loop.
+  // The channel may temporarely starving as well.
+  // Then, checking here is irelevant
   if ( get_event( if_stm ) )
 	{
 	  // Something read

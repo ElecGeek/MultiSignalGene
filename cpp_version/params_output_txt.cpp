@@ -103,10 +103,10 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "Set the phase of the pulse " << dec << action.value << " PI/8" << endl;
 	  break;
 	case signals_param_action::ampl_modul_modul_mode:
-	  out_line << "Set the modulation mode of the amplitude modulation " << dec << action.value << " 1 = abs" << endl;
+	  out_line << "Set the modulation mode of the amplitude modulation " << dec << action.value << " 0=normal 1=abs" << endl;
 	  break;
 	case signals_param_action::pulse_modul_mode:
-	  out_line << "Set the modulation mode of the pulse " << dec << action.value << " 1 = abs" << endl;
+	  out_line << "Set the modulation mode of the pulse " << dec << action.value << " 0=normal 1=abs" << endl;
 	  break;
 	case signals_param_action::user_volume:
 	  out_line << "Sets the user_volume " << hex << action.value << ", dec: " << dec << action.value << endl;
