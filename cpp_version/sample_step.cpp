@@ -14,7 +14,10 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   //const signed long cal[] = { 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5 };
   //const vector<signed long> cor_angle_list( cal, cal + sizeof( cal ) / sizeof( cal[ 0 ] ));
   // C++11
-  array<signed long,20> cor_angle_list{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5};
+  // array<signed long,20> cor_angle_list{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5};
+  // C++14
+  // see the .hxx file
+  constexpr static array< signed long, 20 > cor_angle_list = {{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5 }};
 
   signed long cor_c, cor_s;
   signed long cor_z;
@@ -56,7 +59,7 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   unsigned short shifts = 0;
   // Now run the alghorythm
   // for( vector<signed long>::const_iterator z_diff = cor_angle_list.begin();
-  for_each( cor_angle_list.begin(), cor_angle_list.end(), [&](signed long&z_diff)
+  for_each( cor_angle_list.begin(), cor_angle_list.end(), [&](const signed long&z_diff)
 			{
 			  signed long cor_c_temp, cor_s_temp;
 			  if ( cor_z >= 0 )
