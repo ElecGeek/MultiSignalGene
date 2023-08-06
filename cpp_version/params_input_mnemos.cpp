@@ -1,4 +1,5 @@
 #include "params_input_mnemos.hxx"
+#include <cmath>
 
 mnemo_event::mnemo_event():
   status( warming_up )
@@ -98,8 +99,144 @@ bool mnemos_bytes_datagram_test::get_event(deque<mnemo_event>::const_iterator&cu
 	}
 }
 
+string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value,
+															 bool default_freq_not_seconds,
+															 const char&post_proc) const
+{
+  // This does not perform any tolower.
+  // It should be done at the geneeral preprocessing
+  char power10 = 0;
+  bool freq_not_seconds;
+  string unit_without_scale;
+  if ( the_event.value_unit.empty() == false )
+	{
+	  string::value_type scale = the_event.value_unit[ 0 ];
+	  switch( scale )
+		{
+		case 'm':
+		  // Check here if it is meg
+		  if ( the_event.value_unit.size() >= 3 )
+			{
+			  if ( the_event.value_unit[ 1 ] == 'e' && the_event.value_unit[ 2 ] == 'g' )
+				return string( "Sorry, mega (" ) + the_event.value_unit + string( ") is not supported" );
+			  else
+				{
+				  power10 = -3;
+				  unit_without_scale = the_event.value_unit.substr( 1 );
+				}
+			}
+		  else
+			{
+			  power10 = -3;
+			  unit_without_scale = the_event.value_unit.substr( 1 );
+			}
+		  break;
+		case 'g':
+		  return string( "Sorry, giga (" ) + the_event.value_unit + string( ") is not supported" );
+		case 'n':
+		  return string( "Sorry, nano (" ) + the_event.value_unit + string( ") is not supported" );
+		case 'p':
+		  return string( "Sorry, pico (" ) + the_event.value_unit + string( ") is not supported" );
+		case 'k':
+		  power10 = 3;
+		  unit_without_scale = the_event.value_unit.substr( 1 );
+		  break;
+		case 'u':
+		  power10 = -6;
+		  unit_without_scale = the_event.value_unit.substr( 1 );
+		  break;
+		case 'h':
+		case 's':
+		  // It can be seconds or hertz, let's the code below doing the job
+		  // power10 = 0; irelevant
+		  unit_without_scale = the_event.value_unit;
+		  break;
+		default:
+		  return string( "Sorry, the unit " ) + the_event.value_unit + string( " is unknown" );
+		}
+	}
+  // irelevant else here to set unit_without_scale as it is initialized to empty
+  // step 2:
+  if ( unit_without_scale.compare( "hz" ) == 0 || unit_without_scale.compare( "hertz" ) == 0 )
+	{
+	  freq_not_seconds = true;
+	}
+  else if ( unit_without_scale.compare( "s" ) == 0 || unit_without_scale.compare( "sec" ) == 0 )
+	{
+	  freq_not_seconds = false;
+	}
+  else if ( unit_without_scale.empty() )
+	{
+	  freq_not_seconds = default_freq_not_seconds;
+	}
+  else
+	return string("The unit (" ) + unit_without_scale + string( ") is unknown" );
+
+  // step 3: parse the value
+  float the_val = float( stoul( the_event.value_left ));
+
+  if ( the_event.value_right.size() < 6 )
+	{
+	  unsigned int the_dec = stoul( the_event.value_right );
+	  float f1 = float( the_dec )/ float( pow( 10, the_event.value_right.size() ));
+	  the_val += f1;
+	}
+  else
+	return string( "The value (" ) +
+	  the_event.value_right + string( "." ) + the_event.value_right +
+	  string( "should not have more than 5 digits after the decimal separator.");
+  if ( the_val == 0.0 )
+	return "The value should nevere be null, use NOP instead";
+
+  // spet 4: computes u, m or K
+  // avoid irelevant calculation
+  switch ( power10 ) {
+  case -3:
+	the_val /= 1000;
+	break;
+  case -6:
+	the_val /= 1000000;
+	break;
+  case 3:
+	the_val *= 1000;
+	break;
+  }
+  // step 5: check if S or Hz
+  if ( default_freq_not_seconds != freq_not_seconds )
+	{
+	  the_val = 1.0 / the_val;
+	}
+  // step 6:
+  switch ( post_proc )
+	{
+	case 1:
+	  the_val *= 16777216.0 / ( 48000.0 * 4.0 );
+	  break;
+	case 4:
+	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 4.0 );
+	  break;
+	case 8:
+	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 8.0 );
+	  break;
+	case 0:
+	  the_val = 16777216.0 / ( 48000.0 * 4.0 * the_val );
+	  break;
+	case -2:
+	  the_val *= 48000.0 / ( 16.0 * 2.0 );
+	  break;
+	default:
+	  return "Internal error";
+	}
+  if( the_val > 16777216 )
+	return "Value too big";
+  the_val = ceil( the_val );
+  value = (long)the_val;
+
+  return string();
+}
 string input_params_mnemos_2_action::Channel_string_2_val(unsigned short&val) const
 {
+  // This supports both uppercase and lowercase
   unsigned short value;
   if ( the_event.channel.compare( "all" ) == 0 || the_event.channel.compare( "ALL" ) == 0 ||
 	   the_event.channel.compare( "/" ) == 0 || the_event.channel.compare( "0" ) == 0 )
@@ -115,7 +252,7 @@ string input_params_mnemos_2_action::Channel_string_2_val(unsigned short&val) co
   else
 	return "Channel id should be a integer or the keyword 'all'.";
 }
-string input_params_mnemos_2_action::Mode_strings_2_val(unsigned char&mode) const
+string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) const
 {
   if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.empty() )
 	{
@@ -139,10 +276,25 @@ string input_params_mnemos_2_action::Depth_strings_2_val(unsigned long&val_0_255
 	{
 	  unsigned int the_val = stoul( the_event.value_left );
 	  if ( the_val > 100 )
-		return "The value should be a positive lower or equal than 100";
+		return "The depth/volume value should be a positive lower or equal than 100";
 	  if ( the_val == 0 )
 		{
-		  // scale from 0 to (excl) 1 TODO
+		  // scale from 0 to (excl) 1
+
+		  unsigned int the_dec = stoul( the_event.value_right );
+		  if ( the_event.value_right.size() < 6 )
+			{
+			  unsigned long f1 = the_dec * pow( 10, ( 6 - the_event.value_right.size() ));
+			  val_0_255 = f1 / 3921;
+			  if ( val_0_255 > 255 )
+				val_0_255 = 255;
+			  return string();
+			}
+		  else
+			{
+			  val_0_255 = 0;
+			  return "The depth/volume value should not have more than 5 digits after the decimal separator.";
+			}
 		}else
 		{
 		  val_0_255 = the_val * 10 + stoul( the_event.value_right.substr(0,1) );
@@ -150,7 +302,7 @@ string input_params_mnemos_2_action::Depth_strings_2_val(unsigned long&val_0_255
 		  val_0_255 /= 1000;
 		}
 	  if ( val_0_255 >= 256 )
-		return "The value slightly exceed 100%";
+		return "The depth/volume value slightly exceed 100%";
 
 	  return string();
 	}
@@ -169,7 +321,7 @@ string input_params_mnemos_2_action::Angle_strings_2_val(unsigned long&val_0_15)
 		  // 0 to (excluded) 1
 		  if ( the_event.value_right.size() < 6 )
 			{
-			  unsigned long f1 = the_dec * 10 ^ ( 6 - the_event.value_right.size() );
+			  unsigned long f1 = the_dec * pow( 10 , ( 6 - the_event.value_right.size() ));
 			  val_0_15 = ( f1 + 1953 )/ 62500;
 			  if ( val_0_15 == 16 )
 				val_0_15 = 0;
@@ -208,25 +360,65 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
   the_event( the_event ),
   ipm2a_clearing( clearing ),
   ipm2a_status( status ),
-  mnemos_list({{P_base_freq,"OF"},{P_base_freq,"of"},
-			   {P_main_SR,"OS"},{P_main_SR,"os"},
-			   {P_main_ampl,"OA"},{P_main_ampl,"oa"},
-			   {P_abort,"NQ"},{P_abort,"nq"},
-			   {P_ampl_mod_depth,"AA"},{P_ampl_mod_depth,"aa"},
-			   {P_pulse_depth,"BA"},{P_pulse_depth,"ba"},
-			   {P_mode_pulse,"BM"},{P_mode_pulse,"bm"},
-			   {P_mod_ampl_mod,"AM"},{P_mod_ampl_mod,"am"},
-			   {P_phase_shift_base,"OP"},{P_phase_shift_base,"op"},
-			   {P_phase_shift_pulse,"BP"},{P_phase_shift_pulse,"bp"},
-			   {P_phase_shift_ampl_mod,"AP"},{P_phase_shift_ampl_mod,"ap"},
-			   {P_phase_overwrite_base,"OO"},{P_phase_overwrite_base,"oo"},
-			   {P_phase_overwrite_pulse,"BO"},{P_phase_overwrite_pulse,"bo"},
-			   {P_phase_overwrite_ampl_mod,"AO"},{P_phase_overwrite_ampl_mod,"ao"},
-			   {P_nop,"NN"},{P_nop,"nn"},
-			   {P_ampl_mod_freq,"AF"},{P_ampl_mod_freq,"af"},
-			   {P_pulse_freq,"BF"},{P_pulse_freq,"bf"},
-			   {P_pulse_hold_high,"BH"},{P_pulse_hold_high,"bh"},
-			   {P_pluse_hold_low,"BI"},{P_pluse_hold_low,"bi"}})
+  mrf({
+	  {"of",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::base_freq;
+		  return FreqDelay_strings_2_val(value,true,8);}},
+	  {"os",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::main_ampl_slewrate;
+		  return FreqDelay_strings_2_val(value,false,0);}},
+	  {"oa",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::main_ampl_val;
+		  return Depth_strings_2_val( value );}},
+	  {"aa",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::ampl_modul_depth;
+		  return Depth_strings_2_val( value );}},
+	  {"ba",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_depth;
+		  return Depth_strings_2_val( value );}},
+	  {"bm",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_modul_mode;
+		  return Mode_strings_2_val( value );}},
+	  {"am",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::ampl_modul_modul_mode;
+		  return Mode_strings_2_val( value );}},
+	  {"op",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::base_phase_shift;
+		  return Angle_strings_2_val(value);}},
+	  {"bp",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_phase_shift;
+		  return Angle_strings_2_val(value);}},
+	  {"ap",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::ampl_modul_phase_shift;
+		  return Angle_strings_2_val(value);}},
+	  {"oo",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::base_phase_set;
+		  return Angle_strings_2_val(value);}},
+	  {"bo",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_phase_set;
+		  return Angle_strings_2_val(value);}},
+	  {"ao",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::ampl_modul_phase_set;
+		  return Angle_strings_2_val(value);}},
+	  {"nn",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::nop;
+		  value=0; return string();}},
+	  {"af",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::ampl_modul_freq;
+		  return FreqDelay_strings_2_val(value,true,1);}},
+	  {"bf",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_freq;
+		  return FreqDelay_strings_2_val(value,true,4);}},
+	  {"bh",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_high_hold;
+		  return FreqDelay_strings_2_val(value,false,-2);}},
+	  {"bi",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::pulse_low_hold;
+		  return FreqDelay_strings_2_val(value,false,-2);}}
+	}),
+
+  mnemos_list({
+	  {P_abort,"NQ"},{P_abort,"nq"}})
 {}
 
 
@@ -234,122 +426,67 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
 void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_action>&actions)
 {
   signals_param_action action;
-
+  decltype(mrf)::const_iterator mnemos_read_funcs_iter;
   multimap<short,string>::const_iterator mnemos_list_iter;
-  string return_str;
+  string return_err_str;
 
-  mnemos_list_iter = find_if( mnemos_list.begin(), mnemos_list.end(),
-							  [&](multimap<short,string>::const_reference a) -> bool {
-								return a.second == the_event.mnemo;
-							  });
-
-  if ( mnemos_list_iter != mnemos_list.end() )
+  mnemos_read_funcs_iter = mrf.find(the_event.mnemo);
+  if ( mnemos_read_funcs_iter != mrf.end() )
 	{
 	  unsigned long value;
-	  unsigned char val_c;
-	  switch( mnemos_list_iter->first )
+	  signals_param_action::action_list act;
+	  return_err_str = mnemos_read_funcs_iter->second( value, act );
+	  if ( return_err_str.empty() )
 		{
-		case P_base_freq:
-		  
-		  break;
-		case P_main_SR:
-		  
-		  break;
-		case P_main_ampl:
-		  return_str = Depth_strings_2_val( value );
-		  if ( return_str.empty() )
-			{
-			  action.action = signals_param_action::main_ampl_val;
-			  action.value = value;
-			}		  		  
-		  break;
-		case P_abort:
-		  ipm2a_status = mnemo_event::end_track;
-		  ipm2a_clearing = input_params_base::c_abort;
-		  break;
-		case P_ampl_mod_depth:
-		  return_str = Depth_strings_2_val( value );
-		  if ( return_str.empty() )
-			{
-			  action.action = signals_param_action::ampl_modul_depth;
-			  action.value = value;
-			}
-		  break;
-		case P_pulse_depth:
-		  return_str = Depth_strings_2_val( value );
-		  if ( return_str.empty() )
-			{
-			  action.action = signals_param_action::pulse_depth;
-			  action.value = value;
-			}		  
-		  break;
-		case P_mode_pulse:
-		  return_str = Mode_strings_2_val( val_c );
-		  if ( return_str.empty() )
-			{
-			  action.action = signals_param_action::pulse_modul_mode;
-			  action.value = val_c;
-			}
-		  break;
-		case P_mod_ampl_mod:
-		  return_str = Mode_strings_2_val( val_c );
-		  if ( return_str.empty() )
-			{
-			  action.action = signals_param_action::ampl_modul_modul_mode;
-			  action.value = val_c;
-			}
-		  break;
-		case P_phase_shift_base:
-		case P_phase_shift_pulse:
-		case P_phase_shift_ampl_mod:
-		case P_phase_overwrite_base:
-		case P_phase_overwrite_pulse:
-		case P_phase_overwrite_ampl_mod:
-   		  return_str = Angle_strings_2_val( value );
-		  if ( return_str.empty() )
-			{
-			  switch( mnemos_list_iter->first )
-				{
-				case P_phase_shift_base:      action.action = signals_param_action::base_phase_shift;  break;
-				case P_phase_shift_pulse:     action.action = signals_param_action::pulse_phase_shift;  break;
-				case P_phase_shift_ampl_mod:  action.action = signals_param_action::ampl_modul_phase_shift;  break;
-				case P_phase_overwrite_base:  action.action = signals_param_action::base_phase_set;  break;
-				case P_phase_overwrite_pulse: action.action = signals_param_action::pulse_phase_set;  break;
-				case P_phase_overwrite_ampl_mod:  action.action = signals_param_action::ampl_modul_phase_set;  break;
-				}
-			  action.value = value;
-			}
-		  break;
-		case P_nop:
-		  action.action = signals_param_action::nop;
-		  break;
-		case P_ampl_mod_freq:
-		  
-		  break;
-		case P_pulse_freq:
-		  
-		  break;
-		case P_pulse_hold_high:
-		  
-		  break;
-		case P_pluse_hold_low:
-		  
-		  break;
+		  unsigned short val_s;
+		  return_err_str = Channel_string_2_val( val_s );
+		  action.channel_id = val_s;
+
+		  action.action = act;
+		  action.value = value;
+		  actions.push_back( action );
 		}
-	}
-  else
-	return_str = "Unknown mnemo. ";
-
-  unsigned short val_s;
-  return_str += Channel_string_2_val( val_s );
-  action.channel_id = val_s;
-
-  if ( return_str.empty() )
+	  else
+		cout << return_err_str << ", channel: " << the_event.channel << ", mnemo: " << the_event.mnemo << endl;
+	}else
 	{
-	  actions.push_back( action );
+	  // Not found, 3 reasons
+	  //   * mnemo handeled in the old version
+	  //   * mnemo of the extended commands ( store, retrieve etc... NOT YET )
+	  //   * really not found
+	  // The store retrieve is on hold as a decision has to be taken:
+	  //   * does it move to the low level parameters ( recording parameter action structures )
+	  //   * should it handled as file pointer. That means it is available in seekable inputs only
+	  if ( mnemos_list_iter != mnemos_list.end() )
+		{
+		  unsigned long value;
+		  unsigned char val_c;
+		  mnemos_list_iter = find_if( mnemos_list.begin(), mnemos_list.end(),
+									  [&](multimap<short,string>::const_reference a) -> bool {
+										return a.second == the_event.mnemo;
+									  });
+		  switch( mnemos_list_iter->first )
+			{
+			case P_abort:
+			  ipm2a_status = mnemo_event::end_track;
+			  ipm2a_clearing = input_params_base::c_abort;
+			  break;
+			}
+		  unsigned short val_s;
+		  return_err_str += Channel_string_2_val( val_s );
+		  action.channel_id = val_s;
+		  
+		  if ( return_err_str.empty() )
+			{
+			  actions.push_back( action );
+			}
+		  else
+			cout << return_err_str << ", channel: " << the_event.channel << ", mnemo: " << the_event.mnemo << endl;
+
+		}
+	  else
+		return_err_str = "Unknown mnemo. ";
 	}
-  else
-	cout << return_str << ", channel: " << the_event.channel << ", mnemo: " << the_event.mnemo << endl;
 }
 
 input_params_mnemos_byte_stream::input_params_mnemos_byte_stream(ostream&, istream&i_stm, const bool&with_time_stamp):
@@ -468,8 +605,8 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
   input_params_mnemos_2_action( info_out_stream, *((mnemo_event*)this), ((input_params_base*)this)->clearing, status ),
   the_list({{mnemo_event("","","1","nn","","","/")},
 		{mnemo_event("","","1","XX","22","5","/")},
-		{mnemo_event("","","5","AA","1","20000","%")},
-		{mnemo_event("","","6","AA","100","4","%")},
+		{mnemo_event("","","5","aa","1","20000","%")},
+		{mnemo_event("","","6","aa","100","4","%")},
 		{mnemo_event("","","4","ba","100","0","%")},
 		{mnemo_event("","","3","ba","90","0","")},
 		{mnemo_event("","","4","ba","100","0","%")},
@@ -477,11 +614,33 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
 		{mnemo_event("","","8","am","91","0","/")},
 		{mnemo_event("","","9","am","1","1","/")},
 		{mnemo_event("","","1","oo","22","5","/")},
-		{mnemo_event("","","all","BO","45","500","/")},
-		{mnemo_event("","","3","AO","90","0","/")},
+		{mnemo_event("","","all","nn","466666666666666665","0","/")},
+		{mnemo_event("","","all","bo","45","500","/")},
+		{mnemo_event("","","3","ao","90","0","/")},
 	    {mnemo_event("","","ALL","op","0","5","")},
-		{mnemo_event("","","0","BP","45","500","/")},
-	    {mnemo_event("","","1","AP","90","0","/")}})
+        {mnemo_event("","","0","bp","45","500","/")},
+	    {mnemo_event("","","1","ap","90","0","/")},
+		{mnemo_event("","","20","of","1","20000","%")},
+		{mnemo_event("","","21","of","100","4","")},
+		{mnemo_event("","","22","of","1000","0","m")},
+		{mnemo_event("","","23","of","90","0","mhz")},
+		{mnemo_event("","","24","of","1","666","msec")},
+		{mnemo_event("","","25","of","0","00166","sec")},
+		{mnemo_event("","","26","of","0","600","khz")},
+		{mnemo_event("","","27","of","1","600","hz")},
+		{mnemo_event("","","30","os","0","0166","sec")},
+        {mnemo_event("","","31","os","0","100","khz")},
+		{mnemo_event("","","40","af","1","2000","%")},
+		{mnemo_event("","","41","bf","100","04","")},
+		{mnemo_event("","","42","af","100","0","m")},
+		{mnemo_event("","","43","bf","90","0","mhz")},
+		{mnemo_event("","","44","af","1","066","msec")},
+		{mnemo_event("","","45","bf","0","0","sec")},
+		{mnemo_event("","","50","bh","0","00166","sec")},
+		{mnemo_event("","","51","bh","0","600","khz")},
+		{mnemo_event("","","52","bi","0","0166","sec")},
+        {mnemo_event("","","53","bi","10","0","s")}}
+)
 {
   the_list_iter = the_list.begin();
   the_list_end = the_list.end();

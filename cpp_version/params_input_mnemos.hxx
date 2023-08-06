@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <functional>
 using namespace std;
 
 #ifndef __PARAMS_INPUT_MNEMOS__
@@ -73,7 +74,7 @@ class input_params_mnemos_2_action
    * \param value Reference to return the value
    * \return error string or empty string if no error
    */
-  string Mode_strings_2_val( unsigned char&value) const;   
+  string Mode_strings_2_val( unsigned long&value) const;   
   /* \brief Converts channel data into channel code
    *
    * The result is the channel id or 0 for all of them
@@ -92,7 +93,20 @@ class input_params_mnemos_2_action
    * \param value Reference to return the value
    * \return error string or empty string if no error
    */
-string Angle_strings_2_val(unsigned long&value) const;
+  string Angle_strings_2_val(unsigned long&value) const;
+  /* \brief Converts frequencies or delays into value
+   *
+   * The result is a format from 0 to 2^20 - 1
+   * The unit tells if we are talking about a frequency or a delay\n
+   * Checks if the before the decimal separator the value is greater then 1\n
+   * Strings and unit string are taken from the base class
+   * \param value Reference to return the value
+   * \param default_freq_not_seconds <speaks by itself>
+   * \return error string or empty string if no error
+   */
+  string FreqDelay_strings_2_val(unsigned long&value,
+								 bool default_freq_not_seconds,
+								 const char&post_proc) const;
   /* \brief Converts depth to numeric value for the modulator functions
    *
    * The result is a format from 0 to 255
@@ -100,9 +114,9 @@ string Angle_strings_2_val(unsigned long&value) const;
    * Checks if the before the decimal separator the value is greater then 1\n
    *   If so, the scale 0 to 100 is used\n
    *   If not the scale from 0 to 1 is used\n
-   * TODO TODO the scal 0 to (excl) 1
    * Strings and unit string are taken from the base class
    * \param value Reference to return the value
+   * \param post_proc Information about final coefficient. See the params_output_mnemos.
    * \return error string or empty string if no error
    */
 string Depth_strings_2_val(unsigned long&) const;
@@ -115,13 +129,15 @@ string Depth_strings_2_val(unsigned long&) const;
   input_params_base::clearing_t&ipm2a_clearing;
   mnemo_event::status_t&ipm2a_status;
   const multimap< short, string >mnemos_list;
-  constexpr unsigned long long str2ll(const char*str, int h = 0)
-  {
-	if ( str[h] == 0 )
-	  return 0;
-	else
-	  return str2ll( str, h + 1 ) * 256 | (unsigned long long) str[ h ];
-  }
+  // Not that lisible, but it avoid excessive indentation in the constructor
+  const map< string, function< string(unsigned long&,signals_param_action::action_list&)> >mrf;
+  //constexpr unsigned long long str2ll(const char*str, int h = 0)
+  //{
+  //	if ( str[h] == 0 )
+  //	  return 0;
+  //	else
+  //	  return str2ll( str, h + 1 ) * 256 | (unsigned long long) str[ h ];
+  //}
 public:
   input_params_mnemos_2_action(void)=delete;
   input_params_mnemos_2_action(ostream&info_out_str,
