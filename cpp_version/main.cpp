@@ -27,6 +27,27 @@ unsigned char debug_level;
 
 int main(int argc,char *argv[] )
 {
+#if defined(__linux__)
+  if ( getuid() == 0 || geteuid() == 0 )
+	{
+	  cout << "ERROR: this software should not run as root" << endl;
+	  exit( EXIT_FAILURE );
+	}
+#elif defined(__CYGWIN__) || defined(__ANDROID__) || defined(__FreeBSD__) || defined(__APPLE__)
+  cout << "This software SHOULD NOT run as root" << endl;
+  if ( getuid() != 0 && geteuid() != 0 )
+	cout << "It looks like OK, but I have no way to verify the test" << endl;
+  else
+	cout << "Please leave, until you are sure you are not root" << endl;
+#elif _WIN32
+  	cout << "This software should not run as root" << endl;
+	cout << "You have to ensure manually" << endl;
+	cout << "as I have not been planning time to implement a test on WIndows" << endl;
+#else
+  	cout << "This software should not run as root" << endl;
+	cout << "You have to ensure manually, as your plateform has not been detected" << endl;
+#endif
+
   int opt;
   params_io_handler params_io;
   // To be removed when the params handler classes are in full production
