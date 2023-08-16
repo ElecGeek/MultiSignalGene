@@ -4,11 +4,11 @@
 mnemo_event::mnemo_event():
   status( warming_up )
 {}
-mnemo_event::mnemo_event(const string&TS_left,const string&TS_right,
+mnemo_event::mnemo_event(const string&TS_left,const string&TS_right,const string&TS_unit,
 						 const string&channel,
 						 const string&mnemo,
 						 const string&value_left,const string&value_right,const string&value_unit):
-  TS_left(TS_left),TS_right(TS_right),
+  TS_left(TS_left),TS_right(TS_right),TS_unit(TS_unit),
   channel(channel),
   mnemo(mnemo),
   value_left(value_left),value_right(value_right),value_unit(value_unit)
@@ -84,6 +84,7 @@ bool mnemos_bytes_datagram_test::get_event(deque<mnemo_event>::const_iterator&cu
 	{
 	  TS_left = (*curr).TS_left;
 	  TS_right = (*curr).TS_right;
+	  TS_unit = (*curr).TS_unit;
 	  channel = (*curr).channel;
 	  mnemo = (*curr).mnemo;
 	  value_left = (*curr).value_left;
@@ -108,51 +109,57 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
   char power10 = 0;
   bool freq_not_seconds;
   string unit_without_scale;
-  if ( the_event.value_unit.empty() == false )
+  string current_unit;
+  if ( post_proc != 20 )
+	current_unit = the_event.value_unit;
+  else
+	current_unit = the_event.TS_unit;
+
+  if ( current_unit.empty() == false )
 	{
-	  string::value_type scale = the_event.value_unit[ 0 ];
+	  string::value_type scale = current_unit[ 0 ];
 	  switch( scale )
 		{
 		case 'm':
 		  // Check here if it is meg
-		  if ( the_event.value_unit.size() >= 3 )
+		  if ( current_unit.size() >= 3 )
 			{
-			  if ( the_event.value_unit[ 1 ] == 'e' && the_event.value_unit[ 2 ] == 'g' )
-				return string( "Sorry, mega (" ) + the_event.value_unit + string( ") is not supported" );
+			  if ( current_unit[ 1 ] == 'e' && current_unit[ 2 ] == 'g' )
+				return string( "Sorry, mega (" ) + current_unit + string( ") is not supported" );
 			  else
 				{
 				  power10 = -3;
-				  unit_without_scale = the_event.value_unit.substr( 1 );
+				  unit_without_scale = current_unit.substr( 1 );
 				}
 			}
 		  else
 			{
 			  power10 = -3;
-			  unit_without_scale = the_event.value_unit.substr( 1 );
+			  unit_without_scale = current_unit.substr( 1 );
 			}
 		  break;
 		case 'g':
-		  return string( "Sorry, giga (" ) + the_event.value_unit + string( ") is not supported" );
+		  return string( "Sorry, giga (" ) + current_unit + string( ") is not supported" );
 		case 'n':
-		  return string( "Sorry, nano (" ) + the_event.value_unit + string( ") is not supported" );
+		  return string( "Sorry, nano (" ) + current_unit + string( ") is not supported" );
 		case 'p':
-		  return string( "Sorry, pico (" ) + the_event.value_unit + string( ") is not supported" );
+		  return string( "Sorry, pico (" ) + current_unit + string( ") is not supported" );
 		case 'k':
 		  power10 = 3;
-		  unit_without_scale = the_event.value_unit.substr( 1 );
+		  unit_without_scale = current_unit.substr( 1 );
 		  break;
 		case 'u':
 		  power10 = -6;
-		  unit_without_scale = the_event.value_unit.substr( 1 );
+		  unit_without_scale = current_unit.substr( 1 );
 		  break;
 		case 'h':
 		case 's':
 		  // It can be seconds or hertz, let's the code below doing the job
 		  // power10 = 0; irelevant
-		  unit_without_scale = the_event.value_unit;
+		  unit_without_scale = current_unit;
 		  break;
 		default:
-		  return string( "Sorry, the unit " ) + the_event.value_unit + string( " is unknown" );
+		  return string( "Sorry, the unit " ) + current_unit + string( " is unknown" );
 		}
 	}
   // irelevant else here to set unit_without_scale as it is initialized to empty
@@ -173,21 +180,37 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 	return string("The unit (" ) + unit_without_scale + string( ") is unknown" );
 
   // step 3: parse the value
-  float the_val = float( stoul( the_event.value_left ));
-
-  if ( the_event.value_right.size() < 6 )
+  float the_val;
+  if ( post_proc != 20 )
 	{
-	  unsigned int the_dec = stoul( the_event.value_right );
-	  float f1 = float( the_dec )/ float( pow( 10, the_event.value_right.size() ));
-	  the_val += f1;
-	}
-  else
-	return string( "The value (" ) +
-	  the_event.value_right + string( "." ) + the_event.value_right +
-	  string( "should not have more than 5 digits after the decimal separator.");
-  if ( the_val == 0.0 )
-	return "The value should nevere be null, use NOP instead";
+	  the_val = float( stoul( the_event.value_left ));
 
+	  if ( the_event.value_right.size() < 6 )
+		{
+		  unsigned int the_dec = stoul( the_event.value_right );
+		  float f1 = float( the_dec )/ float( pow( 10, the_event.value_right.size() ));
+		  the_val += f1;
+		}
+	  else
+		return string( "The value (" ) +
+		  the_event.value_right + string( "." ) + the_event.value_right +
+		  string( "should not have more than 5 digits after the decimal separator.");
+	  if ( the_val == 0.0 )
+		return "The value should never be null, use NOP instead";
+	}else{
+	  the_val = float( stoul( the_event.TS_left ));
+
+	  if ( the_event.TS_right.size() < 6 )
+		{
+		  unsigned int the_dec = stoul( the_event.TS_right );
+		  float f1 = float( the_dec )/ float( pow( 10, the_event.TS_right.size() ));
+		  the_val += f1;
+		}
+	  else
+		return string( "The timestamp (" ) +
+		  the_event.TS_right + string( "." ) + the_event.TS_right +
+		  string( "should not have more than 5 digits after the decimal separator.");
+  }
   // spet 4: computes u, m or K
   // avoid irelevant calculation
   switch ( power10 ) {
@@ -210,19 +233,31 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
   switch ( post_proc )
 	{
 	case 1:
+	  // Used by amplitude modulation frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 );
 	  break;
 	case 4:
+	  // Used by pulse modulation frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 4.0 );
 	  break;
 	case 8:
+	  // Used by base frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 8.0 );
 	  break;
 	case 0:
+	  // Used by slew rate
 	  the_val = 16777216.0 / ( 48000.0 * 4.0 * the_val );
 	  break;
 	case -2:
+	  // Used by high or low hold
 	  the_val *= 48000.0 / ( 16.0 * 2.0 );
+	  break;
+	case 20:
+	  //Used by the timestamps
+	  // The default value of the samples_per_TS_unity is 5
+	  // This precision is enough as it is 104.17uS
+	  the_val *= 9600.0;
+	  //	  cout << "TS :" << the_val << endl;
 	  break;
 	default:
 	  return "Internal error";
@@ -444,10 +479,12 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
 
 		  action.action = act;
 		  action.value = value;
+
 		  actions.push_back( action );
 		}
 	  else
-		cout << return_err_str << ", channel: " << the_event.channel << ", mnemo: " << the_event.mnemo << endl;
+		cout << return_err_str << ", channel: " << the_event.channel << ", mnemo: " << the_event.mnemo << ", unknown channel" << endl;
+
 	}else
 	{
 	  // Not found, 3 reasons
@@ -579,6 +616,8 @@ bool input_params_mnemos_file::eot()const
 }
 bool input_params_mnemos_file::is_ready()
 {
+  if ( samples_per_TS_unity != 5 )
+	cout << "Internal ERROR: samples_per_TS_unity not 5" << endl;
   return true;
 }
 
@@ -603,43 +642,43 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
   info_out_str_stream( ioss ),
   mnemos_bytes_datagram_test( info_out_stream, false, ((input_params_base*)this)->clearing ),
   input_params_mnemos_2_action( info_out_stream, *((mnemo_event*)this), ((input_params_base*)this)->clearing, status ),
-  the_list({{mnemo_event("","","1","nn","","","/")},
-		{mnemo_event("","","1","XX","22","5","/")},
-		{mnemo_event("","","5","aa","1","20000","%")},
-		{mnemo_event("","","6","aa","100","4","%")},
-		{mnemo_event("","","4","ba","100","0","%")},
-		{mnemo_event("","","3","ba","90","0","")},
-		{mnemo_event("","","4","ba","100","0","%")},
-		{mnemo_event("","","7","bm","90","0","")},
-		{mnemo_event("","","8","am","91","0","/")},
-		{mnemo_event("","","9","am","1","1","/")},
-		{mnemo_event("","","1","oo","22","5","/")},
-		{mnemo_event("","","all","nn","466666666666666665","0","/")},
-		{mnemo_event("","","all","bo","45","500","/")},
-		{mnemo_event("","","3","ao","90","0","/")},
-	    {mnemo_event("","","ALL","op","0","5","")},
-        {mnemo_event("","","0","bp","45","500","/")},
-	    {mnemo_event("","","1","ap","90","0","/")},
-		{mnemo_event("","","20","of","1","20000","%")},
-		{mnemo_event("","","21","of","100","4","")},
-		{mnemo_event("","","22","of","1000","0","m")},
-		{mnemo_event("","","23","of","90","0","mhz")},
-		{mnemo_event("","","24","of","1","666","msec")},
-		{mnemo_event("","","25","of","0","00166","sec")},
-		{mnemo_event("","","26","of","0","600","khz")},
-		{mnemo_event("","","27","of","1","600","hz")},
-		{mnemo_event("","","30","os","0","0166","sec")},
-        {mnemo_event("","","31","os","0","100","khz")},
-		{mnemo_event("","","40","af","1","2000","%")},
-		{mnemo_event("","","41","bf","100","04","")},
-		{mnemo_event("","","42","af","100","0","m")},
-		{mnemo_event("","","43","bf","90","0","mhz")},
-		{mnemo_event("","","44","af","1","066","msec")},
-		{mnemo_event("","","45","bf","0","0","sec")},
-		{mnemo_event("","","50","bh","0","00166","sec")},
-		{mnemo_event("","","51","bh","0","600","khz")},
-		{mnemo_event("","","52","bi","0","0166","sec")},
-        {mnemo_event("","","53","bi","10","0","s")}}
+  the_list({{mnemo_event("0","0","s","1","nn","","","/")},
+		{mnemo_event("0","0","s","1","XX","22","5","/")},
+		{mnemo_event("0","0","","5","aa","1","20000","%")},
+		{mnemo_event("1","2","","6","aa","100","4","%")},
+		{mnemo_event("1","2","s","4","ba","100","0","%")},
+		{mnemo_event("0","0","s","3","ba","90","0","")},
+		{mnemo_event("1","2","s","4","ba","100","0","%")},
+		{mnemo_event("1","2","s","7","bm","90","0","")},
+		{mnemo_event("1","21","s","8","am","91","0","/")},
+		{mnemo_event("1","21","s","9","am","1","1","/")},
+		{mnemo_event("1","21","s","1","oo","22","5","/")},
+		{mnemo_event("1","21","s","all","nn","466666666666666665","0","/")},
+		{mnemo_event("1","21","s","all","bo","45","500","/")},
+		{mnemo_event("1","21","s","3","ao","90","0","/")},
+	    {mnemo_event("1","2","s","ALL","op","0","5","")},
+        {mnemo_event("1","2","s","0","bp","45","500","/")},
+	    {mnemo_event("1","2","s","1","ap","90","0","/")},
+		{mnemo_event("1","2","s","20","of","1","20000","%")},
+		{mnemo_event("1","2","s","21","of","100","4","")},
+		{mnemo_event("1","2","s","22","of","1000","0","m")},
+		{mnemo_event("1","2","s","23","of","90","0","mhz")},
+		{mnemo_event("1","2","s","24","of","1","666","msec")},
+		{mnemo_event("1","2","s","25","of","0","00166","sec")},
+		{mnemo_event("1","2","s","26","of","0","600","khz")},
+		{mnemo_event("1","2","s","27","of","1","600","hz")},
+		{mnemo_event("1","2","s","30","os","0","0166","sec")},
+        {mnemo_event("1","2","s","31","os","0","100","khz")},
+		{mnemo_event("1","2","s","40","af","1","2000","%")},
+		{mnemo_event("1","2","s","41","bf","100","04","")},
+		{mnemo_event("1200","0","us","42","af","100","0","m")},
+		{mnemo_event("1","2","","43","bf","90","0","mhz")},
+		{mnemo_event("1","2","","44","af","1","066","msec")},
+		{mnemo_event("1","2","","45","bf","0","0","sec")},
+		{mnemo_event("1","2","s","50","bh","0","00166","sec")},
+		{mnemo_event("1","2","s","51","bh","0","600","khz")},
+		{mnemo_event("1","2","s","52","bi","0","0166","sec")},
+        {mnemo_event("1","2","s","53","bi","10","0","s")}}
 )
 {
   the_list_iter = the_list.begin();
@@ -648,14 +687,19 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
 }
 unsigned long input_params_mnemos_hardcoded::check_next_time_stamp()
 {
+  string return_err_str;
   if ( get_event( the_list_iter, the_list_end ) )
 	{
-	  // Something read
-	  //	  info_out_stream<< (*this);
-	  // cout << (unsigned short)key ;
-	  return timestamp_construct;
+	  unsigned long value;
+	  // Something is always read as it is an hardcoded table
+	  return_err_str = FreqDelay_strings_2_val( value, false, 20 );
+	  if ( return_err_str.empty() )
+		return value;
+	  else
+		// Table input is wrong, tell it is starving in order to respawn the get_event function
+		return 0xffffffff;
 	}else
-	// Input is "starving" nothing has been received or is not complete
+	// Input is "starving", that should not be hapened here
 	return 0xffffffff;
 }
 void input_params_mnemos_hardcoded::exec_next_event(vector<signals_param_action>&actions)
@@ -671,6 +715,8 @@ bool input_params_mnemos_hardcoded::eot(void) const
 }
 bool input_params_mnemos_hardcoded::is_ready(void)
 {
+  if ( samples_per_TS_unity != 5 )
+	cout << "Internal ERROR: samples_per_TS_unity not 5" << endl;
   return true;
 }
 bool input_params_mnemos_hardcoded::exec_loops()

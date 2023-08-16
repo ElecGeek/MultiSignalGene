@@ -47,34 +47,9 @@ public:
 class input_params_mnemos_2_action
 {
   ostream&info_out_str;
-  enum params_input_mnemos {
-	P_base_freq = 0,
-	P_main_SR = 1,
-	P_main_ampl = 2,
-	P_abort = 3,
-	P_ampl_mod_depth = 4,
-	P_pulse_depth = 5,
-	P_mode_pulse = 6,
-	P_mod_ampl_mod = 7,
-	P_phase_shift_base = 8,
-	P_phase_shift_pulse = 9,
-	P_phase_shift_ampl_mod = 10,
-	P_phase_overwrite_base = 11,
-	P_phase_overwrite_pulse = 12,
-	P_phase_overwrite_ampl_mod = 13,
-	P_nop = 14,
-	P_ampl_mod_freq = 15,
-	P_pulse_freq = 16,
-	P_pulse_hold_high = 17,
-	P_pluse_hold_low = 18
+  enum params_input_mnemos_extended { P_abort = 100
   };
-  /* \brief Converts channel data into mode
-   *
-   * The result is the mode (today from 0 to 1)
-   * \param value Reference to return the value
-   * \return error string or empty string if no error
-   */
-  string Mode_strings_2_val( unsigned long&value) const;   
+protected:
   /* \brief Converts channel data into channel code
    *
    * The result is the channel id or 0 for all of them
@@ -82,6 +57,13 @@ class input_params_mnemos_2_action
    * \return error string or empty string if no error
    */
   string Channel_string_2_val( unsigned short&value) const;   
+  /* \brief Converts channel data into mode
+   *
+   * The result is the mode (today from 0 to 1)
+   * \param value Reference to return the value
+   * \return error string or empty string if no error
+   */
+  string Mode_strings_2_val( unsigned long&value) const;   
   /* \brief Converts angles to numeric value for the phase shift and reset functions
    *
    * The result is a format from 0 to 15 per 22.5 degres\n
@@ -96,10 +78,12 @@ class input_params_mnemos_2_action
   string Angle_strings_2_val(unsigned long&value) const;
   /* \brief Converts frequencies or delays into value
    *
+   * This function is used for frequencies, slew rates and holds time,
+   *   but for the timestamps as well.\n
    * The result is a format from 0 to 2^20 - 1
    * The unit tells if we are talking about a frequency or a delay\n
-   * Checks if the before the decimal separator the value is greater then 1\n
    * Strings and unit string are taken from the base class
+   *   which holds all the data of the event.
    * \param value Reference to return the value
    * \param default_freq_not_seconds <speaks by itself>
    * \return error string or empty string if no error
@@ -124,6 +108,7 @@ string Depth_strings_2_val(unsigned long&) const;
   // Format is: velocity is always, full 7 bits the mantissa,
   // exponent_size of the right bits of the key (note code) is the exponent
   // a constant is the additional exponent
+private:
   unsigned long get_value( const unsigned char&exponent_size, const unsigned char&exponent_const )const;
   const mnemo_event&the_event;
   input_params_base::clearing_t&ipm2a_clearing;

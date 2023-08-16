@@ -49,13 +49,14 @@ struct midi_event {
 struct mnemo_event {
   string TS_left;
   string TS_right;
+  string TS_unit;
   string channel;
   string mnemo;
   string value_left;
   string value_right;
   string value_unit;
   mnemo_event();
-  mnemo_event( const string&, const string&,
+  mnemo_event( const string&, const string&, const string&,
 			   const string&channel,
 			   const string&mnemo,
 			   const string&, const string&, const string& );

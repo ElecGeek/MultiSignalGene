@@ -4,7 +4,7 @@
 output_params_txt::output_params_txt( ostream& o_str ):
   o_str( o_str )
 {
-  samples_per_TS_unity = 4800;
+  samples_per_TS_unity = 960;
 }
 output_params_txt::~output_params_txt()
 {}
@@ -27,7 +27,9 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
   out_string.reserve( 120 );
   ostringstream out_line( out_string );
 
-  out_line << right << setw(6) << dec << cumul_time_stamp;
+  out_line << right << setw(6) << dec << float( diff_TS * samples_per_TS_unity ) / 48000.0;
+  out_line << "\t";
+  out_line << right << setw(6) << dec << float( absolute_TS * samples_per_TS_unity ) / 48000.0;
   if ( action.channel_id == 0 )
 	{
 	  out_line << "\tChannel: all\t";
