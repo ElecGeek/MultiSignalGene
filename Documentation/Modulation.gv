@@ -43,14 +43,14 @@ digraph g {
 				  subgraph sample_bundle_process
 				  {
 						node [shape=record]
-		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AP"] "n_sample_pulse_depth";
-		 		  		node [label="<f0>modulation depth|<f1>+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AA"] "n_sample_modulation_depth";
+		 		  		node [label="<f0>sine modulation|<f1>depth\n+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AP"] "n_sample_pulse_depth";
+		 		  		node [label="<f0>pulse modulation|<f1>depth\n+1 100%\n-1,depth=0 100%\n-1,depth=max 0%|depth: AA"] "n_sample_modulation_depth";
 				  		"n_sample_modulation_depth":f0 -> "n_sample_pulse_depth":f0;
 				  }
 				  "n_bundle_signals_in" -> "n_sample_modulation_depth":f0;
 				  node [label="output";shape=ellipse] "n_bundle_signals_out";
 				  "n_sample_pulse_depth":f0 -> "n_bundle_signals_out";
-				  label = "Bundle_signals";
+				  label = "Bundle signals";
 				  node [label="bundle_signals.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_bundle_filename";
 				  node [label="modulation_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_modulator_filename";
 		 }

@@ -1,18 +1,19 @@
-digraph g {
-		comment=""
-		comment="Sorry my lisp installation of graphviz is broken. I hope to fix it ASAP"
+digraph Wave_gene {
+		newrank=true;
 		comment=""
 		 fontname="Helvetica,Arial,sans-sherif"
 		 node [fontname="Helvetica,Arial,sans-sherif"]
 		 edge [fontname="Helvetica,Arial,sans-sherif"]
-		 graph [rankdir="LR"]
+		 rankdir="LR";
 
+		 label="Wave generator";
 		 subgraph cluster_sample_base {
 		 		 subgraph cluster_sample_frequency {
 		 		 		  node [shape=record]
 				 		  subgraph sample_base_frequency {
 				  				  node [label="<f0>base frequency||frequency: OF\nphase shift: OP\nphase (re)set: OO"] n_sample_base_frequency;
 					   }
+					   node [label="parameters in";shape=ellipse] "n_sample_frequency_parameters";
 				  	   node [label="frequency_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_frequency_filename";
 					  label="base frequency";
 				  	}
@@ -23,41 +24,36 @@ digraph g {
 				  				  node [label="<f0>slewrate|apply SR limitation|slewrate: OS"] n_sample_amplitude_slewrate;
 				  				  node [label="<f0>base volume, CPP||always max"] n_sample_volume_soft;
 				  				  node [label="<f0>base volume, VHDL||from hardware"] n_sample_volume_hard;
+								  node [label="parameters in";shape=ellipse] "n_sample_volume_params";
 						}
-				  node [label="depends\nversion";shape=circle] "n_sample_amplitude_version";
-				  node [label="X"] "n_sample_amplitude_product";
-				  "n_sample_volume_soft":f0 -> "n_sample_amplitude_version" [arrowtail=odiamond];
-				  "n_sample_volume_hard":f0 -> "n_sample_amplitude_version";
-				  "n_sample_amplitude_version" -> "n_sample_amplitude_product";
+				  node [label="X";shape=circle] "n_sample_amplitude_product";
+				  "n_sample_volume_soft":f0 -> "n_sample_amplitude_product" [label="software version"];
+				  "n_sample_volume_hard":f0 -> "n_sample_amplitude_product" [label="hardware version"];
 				  "n_sample_amplitude_soft":f0 -> "n_sample_amplitude_slewrate":f0;
 				  "n_sample_amplitude_slewrate":f0 -> "n_sample_amplitude_product"
 			       label = "Base amplitude";
 			  	   node [label="amplitude_handler.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_amplitude_filename";
 		 		  }
 		 		  node [shape=record]
-				  subgraph sample_base_shapes {
-				  				  node [label="<f0>sine||argument: S"] n_sample_base_sine;
-				  				  node [label="<f0>pulse||argument: P"] n_sample_base_pulse;
-				  				  node [label="<f0>flatened triangle||argument: T"] n_sample_base_triangle;
-				  				  node [label="<f0>continuous||argument: D";color=red] n_sample_base_dc;
+				  subgraph cluster_sample_base_shapes {
+				  		  subgraph n_sample_base {
+				  		   		node [shape=record]
+				  		   		node [label="<f0>sine||argument: S"] n_sample_base_sine;
+				  		   		node [label="<f0>pulse||argument: P"] n_sample_base_pulse;
+				  		   		node [label="<f0>flatened triangle||argument: T"] n_sample_base_triangle;
+				  		   		node [label="<f0>continuous||argument: D";color=red] n_sample_base_dc;
+								"n_sample_base_sine":f0 -> "n_sample_base_pulse":f0 -> "n_sample_base_triangle":f0 -> "n_sample_base_dc":f0 [label="excl OR";dir=none];							
+						   }
+						   label="Waveforms";
+						   node [label="data in";shape=ellipse] "n_sample_base_params";
+						   node [label="configuration in";shape=ellipse] "n_sample_base_config";
+						   node [label="output";shape=ellipse] "n_sample_base_out";
+						   node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_base_filename";
 				  }
-				  "n_sample_base_frequency" -> "n_sample_base_sine":f0;
-				  "n_sample_base_frequency" -> "n_sample_base_pulse":f0;
-				  "n_sample_base_frequency" -> "n_sample_base_triangle":f0;
-				  "n_sample_base_frequency" -> "n_sample_base_dc":f0;
-				  "n_sample_amplitude_product" -> "n_sample_base_sine":f0;
-				  "n_sample_amplitude_product" -> "n_sample_base_pulse":f0;
-				  "n_sample_amplitude_product" -> "n_sample_base_triangle":f0;
-				  "n_sample_amplitude_product" -> "n_sample_base_dc":f0;
-				  node [label="virtual\nbase";shape=circle] n_sample_base_virtual_base;
-				  "n_sample_base_sine":f0 -> "n_sample_base_virtual_base" [arrowtail=odiamond];
-				  "n_sample_base_pulse":f0 -> "n_sample_base_virtual_base";
-				  "n_sample_base_triangle":f0 -> "n_sample_base_virtual_base";
-				  "n_sample_base_dc":f0 -> "n_sample_base_virtual_base";
+				  "n_sample_base_frequency":f0 -> "n_sample_base_params";
+				  "n_sample_amplitude_product" -> "n_sample_base_params";
 				  
 				  label = "Base waveform";
-				  node [label="output";shape=ellipse] "n_sample_base_out";
-				  node [label="sample_step.hxx";shape=diamond;style=filled;color=lightgrey] "n_sample_base_filename";
 
 		 }
 

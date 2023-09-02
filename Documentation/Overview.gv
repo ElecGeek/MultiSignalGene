@@ -1,0 +1,81 @@
+digraph overview {
+		newrank=true;
+		comment=""
+		comment="Sorry my lisp installation of graphviz is broken. I hope to fix the indentation ASAP"
+		comment=""
+		 fontname="Helvetica,Arial,sans-sherif"
+		 node [fontname="Helvetica,Arial,sans-sherif"]
+		 edge [fontname="Helvetica,Arial,sans-sherif"]
+		 rankdir=LR;
+		 node [shape=record]
+
+		 label="Overview";
+		 subgraph cluster_initialisation {
+		 		  node [shape=record]
+				  label="Software initialisation";
+				  node [label="configuration out";shape=ellipse] "n_init_output";
+		 }
+		 subgraph cluster_input_commands {
+		 		  node [shape=record]
+				  label="Input commands";
+				  subgraph n_input_cmd {
+				  				  node [label="From file"] "n_input_cmd_file";
+				  				  node [label="From console"] "n_input_cmd_stdio";
+				  				  node [label="From device";color=red] "n_input_cmd_device";
+				  				  node [label="From network";color=red] "n_input_cmd_net";
+				  }
+				  node [label="parameters out";shape=ellipse] "n_input_commands_output";
+				  node [label="configuration in";shape=ellipse] "n_input_commands_config";
+				  n_input_cmd_file -> n_input_cmd_stdio -> n_input_cmd_device -> n_input_cmd_net [label="incl OR";dir=none];
+		 }
+		 subgraph cluster_output_commands {
+		 		  node [shape=record]
+				  label="Output_commands";
+				  subgraph n_output_cmd {
+				  				  node [label="To file"] "n_output_cmd_file";
+				  				  node [label="To console"] "n_output_cmd_stdio";
+				  				  node [label="To device";color=red] "n_output_cmd_device";
+				  				  node [label="To network";color=red] "n_output_cmd_net";
+				  }
+				  node [label="parameters in";shape=ellipse] "n_output_commands_params";
+				  node [label="configuration in";shape=ellipse] "n_output_commands_config";
+				  n_output_cmd_file -> n_output_cmd_stdio -> n_output_cmd_device -> n_output_cmd_net [label="incl OR";dir=none];
+		 }
+		 subgraph cluster_sound_gene_0 {
+		 		  node [shape=record]
+		 		  label="Sound channel";
+		 		  node [label="<f0>Base frequency"] base_frequency;
+		 		  node [label="<f0>Volume"] base_volume;
+		 		  node [label="<f0>Base waveform|continuous, pulse,\nflatened triangle or sine"] base_waveform;
+		 		  node [label="<f0>Sine modulation|Variable depth\nmodulation"] sine_modulation;
+		 		  node [label="<f0>Pulse modulation|Same as sine\nwith high and low\nhold off"] pulse_modulation;
+				  node [label="parameters in";shape=ellipse] "n_base_waveform_params";
+				  "base_volume":f0 -> "base_waveform":f0;
+				  "base_frequency":f0 -> "base_waveform":f0;
+				  "base_waveform":f0 -> "sine_modulation":f0;
+				  "sine_modulation":f0 -> "pulse_modulation":f0;
+				  node [label="configuration in";shape=ellipse] "n_base_waveform_config";
+		 }
+		 subgraph cluster_sound_output {
+		 		  node[shape=record]
+		 		  label="Sound output";
+  		 		  node [label="Jackaudio"] "n_output_jack";
+  		 		  node [label="Dummy, Dry run"] "n_output_dummy";
+  		 		  node [label="Wave file"] "n_output_wavefile";
+				  node [label="data in";shape=ellipse] "n_output_data";
+				  node [label="configuration in";shape=ellipse] "n_output_config";
+		 }
+		 subgraph cluster_bundle_channels {
+				  node[shape=record]
+				  node [label="Channels handler"] "n_bundle_run";
+		 		  label="Channels bundle";
+		 }
+		 "n_init_output" -> "n_input_commands_config";
+		 "n_init_output" -> "n_output_commands_config";
+		 "n_init_output" -> "n_base_waveform_config";
+		 "n_init_output" -> "n_output_config";
+		 "n_input_commands_output" -> "n_output_commands_params" [headlabel="0..P";taillabel="1..M"];
+		 "n_input_commands_output" -> "n_base_waveform_params" [headlabel="0..N";taillabel="1..M"];
+		 "pulse_modulation":f0 -> n_bundle_run [headlabel="1";taillabel="0..N"];
+		 n_bundle_run -> n_output_data;
+}
