@@ -21,8 +21,12 @@ class mnemos_bytes_stream : public mnemo_event {
   ostream&info_out_str;
   input_params_base::clearing_t&mbs_clearing;
 protected:
-  unsigned long timestamp_construct;
   unsigned long track_line;
+  // The software accepts both CR, CR-LF or LF as end of lines
+  // However, it is an issue for the line counting (used in the error messages)
+  // After EACH line, the first used is the one used for counting,
+  //   in case of CR or LF sequences
+  unsigned char crlf_first_used;
   const bool with_time_stamp;
 public:
   mnemos_bytes_stream(void)=delete;
@@ -35,8 +39,6 @@ public:
 class mnemos_bytes_datagram_test : public mnemo_event {
   ostream&info_out_str;
   input_params_base::clearing_t&mbs_clearing;
-protected:
-  unsigned long timestamp_construct;
 public:
   mnemos_bytes_datagram_test(void)=delete;
   mnemos_bytes_datagram_test(ostream&,const bool&with_time_stamp, input_params_base::clearing_t&clearing );
@@ -66,9 +68,9 @@ protected:
   string Mode_strings_2_val( unsigned long&value) const;   
   /* \brief Converts angles to numeric value for the phase shift and reset functions
    *
-   * The result is a format from 0 to 15 per 22.5 degres\n
+   * The result is a format from 0 to 15 for angles from 0 to ( 360 - 22.5 ) per 22.5 degres\n
    * Checks there is no unit or / or degre, otherwise return an error without any future processing\n
-   * Checks if the before the decimal separator the value is 0\n
+   * Checks if before the decimal separator, the value is 0\n
    *   If so, the scale 0 for a 0 angle to (excluded) 1.0 for a 2.PI angle is used\n
    *   If not a real angle is used\n
    * Strings and unit string are taken from the base class

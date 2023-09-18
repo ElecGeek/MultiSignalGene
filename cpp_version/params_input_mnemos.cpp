@@ -3,7 +3,16 @@
 
 mnemo_event::mnemo_event():
   status( warming_up )
-{}
+{
+  TS_left.reserve(15);
+  TS_right.reserve(15);
+  TS_unit.reserve(15);
+  channel.reserve(10);
+  mnemo.reserve(10);
+  value_left.reserve(15);
+  value_right.reserve(15);
+  value_unit.reserve(15);
+}
 mnemo_event::mnemo_event(const string&TS_left,const string&TS_right,const string&TS_unit,
 						 const string&channel,
 						 const string&mnemo,
@@ -20,7 +29,6 @@ mnemos_bytes_stream::mnemos_bytes_stream(ostream&os,
 										 input_params_base::clearing_t&clearing ):
   info_out_str(os),
   with_time_stamp( with_time_stamp ),
-  timestamp_construct( 0 ),
   track_line( 0 ),
   state( state_end ),
   mbs_clearing( clearing )
@@ -34,15 +42,19 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
   //   until the eof "is fixed"
   unsigned char val_read;
   
-  // TODO  TODO  TODO
+  bool shoottheline;
 
-  // This is only to compile and link
-
+  enum{ ls_start, ls_wait_eol_comment,
+	ls_in_ts_left, ls_in_ts_right, ls_in_ts_unit, ls_spctab_ts,
+	ls_in_channel, ls_spctab_channel,
+	ls_in_mnemo, ls_spctab_mnemo,
+	ls_in_val_left, ls_in_val_right, ls_in_val_unit, ls_spctab_val,
+	ls_in_crlf } line_state;
+		
   if( state == state_end )
 	{
 	  if( with_time_stamp == true )
 		{
-		  timestamp_construct = 0;
 		  state = state_ts;
 		}
 	  else
@@ -52,7 +64,252 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 
   while( (i_stm.eof() == false) && (status != end_track) && (state != state_end) )
 	{
+	  shoottheline = false;
 	  i_stm.read( (char*)(&val_read) , 1 );
+	  if ( ( val_read >= 'a' && val_read <= 'z' ) || ( val_read >= 'A' && val_read <= 'Z' ) || val_read == '/' )
+	    {
+	      if ( val_read >= 'A' && val_read <= 'Z' )
+		val_read += 'a' - 'A';
+	      switch ( line_state )
+		{
+		case ls_in_ts_left:
+		case ls_in_ts_right:
+		  line_state = ls_in_ts_unit;
+		case ls_in_ts_unit:
+		  TS_unit += val_read;
+		  break;
+		case ls_spctab_ts:
+		  line_state = ls_in_channel;
+		case ls_in_channel:
+		  channel += val_read;
+		  break;
+		case ls_spctab_channel:
+		  line_state = ls_in_mnemo;
+		case ls_in_mnemo:
+		  mnemo += val_read;
+		  break;
+		case ls_spctab_mnemo:
+		  info_out_str << "Line " << track_line << ": numerical digits are expected for the value" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_in_val_left:
+		case ls_in_val_right:
+		  line_state = ls_in_val_unit;
+		case ls_in_val_unit:
+		  value_unit += val_read;
+		  break;
+		case ls_spctab_val:
+		  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_in_crlf:
+		case ls_start:
+		  info_out_str << "Line " << track_line << ": numerical digits are expected for the timestamp" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_wait_eol_comment:
+		  break;
+		}
+
+	    }
+	  else if ( val_read >= '0' && val_read <= '9' )
+	    {
+	      switch ( line_state )
+		{
+		case ls_in_crlf:
+		case ls_start:
+		  line_state = ls_in_ts_left;
+		case ls_in_ts_left:
+		  TS_left += val_read;
+		  break;
+		case ls_in_ts_right:
+		  TS_right += val_read;
+		  break;
+		case ls_in_ts_unit:
+		  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the TS unit" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_ts:
+		  line_state = ls_in_channel;
+		case ls_in_channel:
+		  channel += val_read;
+		  break;
+		case ls_spctab_channel:
+		  line_state = ls_in_mnemo;
+		case ls_in_mnemo:
+		  mnemo += val_read;
+		  break;
+		case ls_spctab_mnemo:
+		  line_state = ls_in_val_left;
+		case ls_in_val_left:
+		  value_left += val_read;
+		  break;
+		case ls_in_val_right:
+		  value_right += val_read;
+		  break;
+		case ls_in_val_unit:
+		  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the value unit" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_val:
+		  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_wait_eol_comment:
+		  break;
+		}
+	    }
+	  else if ( val_read == '.' || val_read == ',' )
+	    {
+	      switch ( line_state )
+		{
+		case ls_in_ts_left:
+		case ls_start:
+		  line_state = ls_in_ts_right;
+		  break;
+		case ls_in_ts_right:
+		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the TS" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_in_ts_unit:
+		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the TS unit" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_ts:
+		case ls_in_channel:
+		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the channel" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_channel:
+		case ls_in_mnemo:
+		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the mnemonic" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_mnemo:
+		case ls_in_val_left:
+		  line_state = ls_in_val_right;
+		  break;
+		case ls_in_val_right:
+		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_in_val_unit:
+		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value unit" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		case ls_spctab_val:
+		  info_out_str << "Line " << track_line << ": warning, please start comments qith a comment caracter" << endl;
+		  line_state = ls_wait_eol_comment;
+		  shoottheline = true;
+		  break;
+		case ls_wait_eol_comment:
+		  break;
+		case ls_in_crlf:
+		  line_state = ls_in_ts_right;
+		  break;
+		}
+	    }
+	  else if ( val_read == '\n' || val_read == '\r' )
+	    {
+	      switch ( line_state )
+		{
+		case ls_start:
+		  crlf_first_used = val_read;
+		  track_line += 1;
+		  break;
+		case ls_in_ts_left:
+		case ls_in_ts_right:
+		case ls_in_ts_unit:
+		case ls_spctab_ts:
+		case ls_in_channel:
+		case ls_spctab_channel:
+		case ls_in_mnemo:
+		case ls_spctab_mnemo:
+		  info_out_str << "Line" << track_line << ": te line format is wrong, some fields are missing" << endl;
+		  crlf_first_used = val_read;
+		  track_line += 1;
+		  break;
+		case ls_in_val_left:
+		case ls_in_val_right:
+		case ls_in_val_unit:
+		case ls_spctab_val:
+		  crlf_first_used = val_read;
+		  track_line += 1;
+		  shoottheline = true;
+		  break;
+		case ls_wait_eol_comment:
+		  crlf_first_used = val_read;
+		  track_line += 1;
+		  break;
+		case ls_in_crlf:
+		  if ( crlf_first_used == val_read )
+		    track_line += 1;
+		  break;
+		}
+	      line_state = ls_in_crlf;
+	    }
+	  else if ( val_read == ' ' || val_read == '\t' )
+	    {
+	      switch ( line_state )
+		{
+		case ls_in_ts_left:
+		  line_state = ls_spctab_ts;
+		  break;
+		case ls_in_ts_right:
+		case ls_in_ts_unit:
+		  line_state = ls_spctab_ts;
+		  break;
+		case ls_spctab_ts:
+		  break;
+		case ls_in_channel:
+		  line_state = ls_spctab_channel;
+		  break;
+		case ls_spctab_channel:
+		  break;
+		case ls_in_mnemo:
+		  line_state = ls_spctab_mnemo;
+		  break;
+		case ls_spctab_mnemo:
+		  break;
+		case ls_in_val_left:
+		  line_state = ls_spctab_val;
+		  shoottheline = true;
+		  break;
+		case ls_in_val_right:
+		case ls_in_val_unit:
+		  line_state = ls_spctab_val;
+		  shoottheline = true;
+		  break;
+		case ls_spctab_val:
+		  break;
+		case ls_wait_eol_comment:
+		  break;
+		case ls_start:
+		case ls_in_crlf:
+		  info_out_str << "Line " << track_line << ": comments or instructions should start at column 1" << endl;
+		  line_state = ls_wait_eol_comment;
+		  break;
+		}
+	    }
+	  else if ( val_read == '#' || val_read == ';' || val_read == '%' )
+	    {
+	      // Comment starts here
+	      // If the line is complete or empty, no error message is sent
+	      if ( line_state != ls_start && line_state != ls_start && line_state != ls_wait_eol_comment && line_state != ls_spctab_val && line_state != ls_in_crlf )
+		info_out_str << "Line " << track_line << ": the line format is wrong" << endl;
+	      val_read = ls_wait_eol_comment;
+	    }
+	  else
+	    {
+	      // If we are already in a comment it is OK,
+	      // Otherwise the line is discarded
+	      if ( line_state == ls_wait_eol_comment )
+		info_out_str << "Line " << track_line << ": exotic caracters are allowed only in comments" << endl;
+	    }
+	  if ( shoottheline == true )
+	    {
+		  state = state_end;
+	    }
 	}
   if ((state == state_end) && (status != end_track))
 	{
@@ -68,7 +325,6 @@ mnemos_bytes_datagram_test::mnemos_bytes_datagram_test(ostream&os,
 										 const bool&with_time_stamp,
 										 input_params_base::clearing_t&clearing ):
   info_out_str(os),
-  timestamp_construct( 0 ),
   mbs_clearing( clearing )
 {
   if ( with_time_stamp )
@@ -78,8 +334,6 @@ mnemos_bytes_datagram_test::mnemos_bytes_datagram_test(ostream&os,
 bool mnemos_bytes_datagram_test::get_event(deque<mnemo_event>::const_iterator&curr,
 										   deque<mnemo_event>::const_iterator&end)
 {
-  timestamp_construct = 0;
-
   if( curr != end )
 	{
 	  TS_left = (*curr).TS_left;
@@ -182,34 +436,46 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
   // step 3: parse the value
   float the_val;
   if ( post_proc != 20 )
-	{
-	  the_val = float( stoul( the_event.value_left ));
-
-	  if ( the_event.value_right.size() < 6 )
+    {
+      if ( the_event.value_left.empty() == false )
+		the_val = float( stoul( the_event.value_left ));
+      else
+		the_val = 0;
+      
+	  if ( the_event.value_right.empty() == false )
 		{
-		  unsigned int the_dec = stoul( the_event.value_right );
-		  float f1 = float( the_dec )/ float( pow( 10, the_event.value_right.size() ));
-		  the_val += f1;
+		  if ( the_event.value_right.size() < 6 )
+			{
+			  unsigned int the_dec = stoul( the_event.value_right );
+			  float f1 = float( the_dec )/ float( pow( 10, the_event.value_right.size() ));
+			  the_val += f1;
+			}
+		  else
+			return string( "The value (" ) +
+			  the_event.value_left + string( "." ) + the_event.value_right +
+			  string( ") should not have more than 5 digits after the decimal separator.");
 		}
-	  else
-		return string( "The value (" ) +
-		  the_event.value_right + string( "." ) + the_event.value_right +
-		  string( "should not have more than 5 digits after the decimal separator.");
 	  if ( the_val == 0.0 )
 		return "The value should never be null, use NOP instead";
-	}else{
-	  the_val = float( stoul( the_event.TS_left ));
-
-	  if ( the_event.TS_right.size() < 6 )
-		{
-		  unsigned int the_dec = stoul( the_event.TS_right );
-		  float f1 = float( the_dec )/ float( pow( 10, the_event.TS_right.size() ));
-		  the_val += f1;
-		}
-	  else
-		return string( "The timestamp (" ) +
-		  the_event.TS_right + string( "." ) + the_event.TS_right +
-		  string( "should not have more than 5 digits after the decimal separator.");
+    }else{
+    if ( the_event.TS_left.empty() == false )
+      the_val = float( stoul( the_event.TS_left ));
+    else
+      the_val = 0;
+    
+	if ( the_event.TS_right.empty() == false )
+	  {
+		if ( the_event.TS_right.size() < 6 )
+		  {
+			unsigned int the_dec = stoul( the_event.TS_right );
+			float f1 = float( the_dec )/ float( pow( 10, the_event.TS_right.size() ));
+			the_val += f1;
+		  }
+		else
+		  return string( "The timestamp (" ) +
+			the_event.TS_left + string( "." ) + the_event.TS_right +
+			string( ") should not have more than 5 digits after the decimal separator.");
+	  }
   }
   // spet 4: computes u, m or K
   // avoid irelevant calculation
@@ -292,7 +558,7 @@ string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) cons
   if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.empty() )
 	{
 	  mode = 0;
-	  if ( stoul( the_event.value_right ) == 0 )
+	  if ( the_event.value_right.size() == 0 )
 		{
 		  mode = stoul( the_event.value_left );
 		  mode &= 0x01;
@@ -316,25 +582,39 @@ string input_params_mnemos_2_action::Depth_strings_2_val(unsigned long&val_0_255
 		{
 		  // scale from 0 to (excl) 1
 
-		  unsigned int the_dec = stoul( the_event.value_right );
-		  if ( the_event.value_right.size() < 6 )
+		  if ( the_event.value_right.empty() == false )
 			{
-			  unsigned long f1 = the_dec * pow( 10, ( 6 - the_event.value_right.size() ));
-			  val_0_255 = f1 / 3921;
-			  if ( val_0_255 > 255 )
-				val_0_255 = 255;
-			  return string();
+			  if ( the_event.value_right.size() < 6 )
+				{
+				  unsigned int the_dec = stoul( the_event.value_right );
+				  unsigned long f1 = the_dec * pow( 10, ( 6 - the_event.value_right.size() ));
+				  val_0_255 = f1 / 3921;
+				  if ( val_0_255 > 255 )
+					val_0_255 = 255;
+				  return string();
+				}
+			  else
+				{
+				  val_0_255 = 0;
+				  return "The depth/volume value should not have more than 5 digits after the decimal separator.";
+				}
 			}
 		  else
 			{
 			  val_0_255 = 0;
-			  return "The depth/volume value should not have more than 5 digits after the decimal separator.";
+			  return string();
 			}
 		}else
 		{
-		  val_0_255 = the_val * 10 + stoul( the_event.value_right.substr(0,1) );
-		  val_0_255 *= 255;
-		  val_0_255 /= 1000;
+		  if ( the_event.value_right.empty() == false )
+			{
+			  val_0_255 = the_val * 10 + stoul( the_event.value_right.substr(0,1) );
+			  val_0_255 *= 255;
+			  val_0_255 /= 1000;
+			}else{
+			val_0_255 = 2550 * the_val;
+			val_0_255 /= 1000;
+		  } 
 		}
 	  if ( val_0_255 >= 256 )
 		return "The depth/volume value slightly exceed 100%";
@@ -350,22 +630,30 @@ string input_params_mnemos_2_action::Angle_strings_2_val(unsigned long&val_0_15)
 	   the_event.value_unit.empty() )
 	{
 	  unsigned int the_val = stoul( the_event.value_left );
-	  unsigned int the_dec = stoul( the_event.value_right );
 	  if ( the_val == 0 )
 		{
 		  // 0 to (excluded) 1
-		  if ( the_event.value_right.size() < 6 )
+		  if ( the_event.value_right.empty() == false )
 			{
-			  unsigned long f1 = the_dec * pow( 10 , ( 6 - the_event.value_right.size() ));
-			  val_0_15 = ( f1 + 1953 )/ 62500;
-			  if ( val_0_15 == 16 )
-				val_0_15 = 0;
-			  return string();
+			  if ( the_event.value_right.size() < 6 )
+				{
+				  unsigned int the_dec = stoul( the_event.value_right );
+				  unsigned long f1 = the_dec * pow( 10 , ( 6 - the_event.value_right.size() ));
+				  val_0_15 = ( f1 + 1953 )/ 62500;
+				  if ( val_0_15 == 16 )
+					val_0_15 = 0;
+				  return string();
+				}
+			  else
+				{
+				  val_0_15 = 0;
+				  return "The angle should not have more than 5 digits after the decimal separator.";
+				}
 			}
 		  else
 			{
 			  val_0_15 = 0;
-			  return "The angle should not have more than 5 digits after the decimal separator.";
+			  return string();
 			}
 		}
 	  else if ( the_val < 360 )
@@ -465,6 +753,13 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
   multimap<short,string>::const_iterator mnemos_list_iter;
   string return_err_str;
 
+  if( 1 == 2 )
+	{
+	  cout << "Mnemo to find: " << the_event.mnemo << "\t";
+	  cout << the_event.TS_left << "." << the_event.TS_right << "\t" << the_event.channel << "\t";
+	  cout << the_event.value_left << "." << the_event.value_right << endl;
+	}
+
   mnemos_read_funcs_iter = mrf.find(the_event.mnemo);
   if ( mnemos_read_funcs_iter != mrf.end() )
 	{
@@ -545,9 +840,15 @@ unsigned long input_params_mnemos_byte_stream::check_next_time_stamp()
 {
   if ( get_event( i_stm ) )
 	{
-	  // Something read
-	  //	  info_out_stream<< (*this);
-	  return timestamp_construct;
+	  unsigned long value;
+	  string err_ret_str = FreqDelay_strings_2_val( value, false, 20 );
+	  if ( err_ret_str.empty() )
+		return value;
+	  else
+		{
+		  //info_out_str << err_ret_str;
+		  return 0;
+		}
 	}else
 	// Input is "starving" nothing has been received or is not complete
 	return 0xffffffff;
@@ -592,20 +893,36 @@ input_params_mnemos_file::~input_params_mnemos_file()
 
 void input_params_mnemos_file::exec_next_event(vector<signals_param_action>&actions)
 {
-  //cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
-  //cout << (unsigned short)key ;
+  // cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
+  // cout << endl;
 
   mnemos_2_action_run( actions );
+  // Reset the fields
+  // The strucutre should change. For now intilize one by one
+  TS_left.clear();
+  TS_right.clear();
+  TS_unit.clear();
+  channel.clear();
+  mnemo.clear();
+  value_left.clear();
+  value_right.clear();
+  value_unit.clear();
 }
 
 unsigned long input_params_mnemos_file::check_next_time_stamp()
 {
   if ( get_event( if_stm ) )
 	{
-	  // Something read
-	  //	  info_out_stream<< (*this);
-	  // cout << (unsigned short)key ;
-	  return timestamp_construct;
+	  unsigned long value;
+	  string err_ret_str = FreqDelay_strings_2_val( value, false, 20 );
+	  if ( err_ret_str.empty() )
+		return value;
+	  else
+		{
+		  //info_out_str << err_ret_str;
+		  return 0;
+		}
+
 	}else
 	// Input is "starving" nothing has been received or is not complete
 	return 0xffffffff;
@@ -643,8 +960,8 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
   mnemos_bytes_datagram_test( info_out_stream, false, ((input_params_base*)this)->clearing ),
   input_params_mnemos_2_action( info_out_stream, *((mnemo_event*)this), ((input_params_base*)this)->clearing, status ),
   the_list({{mnemo_event("0","0","s","1","nn","","","/")},
-		{mnemo_event("0","0","s","1","XX","22","5","/")},
-		{mnemo_event("0","0","","5","aa","1","20000","%")},
+		{mnemo_event("","0","s","1","XX","22","5","/")},
+		{mnemo_event("0","","","5","aa","1","20000","%")},
 		{mnemo_event("1","2","","6","aa","100","4","%")},
 		{mnemo_event("1","2","s","4","ba","100","0","%")},
 		{mnemo_event("0","0","s","3","ba","90","0","")},
@@ -659,13 +976,13 @@ input_params_mnemos_hardcoded::input_params_mnemos_hardcoded(ostream&):
 	    {mnemo_event("1","2","s","ALL","op","0","5","")},
         {mnemo_event("1","2","s","0","bp","45","500","/")},
 	    {mnemo_event("1","2","s","1","ap","90","0","/")},
-		{mnemo_event("1","2","s","20","of","1","20000","%")},
+		{mnemo_event("1","2","s","20","of","0","20000","%")},
 		{mnemo_event("1","2","s","21","of","100","4","")},
 		{mnemo_event("1","2","s","22","of","1000","0","m")},
 		{mnemo_event("1","2","s","23","of","90","0","mhz")},
 		{mnemo_event("1","2","s","24","of","1","666","msec")},
-		{mnemo_event("1","2","s","25","of","0","00166","sec")},
-		{mnemo_event("1","2","s","26","of","0","600","khz")},
+		{mnemo_event("1","2","s","25","of","","00166","sec")},
+		{mnemo_event("1","2","s","26","of","","600","khz")},
 		{mnemo_event("1","2","s","27","of","1","600","hz")},
 		{mnemo_event("1","2","s","30","os","0","0166","sec")},
         {mnemo_event("1","2","s","31","os","0","100","khz")},
@@ -691,13 +1008,14 @@ unsigned long input_params_mnemos_hardcoded::check_next_time_stamp()
   if ( get_event( the_list_iter, the_list_end ) )
 	{
 	  unsigned long value;
-	  // Something is always read as it is an hardcoded table
-	  return_err_str = FreqDelay_strings_2_val( value, false, 20 );
-	  if ( return_err_str.empty() )
+	  string err_ret_str = FreqDelay_strings_2_val( value, false, 20 );
+	  if ( err_ret_str.empty() )
 		return value;
 	  else
-		// Table input is wrong, tell it is starving in order to respawn the get_event function
-		return 0xffffffff;
+		{
+		  //info_out_str << err_ret_str;
+		  return 0;
+		}
 	}else
 	// Input is "starving", that should not be hapened here
 	return 0xffffffff;

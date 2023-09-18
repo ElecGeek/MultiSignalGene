@@ -87,22 +87,22 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "Sets the pulse depth " << hex << action.value << ", dec: " << dec << action.value << endl;
 	  break;
 	case signals_param_action::base_phase_shift:
-	  out_line << "Shift the phase of the base " << dec << action.value << " PI/8" << endl;
+	  out_line << "Shift the phase of the base " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::ampl_modul_phase_shift:
-	  out_line << "Shift the phase of the amplitude modulation " << dec << action.value << " PI/8" << endl;
+	  out_line << "Shift the phase of the amplitude modulation " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::pulse_phase_shift:
-	  out_line << "Shift the phase of the pulse " << dec << action.value << " PI/8" << endl;
+	  out_line << "Shift the phase of the pulse " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::ampl_modul_phase_set:
-	  out_line << "Set the phase of the amplitude modulation " << dec << action.value << " PI/8" << endl;
+	  out_line << "Set the phase of the amplitude modulation " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::base_phase_set:
-	  out_line << "Set the phase of the base " << dec << action.value << " PI/8" << endl;
+	  out_line << "Set the phase of the base " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::pulse_phase_set:
-	  out_line << "Set the phase of the pulse " << dec << action.value << " PI/8" << endl;
+	  out_line << "Set the phase of the pulse " << dec << action.value << " PI/16 = " << ((float)action.value) * 22.5 << " degree" << endl;
 	  break;
 	case signals_param_action::ampl_modul_modul_mode:
 	  out_line << "Set the modulation mode of the amplitude modulation " << dec << action.value << " 0=normal 1=abs" << endl;
