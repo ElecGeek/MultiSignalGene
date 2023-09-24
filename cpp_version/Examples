@@ -1,0 +1,53 @@
+For all the examples using MultiSignalGene one should replace by the chosen executable (MultiSignalGene_DW_SINE, MultiSignalGene_DW_PULSES, MultiSignalGene_DW_TRIANGLES etc... ) or has a symbolic link to the chosen executable.
+
+Please note the number of channels -c option acts only on a sound output (jackaudio, raw file etc...). It has no effects on any output parameters channels.
+
+
+
+
+To play 2 channels of a midi mapped file using jackaudio output
+MultiSignalGene -i <midimapped_file> -F mid -j . -c 2
+
+
+To play 2 channels of a midi mapped file using jackaudio output while connecting to the 2 first system inputs, and viewing the signal on the X42_scope
+MultiSignalGene -i <midimapped_file> -F mid -j . -c 2 -j -
+
+
+On play 2 channels of a midi mapped file using jackaudio output while connecting against a custom configuration
+Sorry this is not yet implemented.
+The work around is to start as above and to modify the connections using the jackaudio tools. If one takes 30 seconds: 
+MultiSignalGene -i <midimapped_file> -F mid -j . -c 2 -w 30
+
+
+To play 2 channels of a midi mapped file using jackaudio output but only if jackaudio is set to 48K or 96K (leave otherwise)
+MultiSignalGene -i <midimapped_file> -F mid -j . -c 2 -r 48000 -r 96000
+
+
+To compute 3 channels of a midi mapped file and place it into a 48K raw file
+Be careful to the output size!
+MultiSignalGene -i <midimapped_file> -F mid -f <raw_file> -c 3
+or
+MultiSignalGene -i <midimapped_file> -F mid -f <raw_file> -c 3 -r 48000
+or
+MultiSignalGene -i <midimapped_file> -F mid -f <raw_file> -c 3 -r 1
+
+
+To compute 3 channels of a midi mapped file and place it into a 96K raw file
+Be very very carefully to the output size!
+MultiSignalGene -i <midimapped_file> -F mid -f <raw_file> -c 3 -r 2
+or
+MultiSignalGene -i <midimapped_file> -F mid -f <raw_file> -c 3 -r 96000
+
+
+To use the mnemonics test mode and output it in the console, in order to see the syntax
+MultiSignalGene -i <random name> -F test -o - -F mnemo
+
+
+To check a mnemonic input parameters file against errors and display the absolute time from the beginning 
+MultiSignalGene -i <mnemo_file> -F mnemo -o - -F text
+
+
+To check the modulation envelope of 2 channels, while viewing on the X42_scope software, a mnemonic input parameters file
+MultiSignalGene -i <mnemo_file> -F mnemo -c 2 -j - -K C
+or
+MultiSignalGene_DW_CONTINUOUS -i <mnemo_file> -F mnemo -c 2 -j -

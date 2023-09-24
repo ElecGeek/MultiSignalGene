@@ -106,9 +106,15 @@ int main(int argc,char *argv[] )
 		case 'r':
 		  switch ( atoi( optarg ) )
 			{
-			case 48000: the_sr_list.add_value( 1 ); break;
-			case 96000: the_sr_list.add_value( 2 ); break;
-			case 192000: the_sr_list.add_value( 4 ); break;
+			case 1:
+			case 48000:
+			  the_sr_list.add_value( 1 ); break;
+			case 2:
+			case 96000:
+			  the_sr_list.add_value( 2 ); break;
+			case 4:
+			case 192000:
+			  the_sr_list.add_value( 4 ); break;
 			default: cout << "Only 48, 96, 192KHz are allowed sample rates, ignored" << endl; break;
 			}		  
 		  break;

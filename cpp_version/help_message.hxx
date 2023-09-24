@@ -88,7 +88,7 @@ string help()
   ostrstm << "\tToday ONLY the 2 default work, TODO" << endl;
   ostrstm << endl << "-r"; ostrstm << endl;
   ostrstm << "\tSpecifies the sample rate" << endl;
-  ostrstm << "\tOnly 1= 48KHz, 2= 96KHz and 4=192KHz are valid" << endl;
+  ostrstm << "\tOnly 1 or 48KHz, 2 or 96KHz and 4 or 192KHz are valid" << endl;
   ostrstm << "\tIf not involved, let the output module choose or default" << endl;
   ostrstm << "\tMI: specifies a list submitted to the output module" << endl;
   ostrstm << endl << "-l"; ostrstm << endl;
