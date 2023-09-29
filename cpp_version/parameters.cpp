@@ -34,7 +34,7 @@ bool input_params_base::check_next_event( const unsigned short&elapsed_samples, 
 		  if( current_samples >= requested_samples )
 			{
 			  // Something to do now
-			  exec_next_event(actions);
+			  import_next_event(actions);
 			  current_samples -= requested_samples;
 			  wait_for_next_TS = false;
 			  cout << info_out_stream.str();

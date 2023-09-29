@@ -18,7 +18,15 @@ using namespace std;
 class mnemos_bytes_stream : public mnemo_event {
   // just copied and pasted, have to be enchired by the line parsing
   enum state_t{ state_ts, state_code, state_key, state_val, state_string, state_end } state;
+  enum{ ls_start=0, ls_wait_eol_comment=1,
+	ls_in_ts_left=2, ls_in_ts_right=3, ls_in_ts_unit=4, ls_spctab_ts=5,
+	ls_in_channel=6, ls_spctab_channel=7,
+	ls_in_mnemo=8, ls_spctab_mnemo=9,
+	ls_in_val_left=10, ls_in_val_right=11, ls_in_val_unit=12, ls_spctab_val=13,
+	ls_in_crlf=14 } line_state;
+public:
   ostream&info_out_str;
+private:
   input_params_base::clearing_t&mbs_clearing;
 protected:
   unsigned long track_line;
@@ -154,7 +162,7 @@ class input_params_mnemos_byte_stream : public input_params_base, public mnemos_
  public:
   input_params_mnemos_byte_stream(void)=delete;
   input_params_mnemos_byte_stream(ostream&,istream&,const bool&);
-  void exec_next_event(vector<signals_param_action>&actions);
+  void import_next_event(vector<signals_param_action>&actions);
   unsigned long check_next_time_stamp(void);
   bool eot(void) const;
   bool is_ready(void);
@@ -181,7 +189,7 @@ class input_params_mnemos_file : public input_params_base, public mnemos_bytes_s
   input_params_mnemos_file(void)=delete;
   input_params_mnemos_file(ostream&,ifstream&input_stream,const unsigned short&loops_counter);
   ~input_params_mnemos_file(void);
-  void exec_next_event(vector<signals_param_action>&actions);
+  void import_next_event(vector<signals_param_action>&actions);
   unsigned long check_next_time_stamp(void);
   bool eot(void) const;
   bool is_ready(void);
@@ -209,7 +217,7 @@ class input_params_mnemos_hardcoded : public input_params_base, public mnemos_by
 public:
   input_params_mnemos_hardcoded(void)=delete;
   input_params_mnemos_hardcoded(ostream&);
-  void exec_next_event(vector<signals_param_action>&actions);
+  void import_next_event(vector<signals_param_action>&actions);
   unsigned long check_next_time_stamp(void);
   bool eot(void) const;
   bool is_ready(void);

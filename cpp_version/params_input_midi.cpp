@@ -338,7 +338,7 @@ input_params_midi_byte_stream::input_params_midi_byte_stream(ostream&,istream&i_
 }
 
 
-void input_params_midi_byte_stream::exec_next_event(vector<signals_param_action>&actions)
+void input_params_midi_byte_stream::import_next_event(vector<signals_param_action>&actions)
 {
   midi_2_action_run( actions );
 }
@@ -387,7 +387,7 @@ input_params_midi_file::~input_params_midi_file()
   if_stm.close();
 }
 
-void input_params_midi_file::exec_next_event(vector<signals_param_action>&actions)
+void input_params_midi_file::import_next_event(vector<signals_param_action>&actions)
 {
   //cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
   //cout << (unsigned short)key ;

@@ -55,7 +55,7 @@ class input_params_base : public params_base {
   bool wait_for_next_TS;
   unsigned long requested_samples;
   virtual unsigned long check_next_time_stamp(void) = 0;
-  virtual void exec_next_event(vector<signals_param_action>&actions) = 0;
+  virtual void import_next_event(vector<signals_param_action>&actions) = 0;
  public:
   unsigned long cumul_time_stamp;
   unsigned long current_samples;

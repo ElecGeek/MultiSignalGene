@@ -29,7 +29,8 @@ mnemos_bytes_stream::mnemos_bytes_stream(ostream&os,
 										 input_params_base::clearing_t&clearing ):
   info_out_str(os),
   with_time_stamp( with_time_stamp ),
-  track_line( 0 ),
+  track_line( 1 ),
+  line_state( ls_start ),
   state( state_end ),
   mbs_clearing( clearing )
 {}
@@ -43,13 +44,6 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
   unsigned char val_read;
   
   bool shoottheline;
-
-  enum{ ls_start, ls_wait_eol_comment,
-	ls_in_ts_left, ls_in_ts_right, ls_in_ts_unit, ls_spctab_ts,
-	ls_in_channel, ls_spctab_channel,
-	ls_in_mnemo, ls_spctab_mnemo,
-	ls_in_val_left, ls_in_val_right, ls_in_val_unit, ls_spctab_val,
-	ls_in_crlf } line_state;
 		
   if( state == state_end )
 	{
@@ -69,242 +63,258 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 	  if ( ( val_read >= 'a' && val_read <= 'z' ) || ( val_read >= 'A' && val_read <= 'Z' ) || val_read == '/' )
 	    {
 	      if ( val_read >= 'A' && val_read <= 'Z' )
-		val_read += 'a' - 'A';
+			val_read += 'a' - 'A';
 	      switch ( line_state )
-		{
-		case ls_in_ts_left:
-		case ls_in_ts_right:
-		  line_state = ls_in_ts_unit;
-		case ls_in_ts_unit:
-		  TS_unit += val_read;
-		  break;
-		case ls_spctab_ts:
-		  line_state = ls_in_channel;
-		case ls_in_channel:
-		  channel += val_read;
-		  break;
-		case ls_spctab_channel:
-		  line_state = ls_in_mnemo;
-		case ls_in_mnemo:
-		  mnemo += val_read;
-		  break;
-		case ls_spctab_mnemo:
-		  info_out_str << "Line " << track_line << ": numerical digits are expected for the value" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_in_val_left:
-		case ls_in_val_right:
-		  line_state = ls_in_val_unit;
-		case ls_in_val_unit:
-		  value_unit += val_read;
-		  break;
-		case ls_spctab_val:
-		  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_in_crlf:
-		case ls_start:
-		  info_out_str << "Line " << track_line << ": numerical digits are expected for the timestamp" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_wait_eol_comment:
-		  break;
-		}
-
+			{
+			case ls_in_ts_left:
+			case ls_in_ts_right:
+			  line_state = ls_in_ts_unit;
+			case ls_in_ts_unit:
+			  TS_unit += val_read;
+			  break;
+			case ls_spctab_ts:
+			  line_state = ls_in_channel;
+			case ls_in_channel:
+			  channel += val_read;
+			  break;
+			case ls_spctab_channel:
+			  line_state = ls_in_mnemo;
+			case ls_in_mnemo:
+			  mnemo += val_read;
+			  break;
+			case ls_spctab_mnemo:
+			  info_out_str << "Line " << track_line << ": numerical digits are expected for the value" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_in_val_left:
+			case ls_in_val_right:
+			  line_state = ls_in_val_unit;
+			case ls_in_val_unit:
+			  value_unit += val_read;
+			  break;
+			case ls_spctab_val:
+			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_in_crlf:
+			case ls_start:
+			  info_out_str << "Line " << track_line << ": numerical digits are expected for the timestamp" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_wait_eol_comment:
+			  break;
+			}
+		  
 	    }
 	  else if ( val_read >= '0' && val_read <= '9' )
 	    {
 	      switch ( line_state )
-		{
-		case ls_in_crlf:
-		case ls_start:
-		  line_state = ls_in_ts_left;
-		case ls_in_ts_left:
-		  TS_left += val_read;
-		  break;
-		case ls_in_ts_right:
-		  TS_right += val_read;
-		  break;
-		case ls_in_ts_unit:
-		  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the TS unit" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_ts:
-		  line_state = ls_in_channel;
-		case ls_in_channel:
-		  channel += val_read;
-		  break;
-		case ls_spctab_channel:
-		  line_state = ls_in_mnemo;
-		case ls_in_mnemo:
-		  mnemo += val_read;
-		  break;
-		case ls_spctab_mnemo:
-		  line_state = ls_in_val_left;
-		case ls_in_val_left:
-		  value_left += val_read;
-		  break;
-		case ls_in_val_right:
-		  value_right += val_read;
-		  break;
-		case ls_in_val_unit:
-		  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the value unit" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_val:
-		  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_wait_eol_comment:
-		  break;
-		}
+			{
+			case ls_in_crlf:
+			case ls_start:
+			  line_state = ls_in_ts_left;
+			case ls_in_ts_left:
+			  TS_left += val_read;
+			  break;
+			case ls_in_ts_right:
+			  TS_right += val_read;
+			  break;
+			case ls_in_ts_unit:
+			  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the TS unit" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_ts:
+			  line_state = ls_in_channel;
+			case ls_in_channel:
+			  channel += val_read;
+			  break;
+			case ls_spctab_channel:
+			  line_state = ls_in_mnemo;
+			case ls_in_mnemo:
+			  mnemo += val_read;
+			  break;
+			case ls_spctab_mnemo:
+			  line_state = ls_in_val_left;
+			case ls_in_val_left:
+			  value_left += val_read;
+			  break;
+			case ls_in_val_right:
+			  value_right += val_read;
+			  break;
+			case ls_in_val_unit:
+			  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the value unit" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_val:
+			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_wait_eol_comment:
+			  break;
+			}
 	    }
 	  else if ( val_read == '.' || val_read == ',' )
 	    {
 	      switch ( line_state )
-		{
-		case ls_in_ts_left:
-		case ls_start:
-		  line_state = ls_in_ts_right;
-		  break;
-		case ls_in_ts_right:
-		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the TS" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_in_ts_unit:
-		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the TS unit" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_ts:
-		case ls_in_channel:
-		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the channel" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_channel:
-		case ls_in_mnemo:
-		  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the mnemonic" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_mnemo:
-		case ls_in_val_left:
-		  line_state = ls_in_val_right;
-		  break;
-		case ls_in_val_right:
-		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_in_val_unit:
-		  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value unit" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		case ls_spctab_val:
-		  info_out_str << "Line " << track_line << ": warning, please start comments qith a comment caracter" << endl;
-		  line_state = ls_wait_eol_comment;
-		  shoottheline = true;
-		  break;
-		case ls_wait_eol_comment:
-		  break;
-		case ls_in_crlf:
-		  line_state = ls_in_ts_right;
-		  break;
-		}
+			{
+			case ls_in_ts_left:
+			case ls_start:
+			  line_state = ls_in_ts_right;
+			  break;
+			case ls_in_ts_right:
+			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the TS" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_in_ts_unit:
+			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the TS unit" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_ts:
+			case ls_in_channel:
+			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the channel" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_channel:
+			case ls_in_mnemo:
+			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the mnemonic" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_mnemo:
+			case ls_in_val_left:
+			  line_state = ls_in_val_right;
+			  break;
+			case ls_in_val_right:
+			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_in_val_unit:
+			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value unit" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			case ls_spctab_val:
+			  info_out_str << "Line " << track_line << ": warning, please start comments qith a comment caracter" << endl;
+			  line_state = ls_wait_eol_comment;
+			  shoottheline = true;
+			  break;
+			case ls_wait_eol_comment:
+			  break;
+			case ls_in_crlf:
+			  line_state = ls_in_ts_right;
+			  break;
+			}
 	    }
 	  else if ( val_read == '\n' || val_read == '\r' )
 	    {
 	      switch ( line_state )
-		{
-		case ls_start:
-		  crlf_first_used = val_read;
-		  track_line += 1;
-		  break;
-		case ls_in_ts_left:
-		case ls_in_ts_right:
-		case ls_in_ts_unit:
-		case ls_spctab_ts:
-		case ls_in_channel:
-		case ls_spctab_channel:
-		case ls_in_mnemo:
-		case ls_spctab_mnemo:
-		  info_out_str << "Line" << track_line << ": te line format is wrong, some fields are missing" << endl;
-		  crlf_first_used = val_read;
-		  track_line += 1;
-		  break;
-		case ls_in_val_left:
-		case ls_in_val_right:
-		case ls_in_val_unit:
-		case ls_spctab_val:
-		  crlf_first_used = val_read;
-		  track_line += 1;
-		  shoottheline = true;
-		  break;
-		case ls_wait_eol_comment:
-		  crlf_first_used = val_read;
-		  track_line += 1;
-		  break;
-		case ls_in_crlf:
-		  if ( crlf_first_used == val_read )
-		    track_line += 1;
-		  break;
-		}
+			{
+			case ls_start:
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  break;
+			case ls_in_ts_left:
+			case ls_in_ts_right:
+			case ls_in_ts_unit:
+			case ls_spctab_ts:
+			  info_out_str << "Line" << track_line << ": the line format is wrong, channel, mnemonic and value fields are missing" << endl;
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  break;
+			case ls_in_channel:
+			case ls_spctab_channel:
+			  info_out_str << "Line" << track_line << ": the line format is wrong, mnemonic and value fields are missing" << endl;
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  break;
+			case ls_in_mnemo:
+			case ls_spctab_mnemo:
+			  info_out_str << "Line" << track_line << ": the line format is wrong, value field are missing" << endl;
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  break;
+			case ls_in_val_left:
+			case ls_in_val_right:
+			case ls_in_val_unit:
+			case ls_spctab_val:
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  shoottheline = true;
+			  break;
+			case ls_wait_eol_comment:
+			  crlf_first_used = val_read;
+			  track_line += 1;
+			  break;
+			case ls_in_crlf:
+			  if ( crlf_first_used == val_read )
+				track_line += 1;
+			  break;
+			}
 	      line_state = ls_in_crlf;
 	    }
 	  else if ( val_read == ' ' || val_read == '\t' )
 	    {
 	      switch ( line_state )
-		{
-		case ls_in_ts_left:
-		  line_state = ls_spctab_ts;
-		  break;
-		case ls_in_ts_right:
-		case ls_in_ts_unit:
-		  line_state = ls_spctab_ts;
-		  break;
-		case ls_spctab_ts:
-		  break;
-		case ls_in_channel:
-		  line_state = ls_spctab_channel;
-		  break;
-		case ls_spctab_channel:
-		  break;
-		case ls_in_mnemo:
-		  line_state = ls_spctab_mnemo;
-		  break;
-		case ls_spctab_mnemo:
-		  break;
-		case ls_in_val_left:
-		  line_state = ls_spctab_val;
-		  shoottheline = true;
-		  break;
-		case ls_in_val_right:
-		case ls_in_val_unit:
-		  line_state = ls_spctab_val;
-		  shoottheline = true;
-		  break;
-		case ls_spctab_val:
-		  break;
-		case ls_wait_eol_comment:
-		  break;
-		case ls_start:
-		case ls_in_crlf:
-		  info_out_str << "Line " << track_line << ": comments or instructions should start at column 1" << endl;
-		  line_state = ls_wait_eol_comment;
-		  break;
-		}
+			{
+			case ls_in_ts_left:
+			  line_state = ls_spctab_ts;
+			  break;
+			case ls_in_ts_right:
+			case ls_in_ts_unit:
+			  line_state = ls_spctab_ts;
+			  break;
+			case ls_spctab_ts:
+			  break;
+			case ls_in_channel:
+			  line_state = ls_spctab_channel;
+			  break;
+			case ls_spctab_channel:
+			  break;
+			case ls_in_mnemo:
+			  line_state = ls_spctab_mnemo;
+			  break;
+			case ls_spctab_mnemo:
+			  break;
+			case ls_in_val_left:
+			  line_state = ls_spctab_val;
+			  shoottheline = true;
+			  break;
+			case ls_in_val_right:
+			case ls_in_val_unit:
+			  line_state = ls_spctab_val;
+			  shoottheline = true;
+			  break;
+			case ls_spctab_val:
+			  break;
+			case ls_wait_eol_comment:
+			  break;
+			case ls_start:
+			case ls_in_crlf:
+			  info_out_str << "Line " << track_line << ": comments or instructions should start at column 1" << endl;
+			  line_state = ls_wait_eol_comment;
+			  break;
+			}
 	    }
 	  else if ( val_read == '#' || val_read == ';' || val_read == '%' )
 	    {
-	      // Comment starts here
-	      // If the line is complete or empty, no error message is sent
-	      if ( line_state != ls_start && line_state != ls_start && line_state != ls_wait_eol_comment && line_state != ls_spctab_val && line_state != ls_in_crlf )
-		info_out_str << "Line " << track_line << ": the line format is wrong" << endl;
-	      val_read = ls_wait_eol_comment;
+		  if ( line_state == ls_in_val_left || line_state == ls_in_val_right || line_state == ls_in_val_unit )
+			{
+			  line_state = ls_in_val_unit;
+			  value_unit += val_read;
+			}
+		  else
+			{
+			  // Comment starts here
+			  // If the line is complete or empty, no error message is sent
+  			  if ( line_state != ls_start && line_state != ls_wait_eol_comment && line_state != ls_spctab_val && line_state != ls_in_crlf  )
+				info_out_str << "Line " << track_line << ": the line format is wrong " << val_read << "  " << (short)line_state << endl;
+			  line_state = ls_wait_eol_comment;
+			}
 	    }
 	  else
 	    {
 	      // If we are already in a comment it is OK,
 	      // Otherwise the line is discarded
-	      if ( line_state == ls_wait_eol_comment )
-		info_out_str << "Line " << track_line << ": exotic caracters are allowed only in comments" << endl;
+	      if ( line_state != ls_wait_eol_comment )
+			info_out_str << "Line " << track_line << ": exotic caracters ( " << val_read << " ) allowed only in comments" << endl;
 	    }
 	  if ( shoottheline == true )
 	    {
@@ -753,12 +763,12 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
   multimap<short,string>::const_iterator mnemos_list_iter;
   string return_err_str;
 
-  if( 1 == 2 )
-	{
+  /*  if( the_event.mnemo.compare( "bh" ) == 0 || the_event.mnemo.compare( "bi" ) == 0|| the_event.mnemo.compare( "bf" ) == 0)
+ 	{
 	  cout << "Mnemo to find: " << the_event.mnemo << "\t";
 	  cout << the_event.TS_left << "." << the_event.TS_right << "\t" << the_event.channel << "\t";
 	  cout << the_event.value_left << "." << the_event.value_right << endl;
-	}
+	  }*/
 
   mnemos_read_funcs_iter = mrf.find(the_event.mnemo);
   if ( mnemos_read_funcs_iter != mrf.end() )
@@ -831,7 +841,7 @@ input_params_mnemos_byte_stream::input_params_mnemos_byte_stream(ostream&, istre
 }
 
 
-void input_params_mnemos_byte_stream::exec_next_event(vector<signals_param_action>&actions)
+void input_params_mnemos_byte_stream::import_next_event(vector<signals_param_action>&actions)
 {
   mnemos_2_action_run( actions );
 }
@@ -891,7 +901,7 @@ input_params_mnemos_file::~input_params_mnemos_file()
   if_stm.close();
 }
 
-void input_params_mnemos_file::exec_next_event(vector<signals_param_action>&actions)
+void input_params_mnemos_file::import_next_event(vector<signals_param_action>&actions)
 {
   // cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
   // cout << endl;
@@ -907,6 +917,12 @@ void input_params_mnemos_file::exec_next_event(vector<signals_param_action>&acti
   value_left.clear();
   value_right.clear();
   value_unit.clear();
+
+  if ( info_out_str_stream.str().empty() == false )
+	{
+	  cout << info_out_str_stream.str();
+	  info_out_str_stream.str("");
+	}
 }
 
 unsigned long input_params_mnemos_file::check_next_time_stamp()
@@ -1020,7 +1036,7 @@ unsigned long input_params_mnemos_hardcoded::check_next_time_stamp()
 	// Input is "starving", that should not be hapened here
 	return 0xffffffff;
 }
-void input_params_mnemos_hardcoded::exec_next_event(vector<signals_param_action>&actions)
+void input_params_mnemos_hardcoded::import_next_event(vector<signals_param_action>&actions)
 {
   //cout << "TS cumul: " << dec << cumul_time_stamp / 10 << '\t';
   //cout << (unsigned short)key ;

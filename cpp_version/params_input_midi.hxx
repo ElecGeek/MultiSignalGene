@@ -100,7 +100,7 @@ class input_params_midi_byte_stream : public input_params_base, public midi_byte
  public:
   input_params_midi_byte_stream(void)=delete;
    input_params_midi_byte_stream(ostream&,istream&,const bool&);
-  void exec_next_event(vector<signals_param_action>&actions);
+  void import_next_event(vector<signals_param_action>&actions);
   unsigned long check_next_time_stamp(void);
   friend ostream&operator<<(ostream&,const input_params_midi_byte_stream&);
 };
@@ -126,7 +126,7 @@ class input_params_midi_file : public input_params_base, public midi_bytes_strea
   input_params_midi_file(void)=delete;
   input_params_midi_file(ostream&,ifstream&input_stream,const unsigned short&loops_counter);
   ~input_params_midi_file(void);
-  void exec_next_event(vector<signals_param_action>&actions);
+  void import_next_event(vector<signals_param_action>&actions);
   unsigned long check_next_time_stamp(void);
   bool eot(void) const;
   bool is_ready(void);
