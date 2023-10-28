@@ -7,7 +7,7 @@
 sample_rate_list::sample_rate_list():
   don_t_care( true)
 {}
-void sample_rate_list::add_value(const unsigned char&a)
+void sample_rate_list::add_value(const unsigned short&a)
 {
   don_t_care = false;
   if( find( list_sr.begin(), list_sr.end(), a ) == list_sr.end())
@@ -28,7 +28,7 @@ sample_rate_list sample_rate_list::intersect_sr_list(const sample_rate_list&a)co
 	else
 	  // search for the intersection
 	  // no set_intersection as it came with C++17
-	  for_each( list_sr.begin(), list_sr.end(), [&](const unsigned char& b){
+	  for_each( list_sr.begin(), list_sr.end(), [&](const unsigned short& b){
 		  auto iter = find( a.list_sr.begin(), a.list_sr.end(), b );
 		  if ( iter != a.list_sr.end() )
 			the_return.list_sr.insert( b );
@@ -36,19 +36,21 @@ sample_rate_list sample_rate_list::intersect_sr_list(const sample_rate_list&a)co
   }
 	return the_return;
 }
-unsigned char sample_rate_list::get_sample_rate()const
+pair<unsigned short,bool> sample_rate_list::get_sample_rate()const
 {
   // default strategy is to return the lowest one
   if( don_t_care )
 	// return 4;
-	  return 1;
+	return make_pair(48,false);
   else
 	if ( list_sr.begin() == list_sr.end() )
 	  // list is empty, return 0
-	  return 0;
+	  return make_pair(0,true);
 	else
-	  // return list_sr.rbegin();
-	  return *list_sr.begin();
+	  {
+		const unsigned short xxx=*list_sr.begin();
+		return make_pair(xxx,xxx<48);
+	  }
 }
 ostream&operator<<(ostream&a,const sample_rate_list&b)
 {
@@ -58,9 +60,9 @@ ostream&operator<<(ostream&a,const sample_rate_list&b)
 	if ( b.list_sr.begin() == b.list_sr.end() )
 	  a<<"[none]";
 	else
-	  for_each( b.list_sr.begin(), b.list_sr.end(), [&a](const unsigned char&c)
+	  for_each( b.list_sr.begin(), b.list_sr.end(), [&a](const unsigned short&c)
 				{
-				  a<<" "<<c*48000<<" ";
+				  a<<" "<<c*1000<<" ";
 				});
   return a;
 }
@@ -303,13 +305,16 @@ sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbr
 	  
 	  unsigned long jack_sr = jack_get_sample_rate( client );
 	  cout << jack_sr << endl;
-	  switch ( jack_sr )
+
+	  if ( jack_sr >= 3000 && jack_sr <= 192000 )
 		{
-		case 48000:  sr_list.add_value( 1 );  cout << "jack sr: " << sr_list << endl; break;
-		case 96000:  sr_list.add_value( 2 );  cout << "jack sr: " << sr_list << endl; break;
-		case 192000:  sr_list.add_value( 4 );  cout << "jack sr: " << sr_list << endl; break;
-		default: is_open_b = false; cout << "Sample rate of " << jack_sr << " is not supported" << endl;
-		}
+		  sr_list.add_value( jack_sr / 1000 );
+		  cout << "jack sr: " << sr_list << endl;
+		}else{
+		is_open_b = false;
+		cout << "Sample rate of " << jack_sr << " is not supported" << endl;
+	  }
+
 	}else{
 	is_open_b = false;
   }

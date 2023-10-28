@@ -47,7 +47,7 @@ class frequency_handler
    * The division rate should not be greater than 8 to guarantee the rest of the project
    * It might work for higher values but it is a non sense in this project
    */
- frequency_handler( const unsigned char& samle_rate_id,
+ frequency_handler( const unsigned short& samle_rate_id,
 					 const unsigned char& division_rate);
   /** \brief set the frequency
    *

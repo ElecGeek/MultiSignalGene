@@ -39,7 +39,7 @@ class main_loop {
    */
   vector<signals_param_action>actions;
  private:
-  const unsigned char&sample_rate_id;
+  const unsigned short&sample_rate_id;
   //! Samples counter for the parameters set update
   unsigned short samples_count;
   //! Number of samples ran between 2 parameters updates (always based on 48KHz)
@@ -65,7 +65,7 @@ class main_loop {
    *  \param samples_per_param_check Number of samples to run for one parameter set (in or out) update
    *  \param shutdown_length Not yet implemented
   */
-  main_loop( const unsigned char&sample_rate_id,
+  main_loop( const unsigned short&sample_rate_id,
 			 const string&mode,
 			 const unsigned short&n_channels,
 			 const unsigned short samples_per_param_check = 48,

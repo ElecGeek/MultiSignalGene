@@ -26,7 +26,7 @@ public:
   frequency_handler frequency;
   sample_step_sine step_sine;
 
-  modulation_handler( const unsigned char& sample_rate_id,
+  modulation_handler( const unsigned short& sample_rate_id,
 					 const unsigned char& division_rate);
   /** Run operator
    *

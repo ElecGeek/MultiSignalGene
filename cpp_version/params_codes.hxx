@@ -10,7 +10,7 @@
  * 0000 0eee  0mmmmmmm c=1   C00 to G00  OF  Base frequency             max = 2976.56Hz step = 23.44Hz min = 0.183Hz, 5.46s step = 0.366Hz\n
  * 0000 1eee  0mmmmmmm c=0  G#00 to D#0  OS  Main amplitude slew-rate   max = ??? min step = ? max step = ?\n
  * 0001 000e  0mmmmmmm c=1    E0 to  F0  OA  Main amplitude             max = 254 min step = 1 max step = 2\n
- * 0001 0010  0xxxxxxx na.          F#0  NQ  Abort this parameters input channel, use this for testing\n
+ * 0001 0010  0xxxxxxx na.          F#0  NQ  Abort. Mnemonic file is over. Channel is discarded. Value is the time before leave (not yet implemented)\n
  * 0001 0011           na.           G0   /  Reserved\n
  * 0001 0100  0mmmmmmm c=1          G#0  AA  Amplitude modulation depth max = 127 step = 2\n
  * 0001 0101  0mmmmmmm c=1           A0  BA  Pulse depth                max = 127 step = 2\n

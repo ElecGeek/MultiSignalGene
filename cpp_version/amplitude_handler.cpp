@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-amplitude_handler::amplitude_handler(const unsigned char&sample_rate_id):
+amplitude_handler::amplitude_handler(const unsigned short&sample_rate_id):
   volume( 255 ), requested_ampl( 0 ), amplitude24( 0 ), slewrate( 2048 ), sample_rate_id( sample_rate_id )
 {}
 void amplitude_handler::set_volume( const unsigned char&volume )
@@ -16,7 +16,7 @@ void amplitude_handler::set_amplitude( const unsigned char&amplitude )
 void amplitude_handler::set_slewrate( const unsigned short&slewrate )
 {
   this->slewrate = slewrate;
-  this->slewrate *= 4;
+  this->slewrate *= 4 * 48;
   this->slewrate /= sample_rate_id;
 }
 

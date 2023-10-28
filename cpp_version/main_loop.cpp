@@ -2,7 +2,7 @@
 
 #include <jack/jack.h>
 
-main_loop::main_loop( const unsigned char&sample_rate_id,
+main_loop::main_loop( const unsigned short&sample_rate_id,
 					  const string&mode,
 					  const unsigned short&n_channels,
 					  const unsigned short samples_per_param_check,
@@ -29,7 +29,11 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
   output_waveform_info.reserve( 25 + 2 * n_channels );
   output_waveform_info += "Output waves is(are):";
 
-  samples_per_TS_unit = sample_rate_id * samples_per_param_check;
+  // samples_per_TS_unit = sample_rate_id * samples_per_param_check;
+  // sample_rate_id is based on multiples of 1KHz,
+  //   then to get a refresh of the parameters every mS,
+  //   the sample_rate_id is the sample divider 
+  samples_per_TS_unit = sample_rate_id * 1;
   //  cout << "SPTU " <<samples_per_TS_unit << endl;
   auto mode_iter = mode.begin();
 
@@ -334,8 +338,8 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		return 0;
 	  else
 		{
-		  unsigned long elapsed_time = sample_action_count * 20833;
-		  return elapsed_time / ( 1000 * sample_rate_id );
+		  unsigned long elapsed_time = sample_action_count * 1000;
+		  return elapsed_time / sample_rate_id ;
 		}
 	}
 }

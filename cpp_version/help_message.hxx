@@ -41,7 +41,7 @@ string help()
   ostrstm << endl << "-f filename" << endl;
   ostrstm << "\tSpecifies a raw signal file. Format is PCM 16 bits as many channels as defined by the -n option" << endl;  
   ostrstm << "\t0..1 MI: Only the last usage is considered" << endl;
-  ostrstm << endl << "-K sine, pulses or triangle" << endl;
+  ostrstm << endl << "-K sine, pulses, triangle or continuous" << endl;
   ostrstm << "\tSpecifies the output signal file, raw and jackaudio (if so)." << endl;
   ostrstm << "\ts=sine, p=pulses, e=triangle, c=continuous or b=both" << endl;
   ostrstm << "\t\tb and c is/are for test purposes" << endl;
@@ -61,6 +61,7 @@ string help()
   ostrstm << "\t\tIn case of a single character or a string shorted than the number of channels," << endl;
   ostrstm << "\t\tthe (last) character is replicated as many times as needed." << endl;
   ostrstm << "\t\tIn case of a string longer than the number of channels, the last characters are voided" << endl;
+  ostrstm << "\t\tFor the sample rate (stricktly) lower than 48KHz, this option should be set with C's only" << endl;
   ostrstm << "\t0..1 MI: Each invocation is concatenated to each other" << endl;
   ostrstm << endl << "-c number" << endl;
   ostrstm << "\tSpecifies the number of audio or raw file channels." << endl;

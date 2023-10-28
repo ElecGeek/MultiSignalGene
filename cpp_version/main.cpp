@@ -106,16 +106,25 @@ int main(int argc,char *argv[] )
 		case 'r':
 		  switch ( atoi( optarg ) )
 			{
+			case 3000:
+			  the_sr_list.add_value( 3 ); break;
+			  break;
+			case 6000:
+			  the_sr_list.add_value( 6 ); break;
+			  break;
 			case 1:
 			case 48000:
-			  the_sr_list.add_value( 1 ); break;
+			  the_sr_list.add_value( 48 ); break;
 			case 2:
 			case 96000:
-			  the_sr_list.add_value( 2 ); break;
+			  the_sr_list.add_value( 96 ); break;
 			case 4:
 			case 192000:
-			  the_sr_list.add_value( 4 ); break;
-			default: cout << "Only 48, 96, 192KHz are allowed sample rates, ignored" << endl; break;
+			  the_sr_list.add_value( 192 ); break;
+			default:
+			  cout << "Only 48000, 96000, 192000 are allowed sample rates" << endl;
+			  cout << "3000 and 6000 are allowed as well under the condition -K C, ignored" << endl;
+			  break;
 			}		  
 		  break;
 		case 'l':
@@ -195,19 +204,31 @@ int main(int argc,char *argv[] )
   cout << "Sample rate(s) requested by the parameters: " << the_sr_list << endl;
   the_sr_list = sfob->process_sample_rate( the_sr_list );
   cout << "Sample rate(s) validated by the output module: " << the_sr_list << endl;
-  const unsigned char sample_rate_id = the_sr_list.get_sample_rate();
+  const pair<unsigned short,bool> sample_rate_data = the_sr_list.get_sample_rate();
 
-  if ( sample_rate_id == 0 )
+  if ( sample_rate_data.first == 0 )
 	{
 	  cout << "Sorry no common value has been found" << endl;
 	  exit( EXIT_FAILURE );
 	}
-  cout << "Sample rate is: " << sample_rate_id*48000 << endl;
+  cout << "Sample rate is: " << sample_rate_data.first*1000 << endl;
+
+  if ( output_mode.empty() && sample_rate_data.second)
+	{
+	  cout << "Low sample rate is used, the K option should be set to C (continuous)" <<endl;
+	  exit( EXIT_FAILURE );
+	}
+  auto is_continuous = [](string::value_type i){ return ( i == 'c' ) || ( i =='C' );};
+  if ( find_if_not( output_mode.begin(), output_mode.end(), is_continuous ) != output_mode.end() )
+	{
+	  cout << "Low sample rate is used, the K option should only C (continuous) values" <<endl;
+	  exit( EXIT_FAILURE );
+	}
 
   cout << "Opening the input and output modules ";
   cout << "with " << channels_number << "channels" << endl;
  
-  main_loop signals(sample_rate_id,output_mode,channels_number);
+  main_loop signals(sample_rate_data.first,output_mode,channels_number);
   cout << signals.get_output_waveform() << endl;
 
   /*  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )

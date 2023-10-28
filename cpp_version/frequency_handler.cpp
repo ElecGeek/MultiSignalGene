@@ -2,9 +2,9 @@
 #include<iostream>
 using namespace std;
 
-frequency_handler::frequency_handler( const unsigned char&sample_rate_id,
+frequency_handler::frequency_handler( const unsigned short&sample_rate_id,
 									  const unsigned char&division_rate):
-  global_rate( (unsigned short)sample_rate_id * (unsigned short)division_rate ),
+  global_rate( sample_rate_id * (unsigned short)division_rate ),
   angle( 0 ), startCycle(false),
   high_hold( 0 ), low_hold( 0 ),
   high_hold_count( 0 ), low_hold_count( 0 ),
@@ -18,7 +18,7 @@ void frequency_handler::set_frequency(const unsigned short&frequency )
   if ( frequency < 1 )
     throw;
   this->frequency = frequency; 
-  this->frequency *= 32;
+  this->frequency *= 32 * 48;
   this->frequency /= global_rate;
   //cout << "Frequency settings " << this->frequency << endl;
 }
@@ -33,8 +33,8 @@ void frequency_handler::set_frequency(const unsigned short&frequency )
 void frequency_handler::set_high_hold(const unsigned short&high_hold)
 {
   this->high_hold = high_hold;
-  this->high_hold *= 16;
   this->high_hold *= global_rate;
+  this->high_hold /= 3;
   //cout << "val high_hold " << 16 * high_hold * global_rate << endl;
 }
 /** \brief Set the low hold time
@@ -48,8 +48,8 @@ void frequency_handler::set_high_hold(const unsigned short&high_hold)
 void frequency_handler::set_low_hold(const unsigned short&low_hold)
 {
   this->low_hold = low_hold;
-  this->low_hold *= 16;
   this->low_hold *= global_rate;
+  this->low_hold /= 3;
   //  cout << "val low_hold " << 16 * low_hold * global_rate << endl;
 }
 /** \brief Shift the phase

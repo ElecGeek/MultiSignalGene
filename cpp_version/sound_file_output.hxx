@@ -23,10 +23,10 @@ using namespace std;
 class sample_rate_list
 {
   bool don_t_care;
-  set<unsigned char>list_sr;
+  set<unsigned short>list_sr;
 public:
   sample_rate_list();
-  void add_value(const unsigned char&);
+  void add_value(const unsigned short&);
   /* \brief Find common values
    *
    * In case of don't care, copy the right list
@@ -36,8 +36,9 @@ public:
   /* \brief Get the sample rate to use
    *
    * Accroding with some default choices, return the sample rate to use
+   * And tell if the value is low
    */
-  unsigned char get_sample_rate()const;
+  pair<unsigned short,bool> get_sample_rate()const;
   friend ostream&operator<<(ostream&,const sample_rate_list&);
 };
 

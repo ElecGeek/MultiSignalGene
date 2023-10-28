@@ -25,7 +25,7 @@ class signal_channel{
   unsigned short channel_id;
  public:
   signal_channel( const unsigned short&channel_id,
-				  const unsigned char&sample_rate_id,
+				  const unsigned short&sample_rate_id,
 				  const unsigned char&mode );
   ~signal_channel(void);
   void exec_next_event( const vector<signals_param_action>& );

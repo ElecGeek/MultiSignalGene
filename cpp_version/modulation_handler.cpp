@@ -4,9 +4,9 @@ using namespace std;
 
 extern unsigned char debug_level;
 
-modulation_handler::modulation_handler( const unsigned char& sample_rate_id,
+modulation_handler::modulation_handler( const unsigned short& sample_rate_id,
 										const unsigned char& division_rate):
-  amplitude( 1 ),
+  amplitude( sample_rate_id ),
   frequency( sample_rate_id, division_rate),
   step_sine( frequency ),
   abs_not_normal( false )
