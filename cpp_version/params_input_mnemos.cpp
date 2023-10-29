@@ -570,7 +570,8 @@ string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) cons
 	  mode = 0;
 	  if ( the_event.value_right.size() == 0 )
 		{
-		  mode = stoul( the_event.value_left );
+		  if ( the_event.value_left.empty() == false )
+			mode = stoul( the_event.value_left );
 		  mode &= 0x01;
 		  return string();
 		}
@@ -585,7 +586,9 @@ string input_params_mnemos_2_action::Depth_strings_2_val(unsigned long&val_0_255
   val_0_255 = 0;
   if ( the_event.value_unit.compare( "%" ) == 0 || the_event.value_unit.empty())
 	{
-	  unsigned int the_val = stoul( the_event.value_left );
+	  unsigned int the_val = 0;
+	  if ( the_event.value_left.empty() == false )
+		the_val = stoul( the_event.value_left );
 	  if ( the_val > 100 )
 		return "The depth/volume value should be a positive lower or equal than 100";
 	  if ( the_val == 0 )
@@ -639,7 +642,9 @@ string input_params_mnemos_2_action::Angle_strings_2_val(unsigned long&val_0_15)
   if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.compare( "degres" ) ||
 	   the_event.value_unit.empty() )
 	{
-	  unsigned int the_val = stoul( the_event.value_left );
+	  unsigned int the_val = 0;
+	  if ( the_event.value_left.empty() == false )
+		the_val = stoul( the_event.value_left );
 	  if ( the_val == 0 )
 		{
 		  // 0 to (excluded) 1
