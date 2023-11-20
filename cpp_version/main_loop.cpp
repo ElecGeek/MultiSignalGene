@@ -135,7 +135,7 @@ bool main_loop::check_action(void)
 		// Each exec_action loop is every 1mS, regardles the sample rate
 		if ( exec_actions() == false )
 		  shutdown_count = 1;
-		samples_count = samples_per_TS_unit;
+		samples_count = samples_per_TS_unit - 1;
 	  }
 	}
   if( shutdown_count != shutdown_start )
