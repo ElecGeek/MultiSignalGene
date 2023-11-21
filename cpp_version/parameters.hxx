@@ -89,9 +89,13 @@ class output_params_base : public params_base {
   virtual void export_next_event(const unsigned long&absolute_TS,
 								 const unsigned long&diff_TS,
 								 const signals_param_action&) = 0;
+  virtual void export_keep_alive(const unsigned long&absolute_TS);
  public:
   unsigned long cumul_time_stamp;
   unsigned long current_samples;
+ private:
+  unsigned short keep_alive_count;
+  const decltype( keep_alive_count ) keep_alive_max;
  protected:
   unsigned short samples_per_TS_unity;
   ostringstream info_out_stream;

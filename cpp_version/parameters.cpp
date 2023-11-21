@@ -74,24 +74,35 @@ bool input_params_base::exec_loops(){
 
 
 output_params_base::output_params_base():
-  cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS_unity( 5 )
+  cumul_time_stamp( 0 ), current_samples( 0 ), samples_per_TS_unity( 5 ),
+  keep_alive_max( 60000 ), keep_alive_count( 0 )
+{}
+void output_params_base::export_keep_alive(const unsigned long&absolute_TS)
 {}
 bool output_params_base::check_next_event( const unsigned short&elapsed_samples,
 										   const vector<signals_param_action>&actions)
 {
   current_samples += elapsed_samples;
-  if ( actions.size() > 0 )
+  if ( actions.empty() == false )
 	{
-	    unsigned long diff_TS;
-		diff_TS = current_samples / samples_per_TS_unity;
-		cumul_time_stamp += diff_TS;
-		current_samples -= diff_TS * samples_per_TS_unity;
-		for( const signals_param_action& it : actions )
-		  {
-			export_next_event( cumul_time_stamp, diff_TS, it );
-			diff_TS = 0;
-		  }
-	}
+	  unsigned long diff_TS;
+	  diff_TS = current_samples / samples_per_TS_unity;
+	  cumul_time_stamp += diff_TS;
+	  current_samples -= diff_TS * samples_per_TS_unity;
+	  for( const signals_param_action& it : actions )
+		{
+		  export_next_event( cumul_time_stamp, diff_TS, it );
+		  diff_TS = 0;
+		}
+	  keep_alive_count = 0;
+	} else {
+	keep_alive_count += 1;
+	if ( keep_alive_count == keep_alive_max )
+	  {
+		keep_alive_count = 0;
+		export_keep_alive( cumul_time_stamp + current_samples / samples_per_TS_unity );
+	  }
+  }
   return true;
 }
 

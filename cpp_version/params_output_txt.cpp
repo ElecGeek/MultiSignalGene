@@ -16,6 +16,19 @@ void output_params_txt::cnv_2_note_velocity( const unsigned char&nbre_bits_expo,
 
 }
 
+void output_params_txt::export_keep_alive(const unsigned long&absolute_TS)
+{
+  string out_string;
+  out_string.reserve( 120 );
+  ostringstream out_line( out_string );
+
+  out_line << right << setw(6) << "/";
+  out_line << "\t";
+  out_line << right << setw(6) << dec << float( absolute_TS * samples_per_TS_unity ) / 48000.0;
+  out_line << "\tChannel: all\tNo operation (keep alive)" << endl;
+
+  o_str << out_line.str();
+}
 void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 										  const unsigned long&diff_TS,
 										  const signals_param_action&action)
