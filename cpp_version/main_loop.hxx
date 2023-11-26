@@ -7,13 +7,15 @@
 #include "frequency_handler.hxx"
 #include "parameters.hxx"
 #include "bundle_signals.hxx"
-#include "sound_file_output_buffer.hxx"
+#include "sound_output_buffer.hxx"
 
 #include <deque>
 #include <map>
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <list>
+#include <functional>
 using namespace std;
 
 
@@ -39,6 +41,9 @@ class main_loop {
    */
   vector<signals_param_action>actions;
  private:
+  //! Quote if the was at least one unsupported type
+  bool sample_type_not_found;
+  //! Sample rate in KHz
   const unsigned short&sample_rate_id;
   //! Samples counter for the parameters set update
   unsigned short samples_count;
@@ -82,6 +87,8 @@ class main_loop {
   */
   unsigned short GetSamplesSize(void)const;
 
+
+  bool test_sound_format(const size_t&, const bool&, const bool& );
   /** \brief Main run function
    *  this function is invloved for each audio buffer to be sent\n
    * It populates the data of all the channels\n
@@ -96,16 +103,41 @@ class main_loop {
    *   It is ignored by many callers except the case\n
    *   there is no audio output and the timebeat has to be followed
    */
-  unsigned long send_to_sound_file_output(sound_file_output_buffer&buffer);
+  //  unsigned long send_to_sound_file_output(sound_file_output_buffer&buffer);
 
-  /** \brief Main run operator DEPRECIATED
-	  This is the operator that has to be run for every output sample set\n
-	  Indeed the scheduling is done by the output
-	  \return A small array of signed short, one per channel
-  */
+  /* \brief Contains the glue functions to fill up fuffers from the channels
+   * according with the type of the buffer\n
+   * Computes the first and the last channel. Today it is simple numbers,
+   * tomorow, it is going to be a real object.\n
+   * For each channel, runs the operator () that compute the next sample value.
+   * Repeat that until the buffer is full.\n
+   * After that or in the loop, check if there are channels to fill up
+   * This should be done on each buffer refill as outputs
+   * such as jackaudio always sends different buffer
+   * (then one should not considered as cached)
+   * Compute and return data about the elapsed time
+   */
+  class send_to_sound_output {
+	//! List of all the supported formats
+	const map<size_t,function< tuple< bool, unsigned long>(sound_file_output_buffer&buffer)> > sample_type_defs_list;
+	unsigned long frame_size_exec;
+	unsigned long frame_size_requested;
+	unsigned short chan_begin;
+	unsigned short chan_end;
+	main_loop*const main_loop_this;
+  public:
+	explicit send_to_sound_output( main_loop*const main_loop_this );
+	unsigned long operator()(sound_file_output_buffer&buffer);
+	friend class main_loop;
+  };
+  send_to_sound_output send_to_sound_file_output;
+
+  /** \brief Runs the command set, if so
+   * This function has to be called at each sample.\n
+   * According with the sample_rate, is checks if 1 mS elapsed.
+   * \return set to true only when a mS just passed
+   */
   bool check_action(void);
-
-  bool operator()(vector<signed short>&output);
 
   /** \brief Input, Output and process parameters
    *  This function is called regulary during the audio buffer refill\n
@@ -127,6 +159,7 @@ class main_loop {
   bool is_all_ready(void)const;
   string get_clearing(void)const;
   string get_output_waveform(void)const;
+  bool HaveSampleTypeNotFound()const;
 };
 
 #endif

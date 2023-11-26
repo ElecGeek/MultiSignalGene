@@ -4,11 +4,13 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 #ifndef __PARAMS_IO_HANDLER__
 #define __PARAMS_IO_HANDLER__
 
 #include "parameters.hxx"
+#include "sound_output_buffer.hxx"
 #include "params_output_txt.hxx"
 #include "params_output_mnemos.hxx"
 #include "params_input_mnemos.hxx"
@@ -23,19 +25,54 @@ enum params_io_format { params_io_unknown = 0,
 						params_io_midi_connec = 4,
 						params_io_vhdl_test = 5,
 						params_io_test = 6};
+enum params_file_format { params_file_8 = 0,
+						  params_file_16BE = 1,
+						  params_file_32BE = 2};
+
+/** @brief Base of the handler of the files, input and output parameters
+ *
+ *
+ */
+class params_fio_handler_base
+{
+protected:
+  unsigned char related_param;
+  typedef map< char, string > options_list_t;
+  deque< pair< short, options_list_t > > fio_channels_with_opts;
+  ostringstream info_fio_params;
+  const multimap< short, string >supported_formats;
+  const multimap< short, string >unsupported_formats;
+  const multimap< short, string >planned_formats;
+  string err_msg_prefix;
+  bool is_bad;
+
+  params_fio_handler_base(unsigned char, string err_msg_prefix,
+						  multimap< short, string > supported_formats,
+						  multimap< short, string > unsupported_formats,
+						  multimap< short, string > planned_formats);
+  params_fio_handler_base()=delete;
+
+  virtual void AddChannelOptions( const options_list_t & ) = 0;
+  virtual void EnvironementNeeds(void) = 0;
+  
+/** \brief Get information
+   *
+   * This returns both the notes and the errors
+   * generated during initialisation and run.\n
+   * It does NOT return any data of the channels
+   */
+  string GetInfos();
+
+  friend class params_io_handler;
+};
 /** @brief Handles all the interfaces of all the input channels
  *
  *
  */
-class params_input_handler {
-  typedef map< char, string > options_list_t;
-  deque< pair< short, options_list_t > > channels_list;
-  ostringstream info_in_params;
-  const multimap< short, string >supported_formats;
-  const multimap< short, string >unsupported_formats;
-  const multimap< short, string >planned_formats;  
+class params_input_handler : public params_fio_handler_base {
+
   deque<input_params_base*> IPB_list;
-public:
+
   params_input_handler();
   /** @brief Add a channel options
    *
@@ -56,14 +93,7 @@ public:
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
-  /** \brief Get information
-   *
-   * This returns both the notes and the errors
-   * generated during initialisation and run.\n
-   * It does NOT return any data of the channels
-   */
-  string GetInfos();
-
+  
   bool CheckMidiFile(ifstream&)const;
   bool CheckMnemos(ifstream&)const;
   bool CheckJackMidi(ifstream&)const;
@@ -76,15 +106,9 @@ public:
  *
  *
  */
-class params_output_handler {
-  typedef map< char, string > options_list_t;
-  deque< pair< short, options_list_t > > channels_list;
-  ostringstream info_out_params;
+class params_output_handler  : public params_fio_handler_base {
   deque<output_params_base*> OPB_list;
-  const multimap< short, string >supported_formats;
-  const multimap< short, string >unsupported_formats;
-  const multimap< short, string >planned_formats;
-public:
+
   params_output_handler();
   /** @brief Add a channel options
    *
@@ -105,13 +129,6 @@ public:
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
-  /** \brief Get information
-   *
-   * This returns both the notes and the errors
-   * generated during initialisation and run.\n
-   * It does NOT return any data of the channels
-   */
-  string GetInfos();
   bool Empty()const;
 
   bool CheckJackMidi()const;
@@ -119,17 +136,48 @@ public:
   friend class params_io_handler;
 };
 
+/** @brief Handles all the interfaces of all the input channels
+ *
+ *
+ */
+class params_file_handler  : public params_fio_handler_base {
+
+  ofstream output_file_stream;
+  //! Create the buffer with samples data,
+  //! the buffer is going to be extended of the buffers data by the output class 
+  sound_file_output_buffer sfo_buffer;
+
+  params_file_handler();
+  ~params_file_handler();
+  /** @brief Add a channel options
+   *
+   * Each time a channel has all its options defined
+   * this function perform a quick sanity check 
+   * and add it to the list
+   */
+  void AddChannelOptions( const options_list_t & );
+  /** @brief environement needs
+   *
+   * Make the list of environement needs
+   *   such as network alive, jackaudio etc...
+   */
+  void EnvironementNeeds(void);
+
+  void CreateOutputFile();
+
+  friend class params_io_handler;
+};
 
 
 class params_io_handler {
-public:
-  enum which_option { input_option, output_option, no_option };
 private:
+  const deque<params_fio_handler_base*>option_list_by_type;
+  decltype( option_list_by_type )::const_iterator option_type_current;
   map<char,string> options_list;
   ostringstream info_io_params;  
-  which_option last_option;
   params_input_handler p_in_h;
   params_output_handler p_out_h;
+  params_file_handler p_file_h;
 public:
   params_io_handler();
   /** @brief Record option
@@ -176,11 +224,27 @@ public:
    * @return true if there is atr least one
    */ 
   bool hasOutputChannels()const;
+  /** @brief Has file defined
+   *
+   * Tells if there is a filename (or pipe) that passed the first sanity check.\n
+   * That is not a guarantee there is at least one valid channel
+   * @return true if there is atr least one
+   */ 
+  bool hasFileOutput()const;
+  /** @brief Has really file output
+   *
+   * Tells if there is at least one input that passed the first sanity check.\n
+   * That is not a guarantee there is at least one valid channel
+   * @return true if there is at least one
+   */ 
+  bool stillHasFileOutput()const;
 
   const deque<input_params_base*>&GetInputChannels()const;
   
   const deque<output_params_base*>&GetOutputChannels()const;
-  /** \brief Get information
+
+  pair< sound_file_output_buffer, ostream* > GetFileOutput();
+/** \brief Get information
    *
    * This returns both the notes and the errors
    * generated during initialisation and run.\n

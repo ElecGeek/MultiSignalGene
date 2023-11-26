@@ -22,8 +22,8 @@ string help()
   ostrstm << "\tSet the debug level" << endl;
   ostrstm << "\tThe default is 0: no debug messages sent to the std output. MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-F format" << endl;
-  ostrstm << "\tSwitch the format of the input or output parameters." << endl;
-  ostrstm << "\tShould be placed everywhere after a -o or a -i option, but before the next -i or -o." << endl;
+  ostrstm << "\tSwitch the format of the input or output parameters or the output file parameters." << endl;
+  ostrstm << "\tShould be placed everywhere after a -o, a -i or a -f option, but before the next -i -o or -f." << endl;
   ostrstm << "\tFor input commands, if this option is specified, the format should be strictly the one specified." << endl;
   ostrstm << "\tIf the option is not specified, the software tries to autodetect." << endl;
   ostrstm << "\tFor output commands, if the option is not specified, a default applies." << endl;

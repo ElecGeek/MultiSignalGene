@@ -7,6 +7,8 @@
 #include "params_output_mnemos.hxx"
 #include "params_input_midi.hxx"
 #include "sound_file_output.hxx"
+#include "sound_jack_output.hxx"
+#include "samplerate_handler.hxx"
 #include "params_io_handler.hxx"
 #include "help_message.hxx"
 
@@ -51,8 +53,6 @@ int main(int argc,char *argv[] )
   int opt;
   params_io_handler params_io;
   // To be removed when the params handler classes are in full production
-  deque<string>file_inputs;
-  deque<string>file_outputs;
   bool run_dummy( false );
   bool has_input( false );
   bool has_output( false );
@@ -65,7 +65,6 @@ int main(int argc,char *argv[] )
   sample_rate_list the_sr_list;
   string output_mode;
 
-  string filename;
   deque<string> jack_data_list;
   char channels_number = 0;
 
@@ -80,18 +79,15 @@ int main(int argc,char *argv[] )
 		  break;
 		case 'o':
 		  params_io.SetOption( opt, string( optarg ));
-		  file_outputs.push_back( string( optarg ));
 		  break;
 		case 'i':
 		  params_io.SetOption( opt, string( optarg ));
-		  file_inputs.push_back( string( optarg ));
 		  break;
 		case 'F':
 		  params_io.SetOption( opt, string( optarg ));
 		  break;
 		case 'f':
-		  filename = string( optarg );
-		  has_output = true;
+		  params_io.SetOption( opt, string( optarg ));
 		  break;
 		case 'K':
 		  output_mode += string( optarg );
@@ -148,9 +144,26 @@ int main(int argc,char *argv[] )
 	}
   params_io.FlushOptions();
 
+  params_io.EnvironementNeeds();
+  this_thread::sleep_for(chrono::milliseconds( 200 ));
+  cout << "Creating input and output parameters channels" << endl;
+  params_io.CreateChannels(n_loops);
+  cout << params_io.GetInfos();
+  if ( params_io.stillHasInputChannels() == false )
+	{
+	  cout << "There was(were) input channel(s), but they has(have) been rejected" << endl;
+	  exit( EXIT_FAILURE ); 
+	}
+  if ( params_io.hasFileOutput() == true && params_io.stillHasFileOutput() == false )
+	{
+	  cout << "There was(were) output files, but they has(have) been rejected" << endl;
+	  exit( EXIT_FAILURE ); 
+	}
+
   cout << params_io.GetInfos();
   has_input = params_io.hasInputChannels();
   has_output |= params_io.hasOutputChannels();
+  has_output |= params_io.hasFileOutput();
   if ( (has_input == false) && (has_output == false) )
 	{
 	  if ( has_hv )
@@ -176,7 +189,7 @@ int main(int argc,char *argv[] )
   	  cout << "Debug set to: " << dec << (unsigned short)debug_level << endl;
 	}
 
-  if( filename.empty() == false && jack_data_list.empty() == false )
+  if( params_io.hasFileOutput() == true && jack_data_list.empty() == false )
 	{
 	  cout << "Can NOT open both an audio and a file output " << endl;
 	  exit( EXIT_FAILURE );
@@ -184,7 +197,7 @@ int main(int argc,char *argv[] )
 
   cout << "Opening the sound file output module "<< endl;
   sound_file_output_base * sfob; 
-  if ( filename.empty() )
+  if ( params_io.hasFileOutput() == false )
 	{
 	  if( jack_data_list.empty() )
 		sfob = (sound_file_output_base*) new sound_file_output_dry( follow_timebeat );
@@ -194,7 +207,7 @@ int main(int argc,char *argv[] )
   else
 	{
 	  if( jack_data_list.empty() )
-		sfob = (sound_file_output_base*) new sound_file_output_file(filename, follow_timebeat );
+		sfob = (sound_file_output_base*) new sound_file_output_file(params_io.GetFileOutput(), follow_timebeat );
 	  else
 		{
 		  cout << "Internal error" << endl;
@@ -231,30 +244,9 @@ int main(int argc,char *argv[] )
   main_loop signals(sample_rate_data.first,output_mode,channels_number);
   cout << signals.get_output_waveform() << endl;
 
-  /*  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
-	// Check here for pipes and other pckeyboard style files
-	if ( (*it).compare( "-" ) != 0 )
-	  {
-		cout << "Opening midi file " << *it << endl; 
-		signals += new input_params_midi_file( *it, n_loops );
-	  } else {
-	  cout << "Opening midi input keyboard" << endl;
-	  signals += new input_params_midi_pckeyboard( cin );
-	}
-  */
-  params_io.EnvironementNeeds();
-  this_thread::sleep_for(chrono::milliseconds( 200 ));
-  cout << "Creating input and output parameters channels" << endl;
-  params_io.CreateChannels(n_loops);
-  cout << params_io.GetInfos();
-  if ( params_io.stillHasInputChannels() == false )
-	{
-	  cout << "There was(were) input channel(s), but they has(have) been rejected" << endl;
-	  exit( EXIT_FAILURE ); 
-	}
   signals += params_io.GetOutputChannels();
   signals += params_io.GetInputChannels();
-
+	
   clock_t ticks( clock() );
   do
 	{
@@ -265,6 +257,12 @@ int main(int argc,char *argv[] )
   // Today, there is oinly one "physical" ouput at a time
   // Keep in mind there can have more in the future
   sfob->set_signals( &signals );
+
+  if( sfob->test_sound_format() )
+	cout << "Sound data type is known by the engine" << endl;
+  else
+  cout << "**** ERROR: The sound data type is unknown by the engine ****" << endl;
+
   if( sfob->pre_run() == true )
 	{
 	  while( wait_for_start_in_sec > 0 )
