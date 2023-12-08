@@ -41,7 +41,7 @@ digraph Wave_gene {
 				  		   		node [label="<f0>sine||argument: S"] n_sample_base_sine;
 				  		   		node [label="<f0>pulse||argument: P"] n_sample_base_pulse;
 				  		   		node [label="<f0>flatened triangle||argument: T"] n_sample_base_triangle;
-				  		   		node [label="<f0>continuous||argument: D";color=red] n_sample_base_dc;
+				  		   		node [label="<f0>continuous||argument: D"] n_sample_base_dc;
 								"n_sample_base_sine":f0 -> "n_sample_base_pulse":f0 -> "n_sample_base_triangle":f0 -> "n_sample_base_dc":f0 [label="excl OR";dir=none];							
 						   }
 						   label="Waveforms";

@@ -1,0 +1,68 @@
+digraph sound_output {
+		newrank=true;
+		comment=""
+		comment="Sorry my lisp installation of graphviz is broken. I hope to fix the indentation ASAP"
+		comment=""
+		 fontname="Helvetica,Arial,sans-sherif"
+		 node [fontname="Helvetica,Arial,sans-sherif"]
+		 edge [fontname="Helvetica,Arial,sans-sherif"]
+		 rankdir=LR;
+		 node [shape=record]
+
+		label="Sound output, software version";
+
+
+		  subgraph cluster_channel_bundle {
+		  		   label="Bundel channels";
+		  		   node[shape=record]
+  		 		   node [label="data out";shape=ellipse] "n_bundle_out";
+				   node [label="Overview";shape=diamond;style=filled;color=lightgrey] "links_bundle_overview";
+				   }
+
+		  subgraph cluster_soft_init {
+		  		   label="Software initilisation";
+		  		   node[shape=record]
+  		 		   node [label="configuration out";shape=ellipse] "n_configuration_out";
+				   node [label="Overview";shape=diamond;style=filled;color=lightgrey] "links_init_overview";
+				   }
+
+		  subgraph cluster_samplerate {
+		  		   node[shape=record]
+  		 		   label="Sample rate";
+				   node [label="Check requested by user|Check available|match, default or software exit"] "n_samplerate_algo";
+				   node [label="configuration";shape=ellipse] "n_samplerate_config";
+				   node [label="samplerate_handler.hxx";shape=diamond;style=filled;color=lightgrey] "links_init_samplerate";
+		 }
+
+		  subgraph cluster_jackaudio {
+		  		   node[shape=record]
+  		 		   label="Jackaudio";
+				   node [label="data in";shape=ellipse] "n_jackaudio_input_data";
+				   node [label="configuration in";shape=ellipse] "n_output_jackaudio_config";
+				   node [label="sound_jack_output.hxx";shape=diamond;style=filled;color=lightgrey] "links_sound_jackaudio";
+		 }
+		 subgraph cluster_dummy {
+		 		  node[shape=record];
+				  label="Dummy / Dry run";
+		  		  node [label="data in";shape=ellipse] "n_dummy_input_data";
+		 }
+
+		 subgraph cluster_file_output {
+		 		  node[shape=record]
+				  label="File output";
+  		 		  node [label="Wave signed char"] "n_output_wave_8";
+  		 		  node [label="Wave signed short"] "n_output_wave_16";
+  		 		  node [label="Wave signed long"] "n_output_wave_32";
+		 		  node [label="Wave float";color=red] "n_output_wave_float";
+				  node [label="data in";shape=ellipse;color=black] "n_file_input_data";
+				  node [label="configuration in";shape=ellipse] "n_output_file_config";
+				  "n_output_wave_8" -> "n_output_wave_16" -> "n_output_wave_32" -> "n_output_wave_float" [label="excl OR";dir=none];
+				   node [label="sound_file_output.hxx";shape=diamond;style=filled;color=lightgrey] "links_file_audio";
+  				  }
+        "n_configuration_out" -> "n_samplerate_config" [dir=both]
+		"n_configuration_out" -> "n_output_jackaudio_config";
+		"n_configuration_out" -> "n_output_file_config";
+		"n_bundle_out" -> "n_jackaudio_input_data";
+		"n_bundle_out" -> "n_dummy_input_data";
+		"n_bundle_out" -> "n_file_input_data";
+}
