@@ -34,8 +34,12 @@ entity sample_step_sine_test is
     --! 32 points from 0 to 2.PI minus epsilon are performed. 2 power this
     --! parameter ( - 1 ) additional points are added in each interval 
     sub_counter_size : integer range 4 to 20 := 8;
+    --! limit the iterations for speed reasons
     limit_calc : integer range 4 to 31 := 7;
-    amplitude : integer range 0 to 65535 := 65535);
+    --! input amplitude
+    amplitude : integer range 0 to 65535 := 65535;
+    --! runs the normal test for deep testing or a fast one for high level test
+    rtl_not_fast : boolean := true );
   port (
     --! Tells the simulation is over. It is used (with an and-reduce) in batch mode to start all the reporting
     simul_over : out std_logic;
@@ -278,36 +282,52 @@ begin
       display_out_s <= '1';
     end process display;
 
-    sample_step_sine_instanc : sample_step_sine generic map (
-      limit_calc => limit_calc )
-      port map (
-      CLK => CLK,
-      RST => RST( RST'low ),
-      start_calc => start,
-      amplitude => amplitude_vector,
-      angle => angle,
-      completed => completed,
-      out_z => z_out,
-      out_s => sin_out,
-      out_c => cos_out );
-        
+      rtl_test_instanc : if rtl_not_fast generate
+        sample_step_sine_instanc : entity work.sample_step_sine(arch) generic map (
+          limit_calc => limit_calc )
+          port map (
+            CLK => CLK,
+            RST => RST( RST'low ),
+            start_calc => start,
+            amplitude => amplitude_vector,
+            angle => angle,
+            completed => completed,
+            out_z => z_out,
+            out_s => sin_out,
+            out_c => cos_out );
+      end generate rtl_test_instanc;
+      fast_test_instanc : if rtl_not_fast = false generate
+        sample_step_sine_instanc : entity work.sample_step_sine(fast) generic map (
+          limit_calc => limit_calc )
+          port map (
+            CLK => CLK,
+            RST => RST( RST'low ),
+            start_calc => start,
+            amplitude => amplitude_vector,
+            angle => angle,
+            completed => completed,
+            out_z => z_out,
+            out_s => sin_out,
+            out_c => cos_out );
+      end generate fast_test_instanc;
+      
 end architecture arch;
 
-configuration sample_step_sine_rtl_test of sample_step_sine_test is
-  for arch
-    for sample_step_sine_instanc : sample_step_sine
-      use entity work.sample_step_sine( arch );
-    end for;
-  end for;
-end configuration sample_step_sine_rtl_test;
+--configuration sample_step_sine_rtl_test of sample_step_sine_test is
+--  for arch
+--    for sample_step_sine_instanc : sample_step_sine
+--      use entity work.sample_step_sine( arch );
+--    end for;
+--  end for;
+--end configuration sample_step_sine_rtl_test;
 
-configuration sample_step_sine_iobehaviour_test of sample_step_sine_test is
-  for arch
-    for sample_step_sine_instanc : sample_step_sine
-      use entity work.sample_step_sine( fast );
-    end for;
-  end for;
-end configuration sample_step_sine_iobehaviour_test;
+--configuration sample_step_sine_iobehaviour_test of sample_step_sine_test is
+--  for arch
+--    for sample_step_sine_instanc : sample_step_sine
+--      use entity work.sample_step_sine( fast );
+--    end for;
+--  end for;
+--end configuration sample_step_sine_iobehaviour_test;
 
 --! Use standard library
 library ieee;
