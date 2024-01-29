@@ -27,4 +27,4 @@ CONFIGURATION
 
 TESTED
     It has been (yet) tested on 32 and 64 bits Intel based CPU
-	It has been tested with an old 5.5.0 gcc
+	It has been tested with an old 7.2.0 gcc

@@ -17,8 +17,10 @@ A: I need to run on an old compiler on an old machine. I don't know what is or i
 Q: Why so old minimum versions?
 A: I need to run it on an old machine. It had the 4.6.2 version of GCC
      Since I needed a newer version for many other purposes. I moved to the 5.5.0
-     after 6 hours to compile the compiler.
-     Then, the software was C++03. Now the software is C++14
+     Then, the software was C++03. Now the software is C++14.
+	 I have needed even more. I moved to the 7.2.0
+     after 8 hours to compile the compiler.
+	 Then now, all the features of the C++14, perhaps C++17, can be used
 
 Q: What is the purpose of the no operation instructions in the input command files?
 A: The examples of the early versions has been hand edited. Not all the reverse hex-dump software
