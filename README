@@ -27,4 +27,5 @@ There is no documentation files. All the data is in the code. A run of the Doxyg
 
 For more information, in the sub folders, there are README files specific to each subprojects
 
-As of the summer 2022, there is a change in the minimum requirements for the C++ version
+As of the summer 2022, there is a change in the minimum requirements for the C++ version from C++03 to C++14
+As of the spring 2024, there is a change in the minimum requirements for the C++ version from C++14 to C++17

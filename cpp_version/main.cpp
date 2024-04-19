@@ -14,6 +14,7 @@
 
 #include <deque>
 #include <string>
+#include <string_view>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -63,6 +64,14 @@ int main(int argc,char *argv[] )
   int n_loops( 0 );
   int wait_for_start_in_sec( 0 );
   sample_rate_list the_sr_list;
+  const map< string_view, unsigned long > known_sr_list = {
+	{ "3000", 3 }, { "3K", 3 },
+	{ "6000", 6 }, { "3K", 6 },
+	{ "48000", 48 }, { "48K", 48 }, { "1", 48 },
+	{ "96000", 96 }, { "96K", 96 }, { "2", 96 },
+	{ "192000", 192 }, { "192K", 192 }, { "4", 192 }
+  };
+  map< string_view, unsigned long >::const_iterator known_sr_list_iter;
   string output_mode;
 
   deque<string> jack_data_list;
@@ -100,27 +109,13 @@ int main(int argc,char *argv[] )
 		  jack_data_list.push_back( string( optarg ));
 		  break;
 		case 'r':
-		  switch ( atoi( optarg ) )
+		  known_sr_list_iter = known_sr_list.find( optarg );
+		  if ( known_sr_list_iter != known_sr_list.end() )
+			the_sr_list.add_value( known_sr_list_iter->second );
+		  else
 			{
-			case 3000:
-			  the_sr_list.add_value( 3 ); break;
-			  break;
-			case 6000:
-			  the_sr_list.add_value( 6 ); break;
-			  break;
-			case 1:
-			case 48000:
-			  the_sr_list.add_value( 48 ); break;
-			case 2:
-			case 96000:
-			  the_sr_list.add_value( 96 ); break;
-			case 4:
-			case 192000:
-			  the_sr_list.add_value( 192 ); break;
-			default:
 			  cout << "Only 48000, 96000, 192000 are allowed sample rates" << endl;
-			  cout << "3000 and 6000 are allowed as well under the condition -K C, ignored" << endl;
-			  break;
+			  cout << "3000 and 6000 are allowed as well, under the condition -K C, ignored" << endl;
 			}		  
 		  break;
 		case 'l':

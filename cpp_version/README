@@ -8,9 +8,10 @@ It is designed to:
 * be controlled by one or more input parameters modules
 * run one or more export parameters module
 * be cross-plateform
-* be compiled on older machines with C++14
+* be compiled on older machines with C++17
 * run on older machines
-* output at 48, 96 or 192KHz sample rate
+* output at 48, 96 or 192KHz sample rate. Or ...
+* ... enveloppe output (no main waveform) at 3 and 6+ KHz 
 * be able to add more audio interfaces in the future
 * produce raw data sound files or interface to jack_audio audio output
 

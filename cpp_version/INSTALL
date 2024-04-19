@@ -1,6 +1,6 @@
 REQUIREMENTS TO BUILD
 
-Basic tool chains to build C++14 or higher software
+Basic tool chains to build C++17 or higher software
 
 Run and dev libraries for JackAudio
 
