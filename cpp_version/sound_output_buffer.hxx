@@ -12,7 +12,7 @@
 using namespace std;
 
 
-struct sound_file_output_buffer
+struct sound_data_output_buffer
 {
   //! Unified variable for type, float flag and interleave flag
   size_t type_float_interleave;
@@ -27,13 +27,13 @@ struct sound_file_output_buffer
   size_t data_size;
   //! Data buffer pointer. To be cast according with the sample_size
   vector<void*>  data;
-  sound_file_output_buffer();
-  sound_file_output_buffer( const size_t&type_hash,
+  sound_data_output_buffer();
+  sound_data_output_buffer( const size_t&type_hash,
 							const bool&is_float,
 							const bool&has_interleave,
 							const size_t&data_size,
 							const vector<void*>&data);
-/** \brief Compute the parameters into one unique hash
+  /** \brief Compute the parameters into one unique hash
    * Since the key of the map type is not able (in C++14)
    * to be and to be search on a tuple,
    * this function compute a "super hash"
@@ -49,7 +49,16 @@ static size_t get_super_hash( const size_t&the_type, const bool&is_float, const 
  * 
  *
  */
-  friend ostream&operator<<(ostream&,const sound_file_output_buffer&);
+  friend ostream&operator<<(ostream&,const sound_data_output_buffer&);
 };
+/** \brief unified strucutre for midi input and output
+ *
+ */
+struct midi_data_io_buffer
+{
+  deque<tuple<unsigned char, unsigned char, unsigned char> >midi_list;
+};
+
+
 
 #endif

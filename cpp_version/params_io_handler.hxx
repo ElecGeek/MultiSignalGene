@@ -145,7 +145,7 @@ class params_file_handler  : public params_fio_handler_base {
   ofstream output_file_stream;
   //! Create the buffer with samples data,
   //! the buffer is going to be extended of the buffers data by the output class 
-  sound_file_output_buffer sfo_buffer;
+  sound_data_output_buffer sfo_buffer;
 
   params_file_handler();
   ~params_file_handler();
@@ -243,7 +243,7 @@ public:
   
   const deque<output_params_base*>&GetOutputChannels()const;
 
-  pair< sound_file_output_buffer, ostream* > GetFileOutput();
+  pair< sound_data_output_buffer, ostream* > GetFileOutput();
 /** \brief Get information
    *
    * This returns both the notes and the errors

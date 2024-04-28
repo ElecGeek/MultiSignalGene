@@ -5,7 +5,7 @@
 #include <thread>
 
 
-size_t sound_file_output_buffer::get_super_hash( const size_t&a, const bool&is_float, const bool&has_interleave )
+size_t sound_data_output_buffer::get_super_hash( const size_t&a, const bool&is_float, const bool&has_interleave )
 {
   size_t the_return = a * 4;
   if ( is_float )
@@ -15,7 +15,7 @@ size_t sound_file_output_buffer::get_super_hash( const size_t&a, const bool&is_f
   return the_return;
 }
 
-sound_file_output_buffer::sound_file_output_buffer( const size_t&type_hash,
+sound_data_output_buffer::sound_data_output_buffer( const size_t&type_hash,
 													const bool&is_float,
 													const bool& has_interleave,
 													const size_t&data_size,
@@ -27,7 +27,7 @@ sound_file_output_buffer::sound_file_output_buffer( const size_t&type_hash,
   data_size(data_size),
   data(data)
 {}
-sound_file_output_buffer::sound_file_output_buffer():
+sound_data_output_buffer::sound_data_output_buffer():
   channels_bounds(pair<unsigned short,unsigned short>
 													(numeric_limits<unsigned short>::min(),
 													 numeric_limits<unsigned short>::max())),
@@ -35,7 +35,7 @@ sound_file_output_buffer::sound_file_output_buffer():
   data_size(0)
   //data is a list/vector/deque, it uses the default constructor
 {}
-ostream&operator<<(ostream&the_out,const sound_file_output_buffer&a)
+ostream&operator<<(ostream&the_out,const sound_data_output_buffer&a)
 {
   the_out<<"Channels: ["<<a.channels_bounds.first<<":"<<a.channels_bounds.second<<"] "<<endl;
   the_out<<"super_hash: "<<a.type_float_interleave<<", data size:"<< a.data_size<<endl;
@@ -44,7 +44,7 @@ ostream&operator<<(ostream&the_out,const sound_file_output_buffer&a)
 }
 
 
-sound_file_output_base::sound_file_output_base(const sound_file_output_buffer&sfo_buffer):
+sound_file_output_base::sound_file_output_base(const sound_data_output_buffer&sfo_buffer):
   sfo_buffer(sfo_buffer)
 {}
 
@@ -73,7 +73,7 @@ sample_rate_list sound_file_output_base::process_sample_rate(const sample_rate_l
 
 
 sound_file_output_dry::sound_file_output_dry(const bool&follow_timebeat):
-  sound_file_output_base( sound_file_output_buffer( typeid(void).hash_code(), false, false,0,vector<void*>())),
+  sound_file_output_base( sound_data_output_buffer( typeid(void).hash_code(), false, false,0,vector<void*>())),
   follow_timebeat(follow_timebeat),
   cumul_us_elapsed( 0 )
 {}
@@ -104,7 +104,7 @@ void sound_file_output_dry::run()
 
 
 
-sound_file_output_file::sound_file_output_file(const pair< sound_file_output_buffer, ostream* >&data,
+sound_file_output_file::sound_file_output_file(const pair< sound_data_output_buffer, ostream* >&data,
 											   const bool&follow_timebeat):
   sound_file_output_base( data.first),
   follow_timebeat(follow_timebeat),

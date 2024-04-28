@@ -118,7 +118,7 @@ unsigned short main_loop::GetSamplesSize()const
 {
   return (short)signal_list.size();
 }
-ostream&operator<<(ostream&,const sound_file_output_buffer&);
+ostream&operator<<(ostream&,const sound_data_output_buffer&);
 
 bool main_loop::check_action(void)
 {
@@ -152,14 +152,14 @@ bool main_loop::check_action(void)
 bool main_loop::test_sound_format(const size_t&the_type,const bool&is_float,const bool&has_interleave)
 {
   return
-	send_to_sound_file_output.sample_type_defs_list.find( sound_file_output_buffer::get_super_hash( the_type, is_float, has_interleave ))
+	send_to_sound_file_output.sample_type_defs_list.find( sound_data_output_buffer::get_super_hash( the_type, is_float, has_interleave ))
 	!=
 	send_to_sound_file_output.sample_type_defs_list.end();
 }
 
 /*
 // Please, keep always this function close to test_sound_format
-unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buffer)
+unsigned long main_loop::send_to_sound_file_output(sound_data_output_buffer&buffer)
 {
   if ( buffer.channels_bounds.first >= signal_list.size() ||
 	   buffer.channels_bounds.first == buffer.channels_bounds.second )
@@ -233,7 +233,7 @@ unsigned long main_loop::send_to_sound_file_output(sound_file_output_buffer&buff
 		}
    	  unsigned long data_sent = 0;
 	  short sample_val;
-	  //	  auto sample_type_found = sample_type_defs_list.find( sound_file_output_buffer::get_super_hash( the_type, is_float, has_interleave )) !=
+	  //	  auto sample_type_found = sample_type_defs_list.find( sound_data_output_buffer::get_super_hash( the_type, is_float, has_interleave )) !=
 	  //	  if ( sample_type_found != sample_type_defs_list.end()
 	  //	{
 	  // } else
@@ -450,13 +450,13 @@ main_loop::send_to_sound_output::
 send_to_sound_output( main_loop*const main_loop_this_ptr ):
   main_loop_this(main_loop_this_ptr),
   sample_type_defs_list( {
-	  { sound_file_output_buffer::get_super_hash( typeid(void).hash_code(), false , false ),
-		  [&](sound_file_output_buffer&buffer)->tuple< bool, unsigned long>{
+	  { sound_data_output_buffer::get_super_hash( typeid(void).hash_code(), false , false ),
+		  [&](sound_data_output_buffer&buffer)->tuple< bool, unsigned long>{
 		  return make_tuple(false,0);
 		}
 	  },
-		{ sound_file_output_buffer::get_super_hash( typeid(char).hash_code(), false , true ),
-			[&](sound_file_output_buffer&buffer)->tuple< bool, unsigned long>{
+		{ sound_data_output_buffer::get_super_hash( typeid(char).hash_code(), false , true ),
+			[&](sound_data_output_buffer&buffer)->tuple< bool, unsigned long>{
 			signed short sample_val;
 			bool no_more_input = true;
 			unsigned long sample_action_count = 0;
@@ -484,8 +484,8 @@ send_to_sound_output( main_loop*const main_loop_this_ptr ):
 			return make_tuple(no_more_input,sample_action_count);
 		  }
 		},
-		  { sound_file_output_buffer::get_super_hash( typeid(short).hash_code(), false , true ),
-			  [&](sound_file_output_buffer&buffer)->tuple< bool, unsigned long>{
+		  { sound_data_output_buffer::get_super_hash( typeid(short).hash_code(), false , true ),
+			  [&](sound_data_output_buffer&buffer)->tuple< bool, unsigned long>{
 			  signed short sample_val;
 			  bool no_more_input = true;
 			  unsigned long sample_action_count = 0;
@@ -513,8 +513,8 @@ send_to_sound_output( main_loop*const main_loop_this_ptr ):
 			return make_tuple(no_more_input,sample_action_count);
 		  }
 		},
-		  { sound_file_output_buffer::get_super_hash( typeid(long).hash_code(), false , true ),
-			  [&](sound_file_output_buffer&buffer)->tuple< bool, unsigned long>{
+		  { sound_data_output_buffer::get_super_hash( typeid(long).hash_code(), false , true ),
+			  [&](sound_data_output_buffer&buffer)->tuple< bool, unsigned long>{
 			signed short sample_val;
 			bool no_more_input = true;
 			unsigned long sample_action_count = 0;
@@ -546,8 +546,8 @@ send_to_sound_output( main_loop*const main_loop_this_ptr ):
 			return make_tuple(no_more_input,sample_action_count);
 			}
 		  },
-			{ sound_file_output_buffer::get_super_hash( typeid(float).hash_code(), true, false ),
-				[&](sound_file_output_buffer&buffer)->tuple< bool, unsigned long>{
+			{ sound_data_output_buffer::get_super_hash( typeid(float).hash_code(), true, false ),
+				[&](sound_data_output_buffer&buffer)->tuple< bool, unsigned long>{
 				signed short sample_val;
 				bool no_more_input = true;
 				unsigned long sample_action_count = 0;
@@ -568,10 +568,13 @@ send_to_sound_output( main_loop*const main_loop_this_ptr ):
 						 iter != frame_float_4.end();
 						 iter++ )
 					  {
-						sample_val = (*main_loop_this->signal_list[ind++])();
-						
+						if ( ind < chan_end )
+						  sample_val = (*main_loop_this->signal_list[ind++])();
+						else
+						  sample_val = 0;
+
 						*(*iter)++ = ((float)sample_val)/32768.0;
-					  }
+						}
 					sample_action_count ++;			  
 					data_sent += 1;
 				  }
@@ -581,7 +584,7 @@ send_to_sound_output( main_loop*const main_loop_this_ptr ):
 	})
 {}
 
-unsigned long main_loop::send_to_sound_output::operator()(sound_file_output_buffer&buffer)
+unsigned long main_loop::send_to_sound_output::operator()(sound_data_output_buffer&buffer)
 {
     if ( buffer.channels_bounds.first >= main_loop_this->signal_list.size() ||
 	   buffer.channels_bounds.first == buffer.channels_bounds.second )
@@ -654,8 +657,9 @@ unsigned long main_loop::send_to_sound_output::operator()(sound_file_output_buff
 	  if ( sample_type_found != sample_type_defs_list.end() )
 		{
 		  ssfo = sample_type_found->second(buffer);
-		} else
+		} else {
 		main_loop_this->sample_type_not_found = true;
+	  }
 	  if( get<0>(ssfo) )
 		{
 		  return 0;

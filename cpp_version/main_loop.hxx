@@ -26,7 +26,7 @@ using namespace std;
  *   All the parameters inputs, one instance per input control\n
  *   All the parameters outputs, one instance per output\n
  *   \n
- *   It is being implemented with some hardcoded values\n
+ *   It is being implemented with some hard-coded values\n
  *     here and in the input and output modules\n
  *     The time is units of 1/10seconds, the buffers size should be around 1K etc...
  */
@@ -90,25 +90,25 @@ class main_loop {
 
   bool test_sound_format(const size_t&, const bool&, const bool& );
   /** \brief Main run function
-   *  this function is invloved for each audio buffer to be sent\n
+   *  this function is involved for each audio buffer to be sent\n
    * It populates the data of all the channels\n
    *   found in the buffer object.\n
    * It calls the input and output parameters handling on a regular basis\n
    *   It is being chosen every 48 samples, 1mS\n
-   * It migh be improved to take a list of buffers for multiple audio outputs\n
+   * It might be improved to take a list of buffers for multiple audio outputs\n
    *   but there are some issues such as the buffer size or the input\n
    *   parameters timing
-   * \param Buffer contains the dat buffer and its specifications
+   * \param Buffer contains the data buffer and its specifications
    * \return The time elapsed in uS
    *   It is ignored by many callers except the case\n
-   *   there is no audio output and the timebeat has to be followed
+   *   there is no audio output and the time-beat has to be followed
    */
-  //  unsigned long send_to_sound_file_output(sound_file_output_buffer&buffer);
+  //  unsigned long send_to_sound_file_output(sound_data_output_buffer&buffer);
 
-  /* \brief Contains the glue functions to fill up fuffers from the channels
+  /* \brief Contains the glue functions to fill up buffers from the channels
    * according with the type of the buffer\n
    * Computes the first and the last channel. Today it is simple numbers,
-   * tomorow, it is going to be a real object.\n
+   * tomorrow, it is going to be a real object.\n
    * For each channel, runs the operator () that compute the next sample value.
    * Repeat that until the buffer is full.\n
    * After that or in the loop, check if there are channels to fill up
@@ -119,7 +119,7 @@ class main_loop {
    */
   class send_to_sound_output {
 	//! List of all the supported formats
-	const map<size_t,function< tuple< bool, unsigned long>(sound_file_output_buffer&buffer)> > sample_type_defs_list;
+	const map<size_t,function< tuple< bool, unsigned long>(sound_data_output_buffer&buffer)> > sample_type_defs_list;
 	unsigned long frame_size_exec;
 	unsigned long frame_size_requested;
 	unsigned short chan_begin;
@@ -127,11 +127,12 @@ class main_loop {
 	main_loop*const main_loop_this;
   public:
 	explicit send_to_sound_output( main_loop*const main_loop_this );
-	unsigned long operator()(sound_file_output_buffer&buffer);
+	unsigned long operator()(sound_data_output_buffer&buffer);
 	friend class main_loop;
   };
   send_to_sound_output send_to_sound_file_output;
-
+  // midi
+  void operator()(midi_data_io_buffer&buffer);
   /** \brief Runs the command set, if so
    * This function has to be called at each sample.\n
    * According with the sample_rate, is checks if 1 mS elapsed.
@@ -140,19 +141,19 @@ class main_loop {
   bool check_action(void);
 
   /** \brief Input, Output and process parameters
-   *  This function is called regulary during the audio buffer refill\n
+   *  This function is called regularly during the audio buffer refill\n
    *    It calls all the input, all the output and all the process channels\n 
    *  For real time reasons, in case an input command is (yet) incomplete,\n
    *    the channel should keep the data, return and execute the next time\n
    *    (or when it is complete)\n
    *  It is called on regular schedule.\n
-   *    The number of samples in between is being hardcoded\n
-   *  \param None as everything should be configurated
+   *    The number of samples in between is being hard-coded\n
+   *  \param None as everything should be configured
    *  \return Flag to tell the software should quit
    *    The flag tells there is no active input channel anymore\n
    *    That means a connection has been closed\n
    *    or an end of file has been reached\n
-   *    The timeout has be handeled int the input channels
+   *    The timeout has be handled int the input channels
   */
   bool exec_actions(void);
   //  void exec_actions(vector<signals_param_action>actions);

@@ -9,51 +9,26 @@
 #include <limits>
 #include "main_loop.hxx"
 #include "sound_file_output.hxx"
+#include "sound_jack_links.hxx"
 
 using namespace std;
 
+#ifndef __NO_JACK__
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#endif
 
-
-
-/* \brief Peers and connections
- *
- * Handles the list of peers with their connections
- */
-class sound_jack_connections_data
-{
-  // C++17 is going to simplify the writing
-  deque< pair< string, deque< string > > >connections_list;
-public:
-  /* \brief Add a new connection or peer
-   *
-   * If the peer exists, the destination is added.\n
-   * If the peer does not exist, it is append at the end;
-   * and its connection is added
-   */
-  void insert_append( const string&peer, const string&dest );
-  /* \brief Additional defaults connections
-   *
-   * If N is lower or equal to the size of the list,
-   * takes the elements and add <dest_app>:<dest-peer><ind> for ind 1 to N\n
-   * If N is greater, execute the actions above
-   * and create as many as needed additional peers named gene_<ind>
-   */
-  void insert_append( const unsigned char&N,
-					  const string& sce_peer,
-					  const string&dest_app, const string&dest_peer,
-					  const bool& stereo );
-  const deque< pair< string, deque< string> > >&operator()()const;
-};
 
 class sound_file_output_jackaudio: public sound_file_output_base
 {
+#ifndef __NO_JACK__
   static int call_back_audio( jack_nframes_t nframes, void * arg );
   static int call_back_jack_shutdown( void * arg );
   static int call_back_samplerate_change( jack_nframes_t nframes, void * arg );
-  vector<jack_port_t*>output_ports;
+  vector<jack_port_t*>output_sound_ports;
+  vector<jack_port_t*>output_midi_ports;
   jack_client_t *client;
+#endif
   bool is_open_b;
   bool is_started;
   // For the call back function
@@ -61,27 +36,18 @@ class sound_file_output_jackaudio: public sound_file_output_base
   bool shutdown_requested;
   // No sound_file_output_buffer as it is constructed on each call
   // as one should not cache its pointer
+  sound_jack_connections_lists connections_list;
   /** Peer prefix in the jack connection system
    */
   string jack_peer;
-  /** \brief list of peers and connections
-   *
-   */  
-  sound_jack_connections_data connections_list_audio;
-  /** \brief list of peers and connections
-   *
-   */  
-  sound_jack_connections_data connections_list_midi_in;
-  /** \brief list of peers and connections
-   *
-   */  
-  sound_jack_connections_data connections_list_midi_out;
 public:
   sound_file_output_jackaudio(const unsigned char&,const deque<string>& jack_connections);
   ~sound_file_output_jackaudio();
   bool test_sound_format()const;
   bool is_ready()const;
+#ifndef __NO_JACK__
   bool pre_run();
+#endif
   void run();
 };
 

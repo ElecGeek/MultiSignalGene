@@ -416,15 +416,15 @@ void params_file_handler::CreateOutputFile()
 		{
 		case params_file_8:
 		  sfo_buffer.type_float_interleave =
-			sound_file_output_buffer::get_super_hash( typeid(char).hash_code(), false, true);
+			sound_data_output_buffer::get_super_hash( typeid(char).hash_code(), false, true);
 		  break;
 		case params_file_16BE:
 		  sfo_buffer.type_float_interleave =
-			sound_file_output_buffer::get_super_hash( typeid(short).hash_code(), false, true);
+			sound_data_output_buffer::get_super_hash( typeid(short).hash_code(), false, true);
 		  break;
 		case params_file_32BE:
 		  sfo_buffer.type_float_interleave =
-			sound_file_output_buffer::get_super_hash( typeid(long).hash_code(), false, true);
+			sound_data_output_buffer::get_super_hash( typeid(long).hash_code(), false, true);
 		  break;
 		default:
 		  return;
@@ -559,7 +559,7 @@ const deque<output_params_base*>&params_io_handler::GetOutputChannels()const
 {
   return p_out_h.OPB_list;
 }
-pair< sound_file_output_buffer, ostream* > params_io_handler::GetFileOutput()
+pair< sound_data_output_buffer, ostream* > params_io_handler::GetFileOutput()
 {
   return make_pair(p_file_h.sfo_buffer, &p_file_h.output_file_stream);
 }

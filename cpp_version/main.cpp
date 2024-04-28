@@ -256,7 +256,14 @@ int main(int argc,char *argv[] )
   if( sfob->test_sound_format() )
 	cout << "Sound data type is known by the engine" << endl;
   else
-  cout << "**** ERROR: The sound data type is unknown by the engine ****" << endl;
+	{
+	  cout << "**** ERROR: The sound output is not possible by this engine ****" << endl;
+	  delete sfob;
+	  cout << "Opening the dry-run sound engine in 10 seconds" << endl;
+	  this_thread::sleep_for(chrono::seconds( 10 ));
+	  sfob = (sound_file_output_base*) new sound_file_output_dry( follow_timebeat );
+	  sfob->set_signals( &signals );
+	}	  
 
   if( sfob->pre_run() == true )
 	{
