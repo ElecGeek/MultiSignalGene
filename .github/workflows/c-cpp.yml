@@ -156,9 +156,9 @@ jobs:
       - name: build
         run: |
           cd cpp_version
-          make CXX=x86_64-w64-mingw32-gcc WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=SINE
-          make CXX=x86_64-w64-mingw32-gcc WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=PULSES
-          make CXX=x86_64-w64-mingw32-gcc WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=TRIANGLES
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=SINE
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=PULSES
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/Windows_without_jackaudio
