@@ -119,7 +119,7 @@ class main_loop {
    */
   class send_to_sound_output {
 	//! List of all the supported formats
-	const map<size_t,function< tuple< bool, unsigned long>(sound_data_output_buffer&buffer)> > sample_type_defs_list;
+	const map<tuple<size_t,bool,bool>,function< tuple< bool, unsigned long>(sound_data_output_buffer&buffer)> > sample_type_defs_list;
 	unsigned long frame_size_exec;
 	unsigned long frame_size_requested;
 	unsigned short chan_begin;

@@ -5,25 +5,14 @@
 #include <thread>
 
 
-size_t sound_data_output_buffer::get_super_hash( const size_t&a, const bool&is_float, const bool&has_interleave )
-{
-  size_t the_return = a * 4;
-  if ( is_float )
-	the_return += 2;
-  if ( has_interleave )
-	the_return += 1;
-  return the_return;
-}
 
-sound_data_output_buffer::sound_data_output_buffer( const size_t&type_hash,
-													const bool&is_float,
-													const bool& has_interleave,
+sound_data_output_buffer::sound_data_output_buffer( const tuple<size_t,bool,bool>&hash_float_interleave,
 													const size_t&data_size,
 													const vector<void*>& data):
   channels_bounds(pair<unsigned short,unsigned short>
 													(numeric_limits<unsigned short>::min(),
 													 numeric_limits<unsigned short>::max())),
-  type_float_interleave( get_super_hash( type_hash, is_float, has_interleave )),
+  hash_float_interleave( hash_float_interleave ),
   data_size(data_size),
   data(data)
 {}
@@ -38,7 +27,10 @@ sound_data_output_buffer::sound_data_output_buffer():
 ostream&operator<<(ostream&the_out,const sound_data_output_buffer&a)
 {
   the_out<<"Channels: ["<<a.channels_bounds.first<<":"<<a.channels_bounds.second<<"] "<<endl;
-  the_out<<"super_hash: "<<a.type_float_interleave<<", data size:"<< a.data_size<<endl;
+  the_out<<"type_hash: "<<get<0>(a.hash_float_interleave);
+  the_out<<" float:"<<get<1>(a.hash_float_interleave);
+  the_out<<" float:"<<get<2>(a.hash_float_interleave);
+  the_out <<", data size:"<< a.data_size<<endl;
 
   return the_out;
 }
@@ -73,7 +65,7 @@ sample_rate_list sound_file_output_base::process_sample_rate(const sample_rate_l
 
 
 sound_file_output_dry::sound_file_output_dry(const bool&follow_timebeat):
-  sound_file_output_base( sound_data_output_buffer( typeid(void).hash_code(), false, false,0,vector<void*>())),
+  sound_file_output_base( sound_data_output_buffer( make_tuple( typeid(void).hash_code(), false, false),0,vector<void*>())),
   follow_timebeat(follow_timebeat),
   cumul_us_elapsed( 0 )
 {}

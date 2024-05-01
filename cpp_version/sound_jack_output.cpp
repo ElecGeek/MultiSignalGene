@@ -45,9 +45,8 @@ int sound_file_output_jackaudio::call_back_audio( jack_nframes_t nframes, void *
 
 sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbre_channels,
 														 const deque<string>&jack_connections):
-  sound_file_output_base(  sound_data_output_buffer( typeid(jack_default_audio_sample_t).hash_code(),
-													 true,
-													 false,
+  sound_file_output_base(  sound_data_output_buffer( make_tuple( typeid(jack_default_audio_sample_t).hash_code(),
+													 true, false),
 													 0,vector<void*>())),
   is_started(false),sound_started(false),shutdown_requested(false),
   connections_list( nbre_channels, jack_connections )
@@ -178,9 +177,7 @@ bool sound_file_output_jackaudio::pre_run()
 #else
 sound_file_output_jackaudio::sound_file_output_jackaudio(const unsigned char&nbre_channels,
 														 const deque<string>&jack_connections):
-  sound_file_output_base(  sound_data_output_buffer( 0,
-													 true,
-													 false,
+  sound_file_output_base(  sound_data_output_buffer( make_tuple( 0,true,false),
 													 0,vector<void*>())),
   is_started(false),sound_started(false),shutdown_requested(false),
   connections_list( nbre_channels, jack_connections ),

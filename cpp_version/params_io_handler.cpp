@@ -415,16 +415,13 @@ void params_file_handler::CreateOutputFile()
 	  switch( chan->first )
 		{
 		case params_file_8:
-		  sfo_buffer.type_float_interleave =
-			sound_data_output_buffer::get_super_hash( typeid(char).hash_code(), false, true);
+		  sfo_buffer.hash_float_interleave = make_tuple( typeid(char).hash_code(), false, true);
 		  break;
 		case params_file_16BE:
-		  sfo_buffer.type_float_interleave =
-			sound_data_output_buffer::get_super_hash( typeid(short).hash_code(), false, true);
+		  sfo_buffer.hash_float_interleave = make_tuple( typeid(short).hash_code(), false, true);
 		  break;
 		case params_file_32BE:
-		  sfo_buffer.type_float_interleave =
-			sound_data_output_buffer::get_super_hash( typeid(long).hash_code(), false, true);
+		  sfo_buffer.hash_float_interleave = make_tuple( typeid(long).hash_code(), false, true);
 		  break;
 		default:
 		  return;
