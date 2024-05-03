@@ -31,7 +31,6 @@ class frequency_handler
 {
   unsigned long frequency;
   const unsigned short global_rate;
-  frequency_handler(void);
   unsigned long angle;
   bool startCycle;
   unsigned long high_hold, low_hold;
@@ -39,6 +38,7 @@ class frequency_handler
   unsigned char lastQuadrant;
   void CheckHold(void);
  public:
+  frequency_handler()=delete;
   /** \brief Constructor
    *
    *  \param sample_rate_id 1 = 48KHz 2 = 96KHz 4 = 192KHz

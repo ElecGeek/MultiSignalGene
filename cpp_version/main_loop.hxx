@@ -31,7 +31,6 @@ using namespace std;
  *     The time is units of 1/10seconds, the buffers size should be around 1K etc...
  */
 class main_loop {
-  main_loop(void);
  public:
   /** \brief Main actions list
    *
@@ -63,6 +62,7 @@ class main_loop {
   //! Text information about the output waveform of all the channels
   string output_waveform_info;
  public:
+  main_loop()=delete;
   /** \brief Constructor
    *  \param sample_rate_id Sample rate 1=48KHz, 2=96KHz and 4 =192KHz
    *  \param mode Output wave (or debug text), see the generator

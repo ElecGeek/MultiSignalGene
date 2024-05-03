@@ -18,9 +18,9 @@
  */
 class modulation_handler
 {
-  modulation_handler();
   bool abs_not_normal;
 public:
+  modulation_handler()=delete;
   // Holds the depth of
   amplitude_handler amplitude;
   frequency_handler frequency;

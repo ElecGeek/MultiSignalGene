@@ -13,13 +13,13 @@
  */
 class sound_file_output_base
 {
-  sound_file_output_base()=delete;
 protected:
   main_loop*signals;
   sample_rate_list sr_list;
   sound_data_output_buffer sfo_buffer;
   midi_data_io_buffer mdio_buffer;
 public:
+  sound_file_output_base()=delete;
   explicit sound_file_output_base(const sound_data_output_buffer&sfo_buffer);
   virtual~sound_file_output_base()=default;
   void set_signals(main_loop*const&);

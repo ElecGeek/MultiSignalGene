@@ -19,8 +19,8 @@ class sample_step
 {
 protected:
   frequency_handler&frequency;
-  sample_step(void);
 public:
+  sample_step()=delete;
   explicit sample_step( frequency_handler&frequency );
   virtual ~sample_step(void)=default;
   virtual signed short Run_Step(const unsigned short&amplitude)=0;
@@ -38,8 +38,8 @@ class sample_step_output {};
  */
 class sample_step_sine : public sample_step, private sample_step_output
 {
-  sample_step_sine(void);
 public:
+  sample_step_sine()=delete;
   explicit sample_step_sine( frequency_handler&frequency );
   ~sample_step_sine(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
@@ -56,8 +56,8 @@ class sample_step_pulse : public sample_step, private sample_step_output
   unsigned short state;
   unsigned short length;
   unsigned short length_count;
-  sample_step_pulse(void);
 public:
+  sample_step_pulse()=delete;
   sample_step_pulse( frequency_handler&frequency, const unsigned short& length );
   ~sample_step_pulse(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
@@ -78,8 +78,8 @@ class sample_step_triangle : public sample_step, private sample_step_output
   unsigned short state;
   unsigned short length;
   unsigned short length_count;
-  sample_step_triangle(void);
 public:
+  sample_step_triangle()=delete;
   sample_step_triangle( frequency_handler&frequency );
   ~sample_step_triangle(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
@@ -91,8 +91,8 @@ public:
  */
 class sample_step_continuous : public sample_step, private sample_step_output
 {
-  sample_step_continuous(void);
 public:
+  sample_step_continuous()=delete;
   sample_step_continuous( frequency_handler&frequency );
   ~sample_step_continuous(void)=default;
   signed short Run_Step(const unsigned short&amplitude);
@@ -107,8 +107,8 @@ public:
 class sample_step_txt : public sample_step, private sample_step_output
 {
   ostream&out_str;
-  sample_step_txt(void);
 public:
+  sample_step_txt()=delete;
   sample_step_txt( frequency_handler&frequency );
   ~sample_step_txt(void)=default;
   signed short Run_Step(const unsigned short&amplitude);

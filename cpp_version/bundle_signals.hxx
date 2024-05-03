@@ -24,6 +24,7 @@ class signal_channel{
   //sample_step_sine pulse_step;
   unsigned short channel_id;
  public:
+  signal_channel()=delete;
   signal_channel( const unsigned short&channel_id,
 				  const unsigned short&sample_rate_id,
 				  const unsigned char&mode );

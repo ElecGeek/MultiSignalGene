@@ -34,7 +34,7 @@ struct signals_param_action
   unsigned short channel_id;
   action_list action;
   unsigned short value;
-  signals_param_action(void);
+  signals_param_action();
   signals_param_action( const unsigned short&,const action_list&,const unsigned short&);
   friend ostream&operator<<(ostream&,const signals_param_action&);
 };

@@ -22,8 +22,8 @@ class output_params_mnemos : public output_params_base, private midi_event
   void cnv_2_note_velocity( const unsigned char&nbre_bits_expo,const unsigned short&value,
 					   unsigned char&note, unsigned char&velocity);
   ostream&o_str;
-  output_params_mnemos(void);
  public:
+  output_params_mnemos()=delete;
   explicit output_params_mnemos( ostream&o_str );
   virtual ~output_params_mnemos();
   void export_next_event(const unsigned long&absolute_TS,

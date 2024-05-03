@@ -66,7 +66,8 @@ class sound_jack_connections_lists
    */  
   sound_jack_connections_data connections_list_midi_out;
 public:
-  explicit sound_jack_connections_lists( const unsigned char&nbre_channels,const deque<string>& );
+  sound_jack_connections_lists()=delete;
+  sound_jack_connections_lists( const unsigned char&nbre_channels,const deque<string>& );
   deque<string>::size_type audio_peers_size()const;
   bool has_atleast_one_audio()const;
   const sound_jack_connections_data&audio()const;  

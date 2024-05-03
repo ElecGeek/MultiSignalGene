@@ -19,6 +19,7 @@ class sound_file_output_dry: public sound_file_output_base
   const bool follow_timebeat;
   unsigned long cumul_us_elapsed;
 public:
+  sound_file_output_dry()=delete;
   sound_file_output_dry(const bool&follow_timebeat);
   ~sound_file_output_dry()=default;
   void run();
@@ -32,6 +33,7 @@ class sound_file_output_file: public sound_file_output_base
   unsigned long cumul_us_elapsed;
   // bool is_open_b;
 public:
+  sound_file_output_file()=delete;
   sound_file_output_file(const pair< sound_data_output_buffer, ostream* >&data,
 						 const bool&follow_timebeat);
   ~sound_file_output_file()=default;

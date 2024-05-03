@@ -41,6 +41,7 @@ class sound_file_output_jackaudio: public sound_file_output_base
    */
   string jack_peer;
 public:
+  sound_file_output_jackaudio()=delete;
   sound_file_output_jackaudio(const unsigned char&,const deque<string>& jack_connections);
   ~sound_file_output_jackaudio();
   bool test_sound_format()const;
