@@ -18,7 +18,8 @@
  */
 class modulation_handler
 {
-  bool abs_not_normal;
+  enum modul_mode_t { normal=0 , abs=1 , neg_abs=2 };
+  modul_mode_t modulation_mode;
 public:
   modulation_handler()=delete;
   // Holds the depth of
@@ -33,7 +34,16 @@ public:
    * Runs the modulation at each sample.
    */
   unsigned short operator()(const unsigned long&val);
-  void modul_mode(const unsigned char&a);
+  constexpr void modul_mode(const unsigned char&a)
+  {
+	switch( a )
+	  {
+	  case 0:   modulation_mode = modul_mode_t::normal;break;
+	  case 1:   modulation_mode = modul_mode_t::abs;break;
+	  case 2:   modulation_mode = modul_mode_t::neg_abs;break;
+	  }
+  }
+
 };
 
 #endif

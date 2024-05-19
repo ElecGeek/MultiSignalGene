@@ -8,7 +8,7 @@
 #include <sstream>
 #include <limits>
 #include "main_loop.hxx"
-#include "sound_file_output.hxx"
+#include "sound_base_output.hxx"
 #include "sound_jack_links.hxx"
 
 using namespace std;

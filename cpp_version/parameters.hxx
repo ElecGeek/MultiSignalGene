@@ -13,8 +13,6 @@ using namespace std;
 #ifndef __PARAMETERS__
 #define __PARAMETERS__
 
-#include "sample_step.hxx"
-
 /** \brief Data of a parameter change
  *
  * Contains the channel, action and the value of an elementary change

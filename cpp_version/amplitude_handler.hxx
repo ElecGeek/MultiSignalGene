@@ -24,10 +24,41 @@ class amplitude_handler
  public:
   amplitude_handler()=delete;
   explicit amplitude_handler(const unsigned short&sample_rate_id);
-  void set_volume(const unsigned char& );
-  void set_slewrate(const unsigned short& );
-  void set_amplitude(const unsigned char& );
-  unsigned short operator()(void);
+  constexpr void set_volume(const unsigned char&volumpe )
+  {
+	this->volume = volume;
+  }
+  constexpr void set_slewrate(const unsigned short&slewrate )
+  {
+	this->slewrate = slewrate;
+	this->slewrate *= 4 * 48;
+	this->slewrate /= sample_rate_id;
+  }
+  constexpr void set_amplitude(const unsigned char&amplitude )
+  {
+	requested_ampl = amplitude;
+  }
+  constexpr unsigned short operator()(void)
+  {
+	if( ((unsigned char)(amplitude24>>16)) > requested_ampl )
+	  {
+		amplitude24 -= slewrate;
+		if ( (( amplitude24 & 0x10000000 ) == 0x10000000 ) ||
+			 (((unsigned char)(amplitude24>>16)) < requested_ampl ) )
+		  amplitude24 = ((unsigned long)requested_ampl) << 16;
+	  }
+	else if (((unsigned char)(amplitude24>>16)) < requested_ampl )
+	  {
+		amplitude24 += slewrate;
+		if (( ( amplitude24 & 0x01000000 ) == 0x01000000 ) ||
+			(((unsigned char)(amplitude24>>16)) > requested_ampl ) )
+		  amplitude24 = ((unsigned long)requested_ampl) << 16;
+	  }
+	//    cout << hex << ((unsigned short)volume) * ((unsigned short)(amplitude24>>16)) << "  ";
+	
+	return ((unsigned short)volume) * ((unsigned short)(amplitude24>>16));
+  }
+
 };
 
 #endif

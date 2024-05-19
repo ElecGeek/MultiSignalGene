@@ -1,3 +1,4 @@
+
 #include "modulation_handler.hxx"
 #include<iostream>
 using namespace std;
@@ -9,16 +10,8 @@ modulation_handler::modulation_handler( const unsigned short& sample_rate_id,
   amplitude( sample_rate_id ),
   frequency( sample_rate_id, division_rate),
   step_sine( frequency ),
-  abs_not_normal( false )
+  modulation_mode( modul_mode_t::normal )
 {}
-
-void modulation_handler::modul_mode(const unsigned char&a)
-{
-  if ( ( a & 0x03 ) == 1 )
-	abs_not_normal = true;
-  else
-	abs_not_normal = false;
-}
 
 /** \brief Compute the modulation for one sample step
  *
@@ -46,14 +39,22 @@ unsigned short modulation_handler::operator()(const unsigned long&val)
   if ( ampl_modul_run == -32768 )
 	cerr << "Problems 5 in signal_channel::operator()" << endl;
   signed long ampl_modul_run_0_1;
-  if ( abs_not_normal )
+  switch ( modulation_mode )
 	{
+	case modul_mode_t::normal:
+	  ampl_modul_run_0_1 = (signed long)modulation_amplitude / 2 - (signed long)ampl_modul_run;
+	  break;
+	case modul_mode_t::abs:
 	  if ( ampl_modul_run < 0 )
 		ampl_modul_run = - ampl_modul_run;
 	  ampl_modul_run_0_1 = (signed long)modulation_amplitude - 2 * ((signed long)ampl_modul_run);
+	  break;
+	case modul_mode_t::neg_abs:
+	  if ( ampl_modul_run < 0 )
+		ampl_modul_run = - ampl_modul_run;
+	  ampl_modul_run_0_1 = 2 * ((signed long)ampl_modul_run);
+	  break;
 	}
-  else
-	ampl_modul_run_0_1 = (signed long)modulation_amplitude / 2 - (signed long)ampl_modul_run;
   if ( ampl_modul_run_0_1 < 0 )
 	{
 	  if ( ampl_modul_run_0_1 < -3 )

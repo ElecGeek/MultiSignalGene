@@ -3,8 +3,6 @@
 #ifndef __MAIN_LOOP__
 #define __MAIN_LOOP__
 
-#include "amplitude_handler.hxx"
-#include "frequency_handler.hxx"
 #include "parameters.hxx"
 #include "bundle_signals.hxx"
 #include "sound_output_buffer.hxx"
