@@ -236,7 +236,7 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 					{
 					case 0x00:
 					  action.action = signals_param_action::pulse_modul_mode;
-					  // irrelevant action.value &= 0x03;
+					  action.value &= 0x03;
 					  break;
 					case 0x04:
 					  action.action = signals_param_action::ampl_modul_modul_mode;

@@ -114,7 +114,7 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	  break;
 	case signals_param_action::pulse_modul_mode:
 	  out_line << "BM " << dec << action.value;
-	  out_line << "\t% amplitude modulation mode" << endl;
+	  out_line << "\t% pulse modulation mode" << endl;
 	  break;
 	case signals_param_action::user_volume:
 	  out_line << "Sets the user_volume " << ( action.value * 100 )/255;
