@@ -1,0 +1,37 @@
+The input parameters modify the behavior of the sound generator (if there is at least one output module).
+The input parameters are sent to the output parameters channel as well.
+
+The common way of working is:
+* A differential or absolute time-stamp, the system has to wait before going future. The absolute time-stamp is available only for the plain text. If no output device channel is defined, the sound files, parameters files etc... are produces "as fast as possible", unless an option is passed to follow the time-beat.  
+* A channel data. it is the channel number N or 0 or "all" for commands that apply to all channels.
+* A command
+* An attribute of the command
+* A comment. It is not available for all parameters channels. While reading, it is to help the parameters file designer, they are ignored. 
+
+
+Three "languages" are available:
+
+* Midi mapped commands
+The base of the parameters format is the (music) midi notes. Each note and its velocity is mapped into a parameter and its value. There is a lot of software on the Internet to edit .mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
+
+* Plain text
+It is more intended to debug the software or a parameter file. It displays the data, with some additional information, in a more human readable way.
+
+* Mnemonics
+It is the standard way to read and write parameters files.
+
+
+
+The documentation is a common documentation of the midi mapping (between the notes and the parameters) and the mnemonics. Some commands may not be available for both cases. The file is params_codes.h, located in software version folder. Is it human readable. The paragraph goes into the documentation after a Doxygen run.
+The menmonics can be found in the (documentation) schematics as well.
+
+
+
+
+   	         Midi mapped codes	Plain text		Mnemonics
+STDIN		   NO	   			NO				untested
+STDOUT		   NO	   			YES				YES
+From file	   YES				NO				YES
+To file		   planned			YES				YES
+From network   planned			NO				planned
+To network	   planned			NO				planned

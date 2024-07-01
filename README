@@ -5,27 +5,13 @@ This project generates audio signals using some primitives.
 * An output module that generates a sinusoidal or a symmetrical pulse output. The amplitude is the output of the modulation module described above. In case of the sine, only one parameter defines the frequency. In case of the pulses, a parameter defines the frequency as another one defines the pulse width.
 * Future modules are going to modulate the frequency
 
-In the documentation folder, there is a graphical view. 
 
-The 2 subprojects are
-* a pure IT project
-    It handles input parameter channels (at least one) in any supported formats.
-    It handles output parameter channels (optional) in any supported formats.
-    Generates the sounds on the fly or save it in a file. 
-* a pure electronics project
-    Receives the parameters in the midi (5pin DIN) format only
-    Generate the sounds on the fly
+There is no extended documentation files.
+* Some data is in the code. A run of the Doxygen software, separately in the 2 folders generates the documentation in the format one wants.
+* Some data (mostly schematics) is in the Documentation folder. A run of the Graphviz software (dot) exports in the format one wants (about 30 are available). The work-flow exports into PNG, JPEG or PDF format. The files are in the artifact.
+* Some data is in the specialized README files.
 
 
-The base of the parameters format is the (music) midi notes. Each note and its velocity is mapped into a parameter and its value. There is a lot of software on the Internet to edit .mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
 
-The documentation of the mapping between the notes and the parameters is in the midi_codes.h file located in software version folder. Is it human readable. The paragraph goes into the documentation after a Doxygen run.
+It is written in the DevOps style. Some shortcuts or quick and dirty parts are written and later cleaned up, removed or left as it. The commits into GitHub are up and running tags.
 
-It is written in the DevOps style. Some shortcuts or quick and dirty parts are written and later cleaned up, removed or left as it. The commits into github are up and running tags.
-
-There is no documentation files. All the data is in the code. A run of the Doxygen software, separately in the 2 folders generates the documentation in the format one wants.
-
-For more information, in the sub folders, there are README files specific to each subprojects
-
-As of the summer 2022, there is a change in the minimum requirements for the C++ version from C++03 to C++14
-As of the spring 2024, there is a change in the minimum requirements for the C++ version from C++14 to C++17

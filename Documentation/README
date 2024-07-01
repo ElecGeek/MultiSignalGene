@@ -1,0 +1,5 @@
+The Overview displays all the modules with their relations to each other.
+
+Each individual schematic displays one or more modules. Some light/summary modules are displayed to show the relations with the current modules.
+
+They are written, using the Graphviz file format. Some exports are done by a work-flow (see "Actions") and are available in the artifact.
