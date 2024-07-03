@@ -1,0 +1,55 @@
+Three output ways are available.
+At least one should be selected.
+
+
+
+Sound device output, software version only
+------------------------------------------
+The module produces sound and sends to the Jackaudio system to be physically played.
+The module can be instantiated only once. It is incompatible with the file output.
+
+The software installs the peers and connects according with data:
+* -j - connects the channels to the inputs of the X42-scope software.
+* -j . connects to the system outputs.
+* -j <filename> connects according with the data found in the file. It is PLANNED.
+The first -j option switches to this mode. More than one can be specified, but they may overlap.
+
+The base wave-form is the default from the compilation. It can be overwritten at start-up.
+
+The sample rate is defined by Jackaudio. The sample rate limits can be provided. If Jackaudio is out of the limits, the software quits.
+The on the fly sample rate change (from Jackaudio) is NOT supported.
+
+
+
+Sound device output, hardware only
+----------------------------------
+The module produces the sound according with the configuration of the hardware, the FPGA, the PCB etc....
+There is no reason to have any configuration.
+The base waveform is non configurable as well.
+
+
+
+File output, software version only
+----------------------------------
+This module produces sound and write to a file to be played later. An third party software should be installed to play-back.
+Only one file at a time can be selected. It is incompatible with the sound device output.
+
+The format is the raw data. One file contains all the channels in interleave mode. Many data format are available, from 8 bits signed to 32 bits signed. The float is planned.
+
+The base wave-form is the default from the compilation. It can be overwritten at start-up.
+
+The sample rate can be chosen. The default is 48KHz.
+
+If the continuous base wave-form is selected, low sample rates are allowed ( 3KHz, 6KHz and 12KHz ). It is intended to view the envelope of the sound signal. Used with the 8 bits raw format, the file can be up to 32 times smaller.  
+*** DO NOT TRY to send it to real devices such as loudspeakers or earphones ***.
+
+
+
+Parameters output, software version only
+----------------------------------------
+Many modules produce parameters, see the README.parameters for details.
+They are all compatible with the sound output described above. The can run stand alone.
+
+They issue the commands the system received from one or more input parameters channels.
+
+Goals are multiple: real time monitor what is produced, test the software, test a parameters file, convert from one format to another etc...
