@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: environement
         run: sudo apt-get install -y libjack-jackd2-dev
       - name: setup build folders
@@ -23,127 +23,104 @@ jobs:
       - name: build
         run: |
           cd cpp_version
-          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=SINE
-          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=PULSES
-          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ DEFAULTWAVE=TRIANGLES
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ EXECDIR=../build/Ubuntu/ DEFAULTWAVE=SINE
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ EXECDIR=../build/Ubuntu/ DEFAULTWAVE=PULSES
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/Ubuntu/ EXECDIR=../build/Ubuntu/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/Ubuntu
           tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: multisignalgene_build
+          name: multisignalgene_build_ubuntu
           path: build
 
   macos-x-build:
-    runs-on: macOS-latest
-    needs: ubuntu-build
+    runs-on: macOS-12
     name: Mac OS X build with jackaudio
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: environement
         run: brew install jack
       - name: setup build folders
         run: |
           mkdir build
           mkdir build/MacOS
-      - name: get workflow as artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: multisignalgene_build
-          path: build
       - name: build
         run: |
           cd cpp_version
-          #make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ DEFAULTWAVE=SINE
-          #make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ DEFAULTWAVE=PULSES
-          #make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ DEFAULTWAVE=TRIANGLES
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ EXECDIR=../build/MacOS/ DEFAULTWAVE=SINE
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ EXECDIR=../build/MacOS/ DEFAULTWAVE=PULSES
+          make WITH_JACKAUDIO=YES BUILDDIR=../build/MacOS/ EXECDIR=../build/MacOS/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/MacOS
-          #tar -cf The_objects_files.tar *.o
-          #rm *.o
+          tar -cf The_objects_files.tar *.o
+          rm -f *.o
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: multisignalgene_build
+          name: multisignalgene_build_macOS
           path: build
 
   ubuntu-build-without-jackaudio:
     name: Ubuntu build without
     runs-on: ubuntu-latest
-    needs: macos-x-build
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: setup build folders
         run: |
           mkdir build
           mkdir build/Ubuntu_without_jackaudio
-      - name: get workflow as artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: multisignalgene_build
-          path: build
       - name: build
         run: |
           cd cpp_version
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=SINE
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=PULSES
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=TRIANGLES
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ EXECDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=SINE
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ EXECDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=PULSES
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/Ubuntu_without_jackaudio/ EXECDIR=../build/Ubuntu_without_jackaudio/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/Ubuntu_without_jackaudio
           tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: multisignalgene_build
+          name: multisignalgene_build_ubuntu_withoutjack
           path: build
 
   macos-x-build-without-jackaudio:
     runs-on: macOS-latest
-    needs: ubuntu-build-without-jackaudio
     name: Mac OS X build without
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: setup build folders
         run: |
           mkdir build
           mkdir build/MacOS_without_jackaudio
-      - name: get workflow as artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: multisignalgene_build
-          path: build
       - name: build
         run: |
           cd cpp_version
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=SINE
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=PULSES
-          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=TRIANGLES
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ EXECDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=SINE
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ EXECDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=PULSES
+          make WITH_JACKAUDIO=NO BUILDDIR=../build/MacOS_without_jackaudio/ EXECDIR=../build/MacOS_without_jackaudio/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/MacOS_without_jackaudio
           tar -cf The_objects_files.tar *.o
-          rm *.o
+          rm -f *.o
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: multisignalgene_build
+          name: multisignalgene_build_macOS_withoutjack
           path: build
 
   windows-build-without-jackaudio:
     runs-on: ubuntu-latest
-    needs: macos-x-build-without-jackaudio
     name: Windows build without
     steps:
-      - uses: actions/checkout@v3
-      - name: get workflow as artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: multisignalgene_build
+      - uses: actions/checkout@v4
       - name: environement
         run: sudo apt-get install -y libjack-jackd2-dev
       - name: Windows env
@@ -156,17 +133,27 @@ jobs:
       - name: build
         run: |
           cd cpp_version
-          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=SINE
-          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=PULSES
-          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=TRIANGLES
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ EXECDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=SINE
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ EXECDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=PULSES
+          make CXX=x86_64-w64-mingw32-g++-posix WITH_JACKAUDIO=NO  BUILDDIR=../build/Windows_without_jackaudio/ EXECDIR=../build/Windows_without_jackaudio/ DEFAULTWAVE=TRIANGLES
       - name: make things easy for the non devs
         run: |
           cd build/Windows_without_jackaudio
-          tar -cf The_objects_files.tar *.o
-          rm *.o
+          tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: multisignalgene_build
+          name: multisignalgene_build_windows_withoutjack
           path: build
 
+
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [ windows-build-without-jackaudio, macos-x-build-without-jackaudio, ubuntu-build-without-jackaudio,macos-x-build, ubuntu-build ] 
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          delete-merged: true
+          name: MultiSignalGene_builds

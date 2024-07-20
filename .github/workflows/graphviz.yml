@@ -5,6 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: environement
       run: sudo apt-get install -y graphviz
     - name: setup folders
@@ -28,7 +29,7 @@ jobs:
         make DOTLANG=jpeg BUILDDIR=../build/jpeg/
         make DOTLANG=png BUILDDIR=../build/png/
     - name: return workflow as artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: multisignalgene-doc
         path: build/*
