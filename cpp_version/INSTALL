@@ -2,12 +2,28 @@ REQUIREMENTS TO BUILD
 
 Basic tool chains to build C++17 or higher software
 
-Run and dev libraries for JackAudio
+Run and dev libraries.
+Optional Jackaudio run and dev packages if has been selected in the makefile (or as environment variable).
+
 
 REQUIREMENTS TO RUN
 
 An up and running machine.
 Graphic environment is not required
+Optional Jackaudio server running (jackd), if has been selected in the makefile (or as environment variable).
+  If Jackaudio is not normally used on the target machine, to not make conflicts with other sound software,
+  if the "physical" sound is not required, jack can be started on the dummy device driver.
+  For that, type "jackd -d dummy -C 2 -P 2"
+
+
+WHY CHOOSE OR NOT JACKAUDIO?
+
+* To play live some sound, it is required
+* To view the envelope or the sound, using the X42_scope (or other), it is required
+
+* To check the syntax of the Jack connection data, it is NOT required
+* To generate a sound file, intended to be played later, using third party software, it is NOT required
+* To check the syntax of a parameter file, regardless to convert or not into another one, it is NOT required
 
 
 OPTIONAL REQUIREMENTS
@@ -22,9 +38,13 @@ Graphviz
 CONFIGURATION
     There is no configure file as the software is written and relay on the standard C++ objects
       Then the configuration comes with the compiler
-    Make script understands the CC, CXXFLAGS, LDFLAGS, SCEDIR and BUILDDIR environment variables
+    The makefile understands the CXX, CXXFLAGS, LDFLAGS variables for cross compilation
+	The makefile understands the SRCDIR, BUILDDIR and EXECDIR variables for non standard paths
+	The CXX_Version should not be touched
+    The makefile understands the DEFAULTWAVE variable. Values are SINE, PULSES or TRIANGLES
+    The makefile understands the WITH_JACK variable. Values are YES or NO
 
 
 TESTED
     It has been (yet) tested on 32 and 64 bits Intel based CPU
-	It has been tested with an old 7.2.0 gcc
+	It has been tested with an old 8.5.0 gcc compiler
