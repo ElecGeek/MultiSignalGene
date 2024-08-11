@@ -4,14 +4,14 @@
 extern unsigned char debug_level;
 
 signal_channel::signal_channel( const unsigned short&channel_id,
-								const unsigned short&sample_rate_id,
+								const unsigned short&sample_rate_K,
 								const unsigned char&mode):
   channel_id( channel_id ),
-  frequency(sample_rate_id,1), amplitude(sample_rate_id),
-  ampl_modul(sample_rate_id, 8),
-  pulse_modul(sample_rate_id, 2)
-  /*  ampl_modul_depth( 1 ), ampl_modul_freq(sample_rate_id,8),
-  pulse_depth( 1 ), pulse_freq(sample_rate_id,2),
+  frequency(sample_rate_K,1), amplitude(sample_rate_K),
+  ampl_modul(sample_rate_K, 8),
+  pulse_modul(sample_rate_K, 2)
+  /*  ampl_modul_depth( 1 ), ampl_modul_freq(sample_rate_K,8),
+  pulse_depth( 1 ), pulse_freq(sample_rate_K,2),
   ampl_modul_step( ampl_modul_freq ), 
   pulse_step( pulse_freq )*/
 {

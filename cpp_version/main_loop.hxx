@@ -41,7 +41,7 @@ class main_loop {
   //! Quote if the was at least one unsupported type
   bool sample_type_not_found;
   //! Sample rate in KHz
-  const unsigned short&sample_rate_id;
+  const unsigned short&sample_rate_K;
   //! Samples counter for the parameters set update
   unsigned short samples_count;
   //! Number of samples ran between 2 parameters updates (always based on 48KHz)
@@ -62,13 +62,13 @@ class main_loop {
  public:
   main_loop()=delete;
   /** \brief Constructor
-   *  \param sample_rate_id Sample rate 1=48KHz, 2=96KHz and 4 =192KHz
+   *  \param sample_rate Sample rate 48=48KHz, 96=96KHz and 192=192KHz
    *  \param mode Output wave (or debug text), see the generator
    *  \param n_channels How many output channels
    *  \param samples_per_param_check Number of samples to run for one parameter set (in or out) update
    *  \param shutdown_length Not yet implemented
   */
-  main_loop( const unsigned short&sample_rate_id,
+  main_loop( const unsigned short&sample_rate_K,
 			 const string&mode,
 			 const unsigned short&n_channels,
 			 const unsigned short samples_per_param_check = 48,

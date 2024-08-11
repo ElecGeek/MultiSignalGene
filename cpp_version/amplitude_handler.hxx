@@ -19,11 +19,11 @@ class amplitude_handler
   // amplitude24 is the same range as slewrate plus one bit on the left for overflow detection
   unsigned long amplitude24;
   unsigned char requested_ampl;
-  // sample_rate_id should be 1 = 48KHz 2 = 96KHz 4 = 192KHz
-  const unsigned short sample_rate_id;
+  // sample_rate_K should be 48 = 48KHz 96 = 96KHz 192 = 192KHz
+  const unsigned short sample_rate_K;
  public:
   amplitude_handler()=delete;
-  explicit amplitude_handler(const unsigned short&sample_rate_id);
+  explicit amplitude_handler(const unsigned short&sample_rate_K);
   constexpr void set_volume(const unsigned char&volumpe )
   {
 	this->volume = volume;
@@ -32,7 +32,7 @@ class amplitude_handler
   {
 	this->slewrate = slewrate;
 	this->slewrate *= 4 * 48;
-	this->slewrate /= sample_rate_id;
+	this->slewrate /= sample_rate_K;
   }
   constexpr void set_amplitude(const unsigned char&amplitude )
   {

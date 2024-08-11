@@ -2,12 +2,12 @@
 
 //#include <jack/jack.h>
 
-main_loop::main_loop( const unsigned short&sample_rate_id,
+main_loop::main_loop( const unsigned short&sample_rate_K,
 					  const string&mode,
 					  const unsigned short&n_channels,
 					  const unsigned short samples_per_param_check,
 					  const unsigned long shutdown_length):
-  sample_rate_id( sample_rate_id ),
+  sample_rate_K( sample_rate_K ),
   samples_count( 0 ),
   samples_per_param_check( samples_per_param_check ),
   send_to_sound_file_output( this ),
@@ -31,11 +31,11 @@ main_loop::main_loop( const unsigned short&sample_rate_id,
   output_waveform_info.reserve( 25 + 2 * n_channels );
   output_waveform_info += "Output waves is(are):";
 
-  // samples_per_TS_unit = sample_rate_id * samples_per_param_check;
-  // sample_rate_id is based on multiples of 1KHz,
+  // samples_per_TS_unit = sample_rate * samples_per_param_check;
+  // sample_rate is based on multiples of 1KHz,
   //   then to get a refresh of the parameters every mS,
-  //   the sample_rate_id is the sample divider 
-  samples_per_TS_unit = sample_rate_id * 1;
+  //   the sample_rate is the sample divider 
+  samples_per_TS_unit = sample_rate_K * 1;
   //  cout << "SPTU " <<samples_per_TS_unit << endl;
   auto mode_iter = mode.begin();
 
@@ -47,7 +47,7 @@ main_loop::main_loop( const unsigned short&sample_rate_id,
 	{
 	  for ( auto const& ind : chan_list )
 		{
-		  sc = new signal_channel( ind + 1 , sample_rate_id, output_default );
+		  sc = new signal_channel( ind + 1 , sample_rate_K, output_default );
 		  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
 		}
 	  output_waveform_info += " all ";
@@ -70,7 +70,7 @@ main_loop::main_loop( const unsigned short&sample_rate_id,
 		  else
 			actual_mode = *mode_iter;
 
-		  sc = new signal_channel( ind + 1, sample_rate_id, actual_mode );
+		  sc = new signal_channel( ind + 1, sample_rate_K, actual_mode );
 		  signal_list.insert( pair<unsigned short,signal_channel*>( ind, sc ));
 
 		  output_waveform_info += " ";
@@ -446,7 +446,7 @@ unsigned long main_loop::send_to_sound_output::operator()(sound_data_output_buff
 	  else
 		{
 		  unsigned long elapsed_time = get<1>(ssfo) * 1000;
-		  return elapsed_time / main_loop_this->sample_rate_id ;
+		  return elapsed_time / main_loop_this->sample_rate_K ;
 		}
 	}
 }

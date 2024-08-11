@@ -6,14 +6,15 @@ WITH_JACKAUDIO?=YES
 CXX_Version?=-std=c++17
 SRCDIR?=
 BUILDDIR?=
+EXECDIR?=
 
 OBJECTS = $(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_input_mnemos.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)params_io_handler.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)sound_jack_links.o $(BUILDDIR)sound_jack_output.o $(BUILDDIR)samplerate_handler.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
 
 $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE)			:	$(OBJECTS)
 ifeq ($(WITH_JACKAUDIO),YES)
-	$(CXX) $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE) $(OBJECTS) -ljack
+	$(CXX) $(LDFLAGS) $(CXX_Version) -o $(EXECDIR)multisignalgene_DW_$(DEFAULTWAVE) $(OBJECTS) -ljack
 else
-	$(CXX) $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE) $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(CXX_Version) -o $(EXECDIR)multisignalgene_DW_$(DEFAULTWAVE) $(OBJECTS)
 endif
 
 $(BUILDDIR)main.o					:	$(SRCDIR)main.cpp $(SRCDIR)help_message.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)main_loop.hxx $(SRCDIR)params_io_handler.hxx

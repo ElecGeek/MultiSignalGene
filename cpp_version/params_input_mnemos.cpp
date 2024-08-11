@@ -572,7 +572,7 @@ string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) cons
 		{
 		  if ( the_event.value_left.empty() == false )
 			mode = stoul( the_event.value_left );
-		  mode &= 0x01;
+		  mode &= 0x03;
 		  return string();
 		}
 	  else
