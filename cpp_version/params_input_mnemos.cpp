@@ -38,7 +38,7 @@ mnemos_bytes_stream::mnemos_bytes_stream(ostream&os,
 bool mnemos_bytes_stream::get_event(istream&i_stm)
 {
   // Since it is a stream char iterator, this function checks for the eof before each read
-  // The file might be finish or the stream is temporarely starving.
+  // The file might be finish or the stream is temporarily starving.
   // In such case, the function does not read anything and returns
   //   until the eof "is fixed"
   unsigned char val_read;
@@ -93,12 +93,12 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  value_unit += val_read;
 			  break;
 			case ls_spctab_val:
-			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment character" << endl;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_in_crlf:
 			case ls_start:
-			  info_out_str << "Line " << track_line << ": numerical digits are expected for the timestamp" << endl;
+			  info_out_str << "Line " << track_line << ": numerical digits are expected for the time-stamp" << endl;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_wait_eol_comment:
@@ -146,7 +146,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_val:
-			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment caracter" << endl;
+			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment character" << endl;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_wait_eol_comment:
@@ -192,7 +192,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_val:
-			  info_out_str << "Line " << track_line << ": warning, please start comments qith a comment caracter" << endl;
+			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment character" << endl;
 			  line_state = ls_wait_eol_comment;
 			  shoottheline = true;
 			  break;
@@ -314,7 +314,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 	      // If we are already in a comment it is OK,
 	      // Otherwise the line is discarded
 	      if ( line_state != ls_wait_eol_comment )
-			info_out_str << "Line " << track_line << ": exotic caracters ( " << val_read << " ) allowed only in comments" << endl;
+			info_out_str << "Line " << track_line << ": exotic characters ( " << val_read << " ) allowed only in comments" << endl;
 	    }
 	  if ( shoottheline == true )
 	    {
@@ -368,8 +368,8 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 															 bool default_freq_not_seconds,
 															 const char&post_proc) const
 {
-  // This does not perform any tolower.
-  // It should be done at the geneeral preprocessing
+  // This does not perform any to-lower.
+  // It should be done at the general preprocessing
   char power10 = 0;
   bool freq_not_seconds;
   string unit_without_scale;
@@ -419,14 +419,14 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 		case 'h':
 		case 's':
 		  // It can be seconds or hertz, let's the code below doing the job
-		  // power10 = 0; irelevant
+		  // power10 = 0; irrelevant
 		  unit_without_scale = current_unit;
 		  break;
 		default:
 		  return string( "Sorry, the unit " ) + current_unit + string( " is unknown" );
 		}
 	}
-  // irelevant else here to set unit_without_scale as it is initialized to empty
+  // irrelevant else here to set unit_without_scale as it is initialized to empty
   // step 2:
   if ( unit_without_scale.compare( "hz" ) == 0 || unit_without_scale.compare( "hertz" ) == 0 )
 	{
@@ -482,13 +482,13 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 			the_val += f1;
 		  }
 		else
-		  return string( "The timestamp (" ) +
+		  return string( "The time-stamp (" ) +
 			the_event.TS_left + string( "." ) + the_event.TS_right +
 			string( ") should not have more than 5 digits after the decimal separator.");
 	  }
   }
-  // spet 4: computes u, m or K
-  // avoid irelevant calculation
+  // step 4: computes u, m or K
+  // avoid irrelevant calculation
   switch ( power10 ) {
   case -3:
 	the_val /= 1000;
@@ -639,7 +639,7 @@ string input_params_mnemos_2_action::Depth_strings_2_val(unsigned long&val_0_255
 }
 string input_params_mnemos_2_action::Angle_strings_2_val(unsigned long&val_0_15) const
 {
-  if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.compare( "degres" ) ||
+  if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.compare( "degrees" ) ||
 	   the_event.value_unit.empty() )
 	{
 	  unsigned int the_val = 0;
@@ -798,7 +798,7 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
 	}else
 	{
 	  // Not found, 3 reasons
-	  //   * mnemo handeled in the old version
+	  //   * mnemo handled in the old version
 	  //   * mnemo of the extended commands ( store, retrieve etc... NOT YET )
 	  //   * really not found
 	  // The store retrieve is on hold as a decision has to be taken:
@@ -913,7 +913,7 @@ void input_params_mnemos_file::import_next_event(vector<signals_param_action>&ac
 
   mnemos_2_action_run( actions );
   // Reset the fields
-  // The strucutre should change. For now intilize one by one
+  // The structure should change. For now initialize one by one
   TS_left.clear();
   TS_right.clear();
   TS_unit.clear();
@@ -1038,7 +1038,7 @@ unsigned long input_params_mnemos_hardcoded::check_next_time_stamp()
 		  return 0;
 		}
 	}else
-	// Input is "starving", that should not be hapened here
+	// Input is "starving", that should not be happened here
 	return 0xffffffff;
 }
 void input_params_mnemos_hardcoded::import_next_event(vector<signals_param_action>&actions)

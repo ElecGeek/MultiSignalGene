@@ -15,7 +15,7 @@ midi_bytes_stream::midi_bytes_stream(ostream&os,const bool&with_time_stamp, inpu
 bool midi_bytes_stream::get_event(istream&i_stm)
 {
   // Since it is a stream char iterator, this function checks for the eof before each read
-  // The file might be finish or the stream is temporarely starving.
+  // The file might be finish or the stream is temporarily starving.
   // In such case, the function does not read anything and returns
   //   until the eof "is fixed"
   unsigned char val_read;
@@ -57,7 +57,7 @@ bool midi_bytes_stream::get_event(istream&i_stm)
 		state = state_key;
 		if ( code < 128 )
 		  {
-			cerr << "Error reading midi smf/mid file: position " << track_tellg << ": code "<< hex << key << " shoud have its high bit set to one" << endl;
+			cerr << "Error reading midi smf/mid file: position " << track_tellg << ": code "<< hex << key << " should have its high bit set to one" << endl;
 		  }
 		break;
 		// Some codes may not expect parameters, they should not be in the file
@@ -122,7 +122,7 @@ bool midi_bytes_stream::get_event(istream&i_stm)
 
 ostream& operator<<( ostream&the_out , const midi_bytes_stream&me )
 {
-  the_out << "Timestamp: " << hex << me.timestamp_construct << ", code: " << (unsigned short)me.code;
+  the_out << "Time-stamp: " << hex << me.timestamp_construct << ", code: " << (unsigned short)me.code;
   the_out << ", key/note: " << (unsigned short)me.key;
   the_out << ", value: " << (unsigned short)me.value << ", optional str: " << me.user_str;
   return the_out;
@@ -190,7 +190,7 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 		case 0x08:
 		  long_value = get_value( 3, 0 );
 		  // val_float = 16777216.0 / ( (float)long_value * 48000 * 4.0 );
-		  // info_out_stream << "Set global amplitude slewrate " << hex << long_value;
+		  // info_out_stream << "Set global amplitude slew-rate " << hex << long_value;
 		  // info_out_stream << ", means " << val_float;
 		  // info_out_stream << "s 0-255 (step: 1/" << 16777216.0 /( 48000.0 * 4.0 ) << ')' << endl;
 		  action.action = signals_param_action::main_ampl_slewrate;
@@ -346,9 +346,9 @@ void input_params_midi_byte_stream::import_next_event(vector<signals_param_actio
 unsigned long input_params_midi_byte_stream::check_next_time_stamp()
 {
   // get_event is called without check if eof.
-  // Since it is going to read more than one caracter, the eof might occur in its loop.
-  // The channel may temporarely starving as well.
-  // Then, checking here is irelevant
+  // Since it is going to read more than one character, the eof might occur in its loop.
+  // The channel may temporarily starving as well.
+  // Then, checking here is irrelevant
   if ( get_event( i_stm ) )
 	{
 	  // Something read
@@ -398,9 +398,9 @@ void input_params_midi_file::import_next_event(vector<signals_param_action>&acti
 unsigned long input_params_midi_file::check_next_time_stamp()
 {
   // get_event is called without check if eof.
-  // Since it is going to read more than one caracter, the eof might occur in its loop.
-  // The channel may temporarely starving as well.
-  // Then, checking here is irelevant
+  // Since it is going to read more than one character, the eof might occur in its loop.
+  // The channel may temporarily starving as well.
+  // Then, checking here is irrelevant
   if ( get_event( if_stm ) )
 	{
 	  // Something read

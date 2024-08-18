@@ -16,7 +16,7 @@ using namespace std;
 
 
 class mnemos_bytes_stream : public mnemo_event {
-  // just copied and pasted, have to be enchired by the line parsing
+  // just copied and pasted, have to be enriched by the line parsing
   enum state_t{ state_ts, state_code, state_key, state_val, state_string, state_end } state;
   enum{ ls_start=0, ls_wait_eol_comment=1,
 	ls_in_ts_left=2, ls_in_ts_right=3, ls_in_ts_unit=4, ls_spctab_ts=5,
@@ -76,8 +76,8 @@ protected:
   string Mode_strings_2_val( unsigned long&value) const;   
   /* \brief Converts angles to numeric value for the phase shift and reset functions
    *
-   * The result is a format from 0 to 15 for angles from 0 to ( 360 - 22.5 ) per 22.5 degres\n
-   * Checks there is no unit or / or degre, otherwise return an error without any future processing\n
+   * The result is a format from 0 to 15 for angles from 0 to ( 360 - 22.5 ) per 22.5 degrees\n
+   * Checks there is no unit or / or degree, otherwise return an error without any future processing\n
    * Checks if before the decimal separator, the value is 0\n
    *   If so, the scale 0 for a 0 angle to (excluded) 1.0 for a 2.PI angle is used\n
    *   If not a real angle is used\n
@@ -124,7 +124,7 @@ private:
   input_params_base::clearing_t&ipm2a_clearing;
   mnemo_event::status_t&ipm2a_status;
   const multimap< short, string >mnemos_list;
-  // Not that lisible, but it avoid excessive indentation in the constructor
+  // Not that readable, but it avoid excessive indentation in the constructor
   const map< string, function< string(unsigned long&,signals_param_action::action_list&)> >mrf;
   //constexpr unsigned long long str2ll(const char*str, int h = 0)
   //{
@@ -147,9 +147,9 @@ public:
  *
  * Bundles the layers of:\n
  * The interface input_params_base to deliver the actions\n
- * The bytes collection from the stream and preprocessing to sort out
+ * The bytes collection from the stream and pre-processing to sort out
  *   the TS, its mneno, its value, its unit (opt), its comment (voided)\n
- * The convertion into an action type\n
+ * The conversion into an action type\n
  *  
  * This should go into a template, but let's wait more interfaces to write a generic template,
  *   based on the 7 network OSI layer style
@@ -172,9 +172,9 @@ class input_params_mnemos_byte_stream : public input_params_base, public mnemos_
  *
  * Bundles the layers of:\n
  * The interface input_params_base to deliver the actions\n
- * The bytes collection from the file and preprocessing to sort out
+ * The bytes collection from the file and pre-processing to sort out
  *   the TS, its mneno, its value, its unit (opt), its comment (voided)\n
- * The convertion into an action type\n
+ * The conversion into an action type\n
  *  
  * This should go into a template, but let's wait more interfaces to write a generic template,
  *   based on the 7 network OSI layer style
@@ -195,14 +195,14 @@ class input_params_mnemos_file : public input_params_base, public mnemos_bytes_s
   bool is_ready(void);
   bool exec_loops();
 };
-/** \brief Bundle class byte hardcoded
+/** \brief Bundle class byte hard-coded
  *
  * This is for test purposes\n
  * Bundles the layers of:\n
  * The interface input_params_base to deliver the actions\n
- * The bytes collection from an hardcoded list and preprocessing to sort out
+ * The bytes collection from an hard-coded list and pre-processing to sort out
  *   the TS, its mneno, its value, its unit (opt), its comment (voided)\n
- * The convertion into an action type\n
+ * The conversion into an action type\n
  *  
  * This should go into a template, but let's wait more interfaces to write a generic template,
  *   based on the 7 network OSI layer style

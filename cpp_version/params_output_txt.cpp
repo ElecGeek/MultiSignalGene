@@ -67,7 +67,7 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  break;
 	case signals_param_action::main_ampl_slewrate:
 	  val_float = 16777216.0 / ( (float)action.value * 48000 * 4.0 );
-	  out_line << "Set global amplitude slewrate " << hex << action.value;
+	  out_line << "Set global amplitude slew-rate " << hex << action.value;
 	  out_line << ", means " << val_float;
 	  out_line << "s 0-255 (step: 1/" << (16777216.0 /( 48000.0 * 4.0 )) << ")" << endl;
 	  break;

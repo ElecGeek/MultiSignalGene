@@ -18,7 +18,7 @@ using namespace std;
  *
  *
  * Reads a datagram such as a jackaudio event 
- * and populates the midi event data ( timestamp (if so ), code, key, value )\n
+ * and populates the midi event data ( time-stamp (if so ), code, key, value )\n
  * This event is empty because jackaudio has not yet been written
  */
 class midi_bytes_datagram : public midi_event {
@@ -26,15 +26,15 @@ class midi_bytes_datagram : public midi_event {
 };
 /** \brief Handles midi byte stream
  *
- * Reads bytes comming from a file, serial port etc...
- * and populates the midi event data ( timestamp (if so ), code, key, value )
+ * Reads bytes coming from a file, serial port etc...
+ * and populates the midi event data ( time-stamp (if so ), code, key, value )
  */
 class midi_bytes_stream : public midi_event {
   enum state_t{ state_ts, state_code, state_key, state_val, state_string, state_end } state;
   ostream&info_out_str;
   // The input iterator should come here
   // but after this class is going to be constructed rather than inherited by the input_params_midi_xxx classes
-  // Indeed some of them reveives a input file stream which is move-copied.
+  // Indeed some of them receives a input file stream which is move-copied.
   // Since the inherited classes are constructed before the local data, the input stream passed is
   // invalidated by the move-copy of the input file stream
   //istream&i_byte_stm;
@@ -83,13 +83,13 @@ public:
  *
  * Bundles the layers of:\n
  * The interface input_params_base to deliver the actions\n
- * The bytes collection from the stream and preprocessing to sort out
+ * The bytes collection from the stream and pre-processing to sort out
  *   the midi command code, the midi note and the midi velocity
- * The convertion into an action type\n
+ * The conversion into an action type\n
  *  
  * This should go into a template, but let's wait more interfaces to write a generic template,
  *   based on the 7 network OSI layer style\n
- * This should move from 3 inheritence into 3 pointers as well
+ * This should move from 3 inheritance into 3 pointers as well
  */
 class input_params_midi_byte_stream : public input_params_base, public midi_bytes_stream, public input_params_midi_2_action
  {
@@ -108,13 +108,13 @@ class input_params_midi_byte_stream : public input_params_base, public midi_byte
  *
  * Bundles the layers of:\n
  * The interface input_params_base to deliver the actions\n
- * The bytes collection from the file and preprocessing to sort out
+ * The bytes collection from the file and pre-processing to sort out
  *   the midi command code, the midi note and the midi velocity
- * The convertion into an action type\n
+ * The conversion into an action type\n
  *  
  * This should go into a template, but let's wait more interfaces to write a generic template,
  *   based on the 7 network OSI layer style\n
- * This should move from 3 inheritence into 3 pointers as well
+ * This should move from 3 inheritance into 3 pointers as well
  */
 class input_params_midi_file : public input_params_base, public midi_bytes_stream, public input_params_midi_2_action {
   ifstream if_stm;

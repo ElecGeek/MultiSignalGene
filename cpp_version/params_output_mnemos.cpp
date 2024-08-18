@@ -54,7 +54,7 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	case signals_param_action::main_ampl_slewrate:
 	  val_float = 16777216.0 / ( (float)action.value * 48000 * 4.0 );
 	  out_line << "OS " << val_float;
-	  out_line << "S" << "\t% slewrate" << endl;
+	  out_line << "S" << "\t% slew-rate" << endl;
 	  break;
 	case signals_param_action::ampl_modul_freq:
 	  val_float = (float)action.value * 48000.0 * 4.0 / 16777216.0;
