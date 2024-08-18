@@ -66,10 +66,17 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "Sets the amplitude " << hex << action.value << ", dec: " << dec << action.value << endl;
 	  break;
 	case signals_param_action::main_ampl_slewrate:
-	  val_float = 16777216.0 / ( (float)action.value * 48000 * 4.0 );
+	  val_float = 16777216.0 * 2.0 / ( (float)action.value * 48000 * 4.0 );
 	  out_line << "Set global amplitude slew-rate " << hex << action.value;
 	  out_line << ", means " << val_float;
-	  out_line << "s 0-255 (step: 1/" << (16777216.0 /( 48000.0 * 4.0 )) << ")" << endl;
+	  out_line << "s 0-255 (next: ";
+	  out_line << (16777216.0 * 2.0 / ( (float)( action.value + 1 ) * 48000 * 4.0 ));
+	  if ( action.value > 0 )
+		{
+		  out_line << ", prev: ";
+		  out_line << (16777216.0 * 2.0 / ( (float)( action.value - 1 ) * 48000 * 4.0 ));
+		}
+	  out_line << ")" << endl;
 	  break;
 	case signals_param_action::ampl_modul_freq:
 	  val_float = (float)action.value * 48000.0 * 4.0 / 16777216.0;

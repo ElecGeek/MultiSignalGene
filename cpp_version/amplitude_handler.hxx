@@ -14,10 +14,10 @@
 class amplitude_handler
 {
   unsigned char volume;
-  // slew-rate uses 14 bits value plus 2 bits padding on the right
+  // slew-rate uses 16 bits value plus 2 bits padding on the right
   unsigned long slewrate;
-  // amplitude24 is the same range as slewrate plus one bit on the left for overflow detection
-  unsigned long amplitude24;
+  // amplitude25 is the same range as slew-rate plus one bit on the left for overflow detection
+  long amplitude25;
   unsigned char requested_ampl;
   // sample_rate_K should be 48 = 48KHz 96 = 96KHz 192 = 192KHz
   const unsigned short sample_rate_K;
@@ -31,6 +31,7 @@ class amplitude_handler
   constexpr void set_slewrate(const unsigned short&slewrate )
   {
 	this->slewrate = slewrate;
+	// 384KHz sampling rate may have problems here
 	this->slewrate *= 4 * 48;
 	this->slewrate /= sample_rate_K;
   }
@@ -40,23 +41,25 @@ class amplitude_handler
   }
   constexpr unsigned short operator()(void)
   {
-	if( ((unsigned char)(amplitude24>>16)) > requested_ampl )
+	if( ((unsigned char)(amplitude25>>17)) > requested_ampl )
 	  {
-		amplitude24 -= slewrate;
-		if ( (( amplitude24 & 0x10000000 ) == 0x10000000 ) ||
-			 (((unsigned char)(amplitude24>>16)) < requested_ampl ) )
-		  amplitude24 = ((unsigned long)requested_ampl) << 16;
+		amplitude25 -= slewrate;
+		// negative (high bit 1) or under the requested value
+		if ( (( amplitude25 & 0x80000000 ) == 0x80000000 ) ||
+			 (((unsigned char)(amplitude25>>17)) < requested_ampl ) )
+		  amplitude25 = ((unsigned long)requested_ampl) << 17;
 	  }
-	else if (((unsigned char)(amplitude24>>16)) < requested_ampl )
+	else if (((unsigned char)(amplitude25>>17)) < requested_ampl )
 	  {
-		amplitude24 += slewrate;
-		if (( ( amplitude24 & 0x01000000 ) == 0x01000000 ) ||
-			(((unsigned char)(amplitude24>>16)) > requested_ampl ) )
-		  amplitude24 = ((unsigned long)requested_ampl) << 16;
+		amplitude25 += slewrate;
+		// Greater than 134 217 728 or over the requested value
+		if (( ( amplitude25 & 0x02000000 ) == 0x02000000 ) ||
+			(((unsigned char)(amplitude25>>17)) > requested_ampl ) )
+		  amplitude25 = ((unsigned long)requested_ampl) << 17;
 	  }
-	//    cout << hex << ((unsigned short)volume) * ((unsigned short)(amplitude24>>16)) << "  ";
+	//    cout << hex << ((unsigned short)volume) * ((unsigned short)(amplitude25>>17)) << "  ";
 	
-	return ((unsigned short)volume) * ((unsigned short)(amplitude24>>16));
+	return ((unsigned short)volume) * ((unsigned short)(amplitude25>>17));
   }
 
 };

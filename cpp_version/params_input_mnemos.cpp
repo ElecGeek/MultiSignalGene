@@ -520,9 +520,9 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 	  // Used by base frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 8.0 );
 	  break;
-	case 0:
+	case -1:
 	  // Used by slew rate
-	  the_val = 16777216.0 / ( 48000.0 * 4.0 * the_val );
+	  the_val = 16777216.0 * 2.0 / ( 48000.0 * 4.0 * the_val );
 	  break;
 	case -2:
 	  // Used by high or low hold
@@ -704,7 +704,7 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
 		  return FreqDelay_strings_2_val(value,true,8);}},
 	  {"os",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::main_ampl_slewrate;
-		  return FreqDelay_strings_2_val(value,false,0);}},
+		  return FreqDelay_strings_2_val(value,false,-1);}},
 	  {"oa",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::main_ampl_val;
 		  return Depth_strings_2_val( value );}},
@@ -788,6 +788,12 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
 		  action.channel_id = val_s;
 
 		  action.action = act;
+
+		  if ( value >= 65536 )
+			{
+			  cout << "**** Value " << value << " of mneno is too big *****" << endl; 
+			  value = 65535;
+			}
 		  action.value = value;
 
 		  actions.push_back( action );

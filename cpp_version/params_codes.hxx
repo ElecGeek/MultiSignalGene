@@ -8,7 +8,7 @@
  * Midi note binary, midi velocity, midi note music (range), mnemonic, description, limits\n
  * Values format: e = exponent, m = mantissa, c = constant to exponent\n
  * 0000 0eee  0mmmmmmm c=1   C00 to G00  OF  Base frequency             max = 2976.56Hz step = 23.44Hz min = 0.183Hz, 5.46s step = 0.366Hz\n
- * 0000 1eee  0mmmmmmm c=0  G#00 to D#0  OS  Main amplitude slew-rate   max = ??? min step = ? max step = ?\n
+ * 0000 1eee  0mmmmmmm c=0  G#00 to D#0  OS  Main amplitude slew-rate   max = 2.666mS min = 174s min step < 40uS max step = 87s\n
  * 0001 000e  0mmmmmmm c=1    E0 to  F0  OA  Main amplitude             max = 254 min step = 1 max step = 2\n
  * 0001 0010  0xxxxxxx na.          F#0  NQ  Abort. Mnemonic file is over. Channel is discarded. Value is the time before leave (not yet implemented)\n
  * 0001 0011           na.           G0   /  Reserved\n
