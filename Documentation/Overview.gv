@@ -11,11 +11,6 @@ digraph overview {
 
 		 label="Overview";
 
-		 subgraph cluster_initialisation {
-		 		  node [shape=record]
-				  label="Software initialisation";
-				  node [label="configuration out";shape=ellipse] "n_init_output";
-		 }
 		 subgraph cluster_input_commands {
 		 		  node [shape=record]
 				  label="Input commands";
@@ -26,7 +21,7 @@ digraph overview {
 				  				  node [label="From network";color=red] "n_input_cmd_net";
 				  }
 				  node [label="parameters out";shape=ellipse] "n_input_commands_output";
-				  node [label="configuration in";shape=ellipse] "n_input_commands_config";
+				  node [label="configuration|from startup";shape=ellipse] "n_input_commands_config";
 				  n_input_cmd_file -> n_input_cmd_stdio -> n_input_cmd_device -> n_input_cmd_net [label="incl OR";dir=none];
 		 }
 		 subgraph cluster_output_commands {
@@ -39,30 +34,34 @@ digraph overview {
 				  				  node [label="To network";color=red] "n_output_cmd_net";
 				  }
 				  node [label="parameters in";shape=ellipse] "n_output_commands_params";
-				  node [label="configuration in";shape=ellipse] "n_output_commands_config";
+				  node [label="configuration|from startup";shape=ellipse] "n_output_commands_config";
 				  n_output_cmd_file -> n_output_cmd_stdio -> n_output_cmd_device -> n_output_cmd_net [label="incl OR";dir=none];
 		 }
 		 subgraph cluster_sound_gene_0 {
 		 		  node [shape=record]
 		 		  label="Sound generator";
 		 		  node [label="Base waveform"] base_waveform;
-		 		  node [label="Modulations"] base_modulations;
+		 		  node [label="Amplitude modulation"] ampl_modulation;
+		 		  node [label="Pulse modulation"] pulse_modulation;
 				  node [label="parameters in";shape=ellipse] "n_base_waveform_params";
-				  "base_waveform" -> "base_modulations";
-				  node [label="configuration in";shape=ellipse] "n_base_waveform_config";
+				  "base_waveform" -> "ampl_modulation";
+				  "ampl_modulation" -> "pulse_modulation";
+				  node [label="configuration|from startup";shape=ellipse] "n_base_waveform_config";
 				  node [label="Modulator";shape=diamond;style=filled;color=lightgrey] "links_modulator"
 				  node [label="Wave_gene";shape=diamond;style=filled;color=lightgrey] "links_wavegene"
 		 }
 
 		 subgraph cluster_sound_software {
 		 		  label="Sound output, software version";
-		 		  node [label="Jackaudio"] "n_output_jack";
-  		 		  node [label="Dummy, Dry run"] "n_output_dummy";
+		 		  node [label="Jackaudio config, peers and connections";color=red] "n_jack_cpc";
+  		 		  node [label="Jackaudio";color=blue] "n_output_jack";
+  		 		  node [label="Dummy, Dry run";color=black] "n_output_dummy";
   		 		  node [label="Wave file"] "n_output_wavefile";
+				  "n_jack_cpc" -> "n_output_jack"[dir=both];
 
-		 		  node [label="configuration in";shape=ellipse] "n_output_config";
+		 		  node [label="configuration|from startup";shape=ellipse] "n_output_config";
 				  node [label="data in";shape=ellipse] "n_output_software";
-				  n_output_jack -> n_output_dummy -> n_output_wavefile [label="incl OR";dir=none];
+				  n_output_jack -> n_output_dummy -> n_output_wavefile [label="excl OR";dir=none];
 				  node [label="Sound_output_software";shape=diamond;style=filled;color=lightgrey] "links_sound_output_software"
 				  }
 
@@ -71,22 +70,12 @@ digraph overview {
 		 		  node [label="Hardware"] n_output_hardware;
 				  }
 
-		 subgraph cluster_bundle_channels {
-				  node[shape=record]
-				  node [label="data in";shape=ellipse] "n_bundle_in";
-				  node [label="data out";shape=ellipse] "n_bundle_out";
-		 		  label="Channels bundle";
-				  node [label="Channels";shape=diamond;style=filled;color=lightgrey] "links_channels"
-		 }
-		 "n_init_output" -> "n_input_commands_config";
-		 "n_init_output" -> "n_output_commands_config";
-		 "n_init_output" -> "n_base_waveform_config";
-		 "n_init_output" -> "n_output_config";
 		 "n_input_commands_output" -> "n_output_commands_params" [headlabel="0..P";taillabel="1..M"];
 		 "n_input_commands_output" -> "n_base_waveform_params" [headlabel="0..N";taillabel="1..M"];
-		 "base_modulations" -> n_bundle_in [headlabel="1";taillabel="0..N"];
-		 n_bundle_out -> n_output_software;
-		 n_bundle_out -> n_output_hardware;
+		 "pulse_modulation" -> n_output_software[headlabel="1";taillabel="0..N"];
+		 "pulse_modulation" -> n_output_hardware[headlabel="1";taillabel="0..N"];
 
+	     node [label="For future releases";shape=diamond;color=red] "red_legenda"
+	     node [label="If jackaudio is compiled in";shape=diamond;color=blue] "blue_legenda"
 	     node [label="More information in the file|<filename>.<theformat>";shape=diamond;style=filled;color=lightgrey] "links_legenda"
 }
