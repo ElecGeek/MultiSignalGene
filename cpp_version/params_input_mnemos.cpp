@@ -503,7 +503,11 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
   // step 5: check if S or Hz
   if ( default_freq_not_seconds != freq_not_seconds )
 	{
-	  the_val = 1.0 / the_val;
+	  if ( the_val < 0.0000015259022 )
+		the_val = 1.0 / the_val;
+	  else
+		// Take the maximum valus
+		the_val = 65535.0;
 	}
   // step 6:
   switch ( post_proc )
@@ -514,10 +518,11 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 	  break;
 	case 4:
 	  // Used by pulse modulation frequency
+	  // Used by base frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 4.0 );
 	  break;
 	case 8:
-	  // Used by base frequency
+	  // Not used
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 8.0 );
 	  break;
 	case -1:
@@ -538,7 +543,7 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 	default:
 	  return "Internal error";
 	}
-  if( the_val > 16777216 )
+  if( the_val >= 16777215.0 )
 	return "Value too big";
   the_val = ceil( the_val );
   value = (long)the_val;
@@ -701,7 +706,7 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
   mrf({
 	  {"of",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::base_freq;
-		  return FreqDelay_strings_2_val(value,true,8);}},
+		  return FreqDelay_strings_2_val(value,true,4);}},
 	  {"os",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::main_ampl_slewrate;
 		  return FreqDelay_strings_2_val(value,false,-1);}},

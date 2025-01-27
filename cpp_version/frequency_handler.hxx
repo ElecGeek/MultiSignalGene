@@ -94,7 +94,7 @@ class frequency_handler
 	if ( frequency < 1 )
 	  throw;
 	this->frequency = frequency; 
-	this->frequency *= 32 * 48;
+	this->frequency *= 16 * 48;
 	this->frequency /= global_rate;
 	//cout << "Frequency settings " << this->frequency << endl;
   }

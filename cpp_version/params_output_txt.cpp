@@ -58,9 +58,9 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "Set track name to " << endl;
 	  break;
 	case signals_param_action::base_freq:
-	  val_float = (float)action.value * 48000.0 * 4.0 * 8.0 / 16777216.0;
+	  val_float = (float)action.value * 48000.0 * 4.0 * 4.0 / 16777216.0;
 	  out_line << "Set base frequency " << hex << action.value << ", means: " << val_float;
-	  out_line << "Hz (step: " << (2.0 * 48000.0 * 4.0 * 8.0 / 16777216.0) << ")" << endl;
+	  out_line << "Hz (step: " << (2.0 * 48000.0 * 4.0 * 4.0 / 16777216.0) << ")" << endl;
 	  break;
 	case signals_param_action::main_ampl_val:
 	  out_line << "Sets the amplitude " << hex << action.value << ", dec: " << dec << action.value << endl;
