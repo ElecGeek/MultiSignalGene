@@ -43,7 +43,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
   //   until the eof "is fixed"
   unsigned char val_read;
   
-  bool shoottheline;
+  enum { shoot_line, clear_line, idle_line } action_line;
 		
   if( state == state_end )
 	{
@@ -58,7 +58,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 
   while( (i_stm.eof() == false) && (status != end_track) && (state != state_end) )
 	{
-	  shoottheline = false;
+	  action_line = idle_line;
 	  i_stm.read( (char*)(&val_read) , 1 );
 	  if ( ( val_read >= 'a' && val_read <= 'z' ) || ( val_read >= 'A' && val_read <= 'Z' ) || val_read == '/' )
 	    {
@@ -84,6 +84,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_spctab_mnemo:
 			  info_out_str << "Line " << track_line << ": numerical digits are expected for the value" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_in_val_left:
@@ -99,6 +100,8 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			case ls_in_crlf:
 			case ls_start:
 			  info_out_str << "Line " << track_line << ": numerical digits are expected for the time-stamp" << endl;
+			  // may be irrelevant is ls_start state
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_wait_eol_comment:
@@ -121,6 +124,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_in_ts_unit:
 			  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the TS unit" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_ts:
@@ -143,6 +147,7 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_in_val_unit:
 			  info_out_str << "Line " << track_line << ": no numerical digit is allowed in the value unit" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_val:
@@ -163,20 +168,24 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_in_ts_right:
 			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the TS" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_in_ts_unit:
 			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the TS unit" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_ts:
 			case ls_in_channel:
 			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the channel" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_channel:
 			case ls_in_mnemo:
 			  info_out_str << "Line " << track_line << ": no decimal separator is allowed in the mnemonic" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_mnemo:
@@ -185,16 +194,17 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_in_val_right:
 			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_in_val_unit:
 			  info_out_str << "Line " << track_line << ": no second decimal separator is allowed in the value unit" << endl;
+			  action_line = clear_line;
 			  line_state = ls_wait_eol_comment;
 			  break;
 			case ls_spctab_val:
 			  info_out_str << "Line " << track_line << ": warning, please start comments with a comment character" << endl;
 			  line_state = ls_wait_eol_comment;
-			  shoottheline = true;
 			  break;
 			case ls_wait_eol_comment:
 			  break;
@@ -234,10 +244,10 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			case ls_in_val_left:
 			case ls_in_val_right:
 			case ls_in_val_unit:
+			  action_line = shoot_line;
 			case ls_spctab_val:
 			  crlf_first_used = val_read;
 			  track_line += 1;
-			  shoottheline = true;
 			  break;
 			case ls_wait_eol_comment:
 			  crlf_first_used = val_read;
@@ -275,12 +285,12 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 			  break;
 			case ls_in_val_left:
 			  line_state = ls_spctab_val;
-			  shoottheline = true;
+			  action_line = shoot_line;
 			  break;
 			case ls_in_val_right:
 			case ls_in_val_unit:
 			  line_state = ls_spctab_val;
-			  shoottheline = true;
+			  action_line = shoot_line;
 			  break;
 			case ls_spctab_val:
 			  break;
@@ -316,9 +326,22 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 	      if ( line_state != ls_wait_eol_comment )
 			info_out_str << "Line " << track_line << ": exotic characters ( " << val_read << " ) allowed only in comments" << endl;
 	    }
-	  if ( shoottheline == true )
+	  switch ( action_line )
 	    {
+		case shoot_line:
 		  state = state_end;
+		  break;
+		case clear_line:
+  // The structure should change. For now initialize one by one
+		  TS_left.clear();
+		  TS_right.clear();
+		  TS_unit.clear();
+		  channel.clear();
+		  mnemo.clear();
+		  value_left.clear();
+		  value_right.clear();
+		  value_unit.clear();
+		  break;
 	    }
 	}
   if ((state == state_end) && (status != end_track))
