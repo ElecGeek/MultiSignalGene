@@ -24,7 +24,7 @@ class amplitude_handler
  public:
   amplitude_handler()=delete;
   explicit amplitude_handler(const unsigned short&sample_rate_K);
-  constexpr void set_volume(const unsigned char&volumpe )
+  constexpr void set_volume(const unsigned char&volume )
   {
 	this->volume = volume;
   }

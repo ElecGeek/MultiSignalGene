@@ -342,6 +342,8 @@ bool mnemos_bytes_stream::get_event(istream&i_stm)
 		  value_right.clear();
 		  value_unit.clear();
 		  break;
+		case idle_line:
+		  break;
 	    }
 	}
   if ((state == state_end) && (status != end_track))
