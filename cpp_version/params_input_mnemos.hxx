@@ -67,13 +67,13 @@ protected:
    * \return error string or empty string if no error
    */
   string Channel_string_2_val( unsigned short&value) const;   
-  /* \brief Converts channel data into mode
+  /* \brief Converts channel data into integer
    *
    * The result is the mode (today from 0 to 1)
    * \param value Reference to return the value
    * \return error string or empty string if no error
    */
-  string Mode_strings_2_val( unsigned long&value) const;   
+  string Mode_strings_2_val( unsigned long&value,const unsigned long&val_max=2) const;   
   /* \brief Converts angles to numeric value for the phase shift and reset functions
    *
    * The result is a format from 0 to 15 for angles from 0 to ( 360 - 22.5 ) per 22.5 degrees\n

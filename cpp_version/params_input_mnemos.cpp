@@ -593,7 +593,7 @@ string input_params_mnemos_2_action::Channel_string_2_val(unsigned short&val) co
   else
 	return "Channel id should be a integer or the keyword 'all'.";
 }
-string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) const
+string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode,const unsigned long&val_max) const
 {
   if ( the_event.value_unit.compare( "/" ) == 0 || the_event.value_unit.empty() )
 	{
@@ -602,11 +602,18 @@ string input_params_mnemos_2_action::Mode_strings_2_val(unsigned long&mode) cons
 		{
 		  if ( the_event.value_left.empty() == false )
 			mode = stoul( the_event.value_left );
-		  mode &= 0x03;
-		  return string();
+		  if ( mode > val_max )
+			{
+			  mode = 0;
+			  return string("The value (")+to_string(mode)+
+				string(") should not be greater than ")+to_string(val_max)+
+				string(".");
+			}
+		  else
+			return string();
 		}
 	  else
-		return "Mode should be an integer 0 or 1.";
+		return "The value should be an integer.";
 	}
   else
 	return "There is no unit for the mode.";
@@ -770,7 +777,7 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
 		  return Angle_strings_2_val(value);}},
 	  {"nn",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::nop;
-		  value=0; return string();}},
+		  return Mode_strings_2_val( value, numeric_limits<unsigned long>::max() );}},
 	  {"af",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::ampl_modul_freq;
 		  return FreqDelay_strings_2_val(value,true,1);}},

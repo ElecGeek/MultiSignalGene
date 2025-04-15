@@ -1,6 +1,6 @@
 CXX?=g++
-CXXFLAGS?=-O2
-LDFLAGS?=
+CXXFLAGS?=-O2 -m64
+LDFLAGS?=-m64
 DEFAULTWAVE?=SINE
 WITH_JACKAUDIO?=YES
 CXX_Version?=-std=c++17
@@ -19,10 +19,10 @@ endif
 
 $(BUILDDIR)main.o					:	$(SRCDIR)main.cpp $(SRCDIR)help_message.hxx $(SRCDIR)sound_file_output.hxx $(SRCDIR)main_loop.hxx $(SRCDIR)params_io_handler.hxx
 ifeq ($(WITH_JACKAUDIO),YES)
-	echo "Compiling with jackaudio"
+	@echo "Using compiler $(CXX), with jackaudio"
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -D __OUTPUT_$(DEFAULTWAVE)_MODE__ -D __WITH_JACK__ -o $(BUILDDIR)main.o $(SRCDIR)main.cpp
 else
-	echo "compiling without jackaudio"
+	@echo "Using the compiler $(CXX), without jackaudio"
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -D __OUTPUT_$(DEFAULTWAVE)_MODE__ -D __NO_JACK__ -o $(BUILDDIR)main.o $(SRCDIR)main.cpp
 endif
 

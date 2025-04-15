@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+// #include <execution>
 
 #ifndef __PARAMS_IO_HANDLER__
 #define __PARAMS_IO_HANDLER__
@@ -18,6 +19,9 @@
 
 using namespace std;
 
+enum params_file_format { params_file_8 = 0,
+						  params_file_16BE = 1,
+						  params_file_32BE = 2};
 enum params_io_format { params_io_unknown = 0,
 						params_io_midi_file = 1,
 						params_io_text = 2,
@@ -25,13 +29,12 @@ enum params_io_format { params_io_unknown = 0,
 						params_io_midi_connec = 4,
 						params_io_vhdl_test = 5,
 						params_io_test = 6};
-enum params_file_format { params_file_8 = 0,
-						  params_file_16BE = 1,
-						  params_file_32BE = 2};
 
 /** @brief Base of the handler of the files, input and output parameters
  *
- *
+ * Built by inherited classes, it holds the common sanity checks
+ *   such as the supported, planned and known-unsupported formats
+ * The specific parameters are handled in the code of the inherited classes.
  */
 class params_fio_handler_base
 {
@@ -43,6 +46,8 @@ protected:
   const multimap< short, string >supported_formats;
   const multimap< short, string >unsupported_formats;
   const multimap< short, string >planned_formats;
+  /** different ways to say TRUE and FALSE */
+  const multimap< bool, string > boolean_parameter;
   string err_msg_prefix;
   bool is_bad;
 
@@ -55,6 +60,12 @@ protected:
   virtual void AddChannelOptions( const options_list_t & ) = 0;
   virtual void EnvironementNeeds(void) = 0;
   
+  /** @brief parse a boolean parameter
+   *
+   * @return the result or the default
+   */
+  bool GetBoolParam(const options_list_t&the_params_list,
+					const unsigned char&param_code, const bool default_data = false );
 /** \brief Get information
    *
    * This returns both the notes and the errors
@@ -102,7 +113,7 @@ class params_input_handler : public params_fio_handler_base {
 };
 
 
-/** @brief Handles all the interfaces of all the input channels
+/** @brief Handles all the interfaces of all the output channels
  *
  *
  */
@@ -136,7 +147,7 @@ class params_output_handler  : public params_fio_handler_base {
   friend class params_io_handler;
 };
 
-/** @brief Handles all the interfaces of all the input channels
+/** @brief Handles all the interfaces of all the file channels
  *
  *
  */

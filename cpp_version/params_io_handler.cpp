@@ -1,5 +1,6 @@
 #include "params_io_handler.hxx"
 
+// using namespace std::execution
 
 params_fio_handler_base::params_fio_handler_base(unsigned char related_param,
 												 string err_msg_prefix,
@@ -7,12 +8,33 @@ params_fio_handler_base::params_fio_handler_base(unsigned char related_param,
 												 multimap< short, string > unsupported_formats,
 												 multimap< short, string > planned_formats):
   related_param(related_param),
-  err_msg_prefix(err_msg_prefix),
   supported_formats(supported_formats),
   unsupported_formats(supported_formats),
   planned_formats(planned_formats),
+  boolean_parameter( { { true, "1" }, { true, "yes"}, {true, "true" },
+					   { false,"0"},{false, "no"}, {false,"false" }}),
+  err_msg_prefix(err_msg_prefix),
   is_bad( false )
 {}
+
+bool params_fio_handler_base::GetBoolParam(const options_list_t&the_params_list,
+				  const unsigned char&param_code, const bool default_data )
+{
+  bool return_data = default_data;
+  options_list_t::const_iterator opt_name;
+  opt_name = the_params_list.find( param_code );
+  if ( opt_name != the_params_list.end() )
+	{
+	  auto found_bool = find_if( /* par , */ boolean_parameter.begin(), boolean_parameter.end(),
+			   [&](auto a) -> bool {
+				 return a.second == opt_name->second;
+			   });
+	  if ( found_bool != boolean_parameter.end() )
+		return_data = found_bool->first;
+	}
+
+  return return_data;
+}
 
 string params_fio_handler_base::GetInfos()
 {
@@ -207,7 +229,7 @@ params_output_handler::params_output_handler():
 						    {params_io_midi_connec,"jmidi"},{params_io_midi_connec,"JMIDI"},
 							{params_io_vhdl_test,"vhdl"},{params_io_vhdl_test,"VHDL"}})
 {}
-/* @breif Validate options in the current channel
+/* @brief Validate options in the current channel
  *
  * Each time the software receives a new input (-i), a new output (-o)
  * or a flush (calling parameters are over), the pending output options are tested and
@@ -270,9 +292,11 @@ void params_output_handler::CreateOutputChannels(void)
 		case params_io_mnemos:
 		case params_io_vhdl_test:
 		case params_io_midi_file:
+		  bool output_non_nop;
 		  out_opt_name = chan.second.find( 'o' );
 		  if ( out_opt_name != chan.second.end() )
 			{
+			  bool output_non_nop = true; 
 			  ofstream output_stream;
 
 			  if( (*out_opt_name).second.compare( "-" ))
@@ -283,7 +307,8 @@ void params_output_handler::CreateOutputChannels(void)
 					  switch( chan.first )
 						{
 						case params_io_text:
-						  OPB_list.push_back( new output_params_txt_file( output_stream ));
+						  output_non_nop = GetBoolParam( chan.second, 'N', true );
+						  OPB_list.push_back( new output_params_txt_file( output_stream, output_non_nop ));
 						  info_fio_params << "Opening text mode output parameters file " << (*out_opt_name).second;
 						  info_fio_params << " Ok" << endl;
 						  break;
@@ -310,7 +335,8 @@ void params_output_handler::CreateOutputChannels(void)
 				switch( chan.first )
 				  {
 				  case params_io_text:
-					OPB_list.push_back( new output_params_txt( cout ));
+					output_non_nop = GetBoolParam( chan.second, 'N', true );
+					OPB_list.push_back( new output_params_txt( cout, output_non_nop ));
 					info_fio_params << "Opening text mode output parameters on standard out Ok" << endl;
 					break;
 				  case params_io_mnemos:

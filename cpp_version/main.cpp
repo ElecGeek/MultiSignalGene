@@ -81,7 +81,7 @@ int main(int argc,char *argv[] )
 
   debug_level = 0;
 
-  while (( opt= getopt( argc, argv, "d:o:i:F:K:f:c:tj:r:l:w:hv" )) != EOF ) 
+  while (( opt= getopt( argc, argv, "d:o:i:F:N:K:f:c:tj:r:l:w:hv" )) != EOF ) 
 	{
 	  switch ( opt )
 		{
@@ -89,15 +89,10 @@ int main(int argc,char *argv[] )
 		  debug_level = atoi( optarg );
 		  break;
 		case 'o':
-		  params_io.SetOption( opt, string( optarg ));
-		  break;
 		case 'i':
-		  params_io.SetOption( opt, string( optarg ));
-		  break;
 		case 'F':
-		  params_io.SetOption( opt, string( optarg ));
-		  break;
 		case 'f':
+		case 'N':
 		  params_io.SetOption( opt, string( optarg ));
 		  break;
 		case 'K':
