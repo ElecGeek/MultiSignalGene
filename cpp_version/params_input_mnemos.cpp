@@ -537,12 +537,15 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
   // step 6:
   switch ( post_proc )
 	{
-	case 1:
+	case 0:
 	  // Used by amplitude modulation frequency
-	  the_val *= 16777216.0 / ( 48000.0 * 4.0 );
+	  the_val *= 16777216.0 * 2.0 / ( 48000.0 * 4.0 );
+	  break;
+	case 2:
+	  // Used by pulse modulation frequency
+	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 2.0 );
 	  break;
 	case 4:
-	  // Used by pulse modulation frequency
 	  // Used by base frequency
 	  the_val *= 16777216.0 / ( 48000.0 * 4.0 * 4.0 );
 	  break;
@@ -780,10 +783,10 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
 		  return Mode_strings_2_val( value, numeric_limits<unsigned long>::max() );}},
 	  {"af",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::ampl_modul_freq;
-		  return FreqDelay_strings_2_val(value,true,1);}},
+		  return FreqDelay_strings_2_val(value,true,0);}},
 	  {"bf",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::pulse_freq;
-		  return FreqDelay_strings_2_val(value,true,4);}},
+		  return FreqDelay_strings_2_val(value,true,2);}},
 	  {"bh",[&](unsigned long&value,signals_param_action::action_list&act)->string{
 		  act=signals_param_action::pulse_high_hold;
 		  return FreqDelay_strings_2_val(value,false,-2);}},

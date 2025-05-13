@@ -81,19 +81,19 @@ void output_params_txt::export_next_event(const unsigned long&absolute_TS,
 		  out_line << ")" << endl;
 		  break;
 		case signals_param_action::ampl_modul_freq:
-		  val_float = (float)action.value * 48000.0 * 4.0 / 16777216.0;
+		  val_float = (float)action.value * 48000.0 * 4.0 / ( 16777216.0 * 2.0 );
 		  out_line << "Sets the amplitude modulation frequency " << hex << action.value;
 		  out_line << ", means: " << val_float;
-		  out_line << "Hz (step: " << (48000.0 * 4.0 / 16777216.0) << ")" << endl;
+		  out_line << "Hz (step: " << (48000.0 * 4.0 / ( 16777216.0 * 2.0)) << ")" << endl;
 		  break;
 		case signals_param_action::ampl_modul_depth:
 		  out_line << "Sets the amplitude modulation depth " << hex << action.value;
 		  out_line << ", means: " << dec << action.value << " (0-255)"<<endl;
 		  break;
 		case signals_param_action::pulse_freq:
-		  val_float = (float)action.value * 48000.0 * 4.0 * 4.0 / 16777216.0;
+		  val_float = (float)action.value * 48000.0 * 4.0 * 2.0 / 16777216.0;
 		  out_line << "Set pulse frequency " << hex << action.value << ", means: " << val_float;
-		  out_line << "Hz (step: " << (2.0 * 48000.0 * 4.0 * 4.0 / 16777216.0) << ")" << endl;
+		  out_line << "Hz (step: " << (2.0 * 48000.0 * 4.0 * 2.0 / 16777216.0) << ")" << endl;
 		  break;
 		case signals_param_action::pulse_high_hold:
 		  val_float = (float)action.value * 16.0 * 2.0 / 48000.0;

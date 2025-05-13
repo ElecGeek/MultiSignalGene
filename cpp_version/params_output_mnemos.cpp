@@ -57,7 +57,7 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "S" << "\t% slew-rate" << endl;
 	  break;
 	case signals_param_action::ampl_modul_freq:
-	  val_float = (float)action.value * 48000.0 * 4.0 / 16777216.0;
+	  val_float = (float)action.value * 48000.0 * 4.0 / ( 16777216.0 * 2.0 );
 	  out_line << "AF " << val_float;
 	  out_line << "Hz " << "\t% amplitude modulation frequency" << endl;
 	  break;
@@ -66,7 +66,7 @@ void output_params_mnemos::export_next_event(const unsigned long&absolute_TS,
 	  out_line << "% " << "\t% amplitude modulation depth" << endl;
 	  break;
 	case signals_param_action::pulse_freq:
-	  val_float = (float)action.value * 48000.0 * 4.0 * 4.0 / 16777216.0;
+	  val_float = (float)action.value * 48000.0 * 4.0 * 2.0 / 16777216.0;
 	  out_line << "BF " << val_float;
 	  out_line << "Hz " << "\t% pulse modulation frequency" << endl;
 	  break;
