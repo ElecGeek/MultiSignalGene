@@ -1,17 +1,52 @@
-This project generates audio signals using some primitives.
-* An amplitude primitive handles a value and a slew-rate. Each time the actual amplitude is not equal to the requested amplitude, the module reaches it according to the slew-rate.
-* An amplitude modulation primitive is applied to the amplitude above. It is a sinusoidal based wave form. The depth is a parameter. When the sine value is +1, the output is the amplitude left untouched. When the sine is -1, the output is between 0 if the depth is 100% and the amplitude left untouched if the depth is 0%.
-* A second amplitude modulation is applied to the output of above. In this one, the modulation can be hold for a certain time on the top of the period and for another time on the bottom.
-* An output module that generates a sinusoidal or a symmetrical pulse output. The amplitude is the output of the modulation module described above. In case of the sine, only one parameter defines the frequency. In case of the pulses, a parameter defines the frequency as another one defines the pulse width.
-* Future modules are going to modulate the frequency
+This project generates independent multi channels audio signals from commands.
 
+There are 2 projects: a software version and an hardware version.
+
+The main goal of this project is to change the parameters on the fly. That means, without any drops. If a frequency and an amplitude change, the sinusoid is faster/slower and higher/lower from the current point.
+All the parameters can be changed by commands, unless otherwise. In such case, the compile time or start-up is specified.
+
+
+
+Software version
+----------------
+The first version was written using the C++03 and GCC 4.6.2. The years later, the minimal versions was raised to GCC 5.5, GCC 7.5 and GCC 8.5. The minimum is now C++17.
+
+New modules or improvements are written using the last version.
+The legacy part remains as it, as long as there is no issues nor requests.
+
+The "physical" output can be chosen, at start-up, among Jackaudio, a wave file or void.
+The general output volume is, today, always set to 100% but the software can set update to control this value.  
+For each channel:
+* This audio is a waveform chosen, at start-up, among sine, triangle, pulse and continuous (with restrictions).
+* The default one is chosen at compile time.
+* This waveform can be frequency modulated TODO.
+* This waveform can amplitude modulated by two independent engines.
+* Some modifiers applies to some engines (see README.commands).
+* The volume can be changed. A commands defined slew rate applies to change quickly or smoothly.
+* As many as needed input commands channels can be set. There are many types (see README.parameters).
+* As many as needed output commands channels can be set. The purposes are: i) display in a human readable ii) store for replays iii) use the software as a remote control, especially if there is the network in between iv) test that chained inputs and output give the same result.
 
 There is no extended documentation files.
-* Some data is in the code. A run of the Doxygen software, separately in the 2 folders generates the documentation in the format one wants.
-* Some data (mostly schematics) is in the Documentation folder. A run of the Graphviz software (dot) exports in the format one wants (about 30 are available). The work-flow exports into PNG, JPEG or PDF format. The files are in the artifact.
-* Some data is in the specialized README files.
+* Some data is in the code. A run of the Doxygen software, separately in the cpp and vhdl version folders generates the documentation in the format one wants.
+* Some data (mostly schematics) is in the Documentation folder. A run of the Graphviz software (dot) exports in the format one wants. The work-flow exports into PNG, JPEG or PDF format. The files are in the artifact.
+* Some information is in the specialized README files.
+
+The commits into GitHub are up and running, but may contain bugs.
 
 
 
-It is written in the DevOps style. Some shortcuts or quick and dirty parts are written and later cleaned up, removed or left as it. The commits into GitHub are up and running tags.
+Hardware version
+----------------
+This version is on hold for some time.
+It is similar to the software version but:
+* The physical output and the audio waveform are defined at compile time.
+* The general output volume is a real input.
+* There is no output commands channels.
+* There is only one input commands channel of one type.
 
+This version is on hold.
+
+
+Others related projects
+-----------------------
+There are two not pinned fun projects in the same GitHub user that implements only the pulse audio waveform. One is a pure electronics (logic and analogue) version, the other one is the VHDL only of a full digital version.

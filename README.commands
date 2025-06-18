@@ -1,0 +1,128 @@
+This is the documentation of the commands.
+
+
+THIS IS AN EARLY VERSION
+
+
+It describes all the (available) formats for all the commands. The transport modes are defined in the README.parameters file.
+
+It gives the minimum, maximum and step values. Internally, it works as short messages using values with short mantissas and exponents (of 2). That means, even the text modes are heavily truncated. To see how, one can set an output parameters channel on the console ( -o - -F txt ) to see the actual values.
+
+The two amplitude modulation are named amplitude modulation and pulse modulation. The difference is the first one is a basic sine modulation, the second has PI/2 and 3.PI/2 hold times.
+
+The midi (code) word is an alias of midi mapped (code)
+
+Some nicknames are used:
+* e: exponent
+* m: mantissa
+* c: constant added to the exponent
+* v: integer value
+* x: other data
+* -: don't care
+
+ * 0000 0eee  0mmmmmmm c=1   C00 to G00  OF  Base frequency             max = 2976.56Hz step = 23.44Hz min = 0.183Hz, 5.46s step = 0.366Hz\n
+ * 0000 1eee  0mmmmmmm c=0  G#00 to D#0  OS  Main amplitude slew-rate   max = 2.666mS min = 174s min step < 40uS max step = 87s\n
+ * 0001 000e  0mmmmmmm c=1    E0 to  F0  OA  Main amplitude             max = 254 min step = 1 max step = 2\n
+
+
+Abort
+-----
+midi= 0001 0010   0vvvvvvv				c=N.A.			midi note: A#0 
+
+This input commands channel is discarded. If all of them are discarded or have reach an end of stream, the program quits.
+The main purpose is to run a partial scenario for test.
+The value is the time before leave (not yet implemented).
+
+
+Reserved
+--------
+midi= 0001 0011   0-------				c=N.A.			midi note: A#0 
+
+ 
+AA, BA Modulation depth
+---------------------------------
+midi= 0001 010x   0vvvvvvv				c=N.A.		
+x=0 for the amplitude modulation						midi note: G#0
+x=1 for the pulse modulation							midi note: A0
+
+Set the depth from 0% if the value vvvvvvv is 0 to 100% if the value vvvvvvv is 127.
+The step is about 0.79%.
+If the modulation depth is 0, the output of the modulator is always its input signal untouched.
+If the modulation depth is 100%, the output of the modulator is between 0 and the its input signal according with the modulation.
+
+
+BM, AM Modulation mode
+----------------------
+midi= 0001 0110   0000 0xvv				c=N.A.			midi note: A#0
+xx=0 for the pulse modulation BM
+xx=1 for the amplitude modulation AM
+vv = 00 using a sine from -1 to +1 translated into 0 to +1 \n
+vv = 01 using the absolute value of a sine from 0 to +1, be careful freq is double!\n
+vv = 10 using opposite of the absolute value translated into 0 to +1, be careful freq is double!\n
+vv = 11 is reserved
+
+Set how the sine of the modulation is used. This computation gives always a value between 0 and +1.
+If it is +1, the modulation left its input untouched.
+If it is 0, the modulation reduces its input according with the modulation depth. 100% depth means the output is 0, 0% depth means the output is left untouched.
+
+
+Reserved
+--------
+midi= 0001 0110   0000 1---				c=N.A.			midi note: A#0 
+
+
+OP, BP, AP Relative phase shift
+--------------------------------
+midi= 0001 0110   00xx vvvv				c=N.A.			midi note: A#0 
+ xx=01 for the base signal OP
+ xx=10 for the pulse modulation BP
+ xx=11 for the amplitude modulation AP
+
+Shifts the phase of the signal by vvvv times PI/8. It( is added to the actual value.
+This should be used with caution as it breaks the assumption of this project to avoid drops. The user may want to set the volume to 0 or change by multiple invocations until to reach the goal.
+
+
+Reserved
+--------
+midi= 0001 0110   0100 vvvv				c=N.A.			midi note: A#0 
+
+
+OO, BO, AO Absolute phase set
+-----------------------------
+midi= 0001 0110   01xx vvvv				c=N.A.			midi note: A#0 
+xx=01 for the base signal OP
+xx=10 for the pulse modulation BP
+xx=11 for the amplitude modulation AP
+
+Sets the phase of the signal to vvvv times PI/8. It overwrite the actual value.
+This should be used with caution as it breaks the assumption of this project to avoid drops. The user may want to set the volume to 0. Changing by multiple invocations until to reach the goal is tricky as the time runs between the invocations.
+
+
+
+NN No operation
+---------------
+midi= 0001 0111   0--- ----				c=N.A.			midi note: B0
+
+This does not do anything. The value is not treated in the software but it is passed to the commands outputs.
+The purposes are:
+* Reserve some room for a manual edition of a binary file.
+* Make a kind of TTL or step display, especially with the -N 0 option of the output command
+
+
+ * 0001 1eee  0mmmmmmm c=0    C1 to  G1  AF  Amplitude modulation freq  max = 186.035Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
+ * 0010 00ee  0mmmmmmm c=0   G#1 to  B1  BF  Pulse frequency max = 106.306Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
+ * 0010 01ee  0mmmmmmm c=6    C2 to D#2  BH  Pulse high hold time\n
+ * 0010 10ee  0mmmmmmm c=6    E2 to  B2  BI  Pulse low hold time\n
+ * 0010 11ee  0mmmmmmm     Reserved\n
+ * \n
+
+
+Reserved, not allowed
+---------------------
+midi= 0--- ----   1--- ---- 
+
+
+Reserved, not allowed
+---------------------
+midi= 1--- ----   0--- ---- 
+
