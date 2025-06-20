@@ -1,16 +1,17 @@
 This is the documentation of the commands.
 
-
+************************
 THIS IS AN EARLY VERSION
+************************
 
 
 It describes all the (available) formats for all the commands. The transport modes are defined in the README.parameters file.
 
-It gives the minimum, maximum and step values. Internally, it works as short messages using values with short mantissas and exponents (of 2). That means, even the text modes are heavily truncated. To see how, one can set an output parameters channel on the console ( -o - -F txt ) to see the actual values.
+It gives the minimum, maximum and step values. Internally, it works as short messages using values with short mantissas and exponents (of 2). That means, even the text modes are heavily truncated. To see how, one can set an output parameters channel on the console ( -o - -F txt ) to see the actual values. The software can run using sampling rates from 3KHz to 192KHz. However, the commands are exactly the same.
 
 The two amplitude modulation are named amplitude modulation and pulse modulation. The difference is the first one is a basic sine modulation, the second has PI/2 and 3.PI/2 hold times.
 
-The midi (code) word is an alias of midi mapped (code)
+The midi (code) word is an alias of midi mapped (code). The early versions of the project uses music editing software but with a mapping between the notes and the commands.
 
 Some nicknames are used:
 * e: exponent
@@ -20,9 +21,59 @@ Some nicknames are used:
 * x: other data
 * -: don't care
 
- * 0000 0eee  0mmmmmmm c=1   C00 to G00  OF  Base frequency             max = 2976.56Hz step = 23.44Hz min = 0.183Hz, 5.46s step = 0.366Hz\n
- * 0000 1eee  0mmmmmmm c=0  G#00 to D#0  OS  Main amplitude slew-rate   max = 2.666mS min = 174s min step < 40uS max step = 87s\n
- * 0001 000e  0mmmmmmm c=1    E0 to  F0  OA  Main amplitude             max = 254 min step = 1 max step = 2\n
+
+
+OF Base frequency
+-----------------
+midi= 0000 0eee   0mmmmmmm				c=1				midi note: C00 to G00
+
+This is the base frequency of all the output waveforms except the continuous. The sampling rate should be at least 48KHz (or the software quits).
+In case of a continuous waveform, this command has no effect. The sampling rate can be all the possible values (but it is a non sense to use the high ones).
+
+TODO calculation formula.
+The maximum frequency is eee=$7 and mmmmmmm=$7f, 2976.56Hz.
+The minimum frequency is eee=0 and mmmmmmm=1, 0.183Hz
+The step is not constant. At the highest frequency it is 23.44Hz. At the lowest frequency, it is 0.366Hz.
+
+
+
+OS Main amplitude slew-rate
+---------------------------
+midi= 0000 1eee   0mmmmmmm				c=0				midi note: G#00 to D#0
+
+This controls the speed of every main amplitude change, see below.
+It is a slope.
+It it the time the amplitude takes if the change would have been from 0 to 100%, or 100% to 0.
+In case of a small change of the main amplitude, the time to reach the new value is lower.
+
+TODO calculation formula.
+The longest time is eee=0 and mmmmmmm=$1, 174s
+The shortest time is eee=$7 and mmmmmmm=$7f, 2.666mS
+The step is not constant. At the shortest time, it is 40uS. At the longest time, it is 87s
+
+
+
+Modulation depth slew-rate
+--------------------------
+It is slightly fast. Today, it is hard-coded.
+
+
+
+OA Main amplitude
+--------------
+midi= 0001 000e   0mmmmmmm				c=0					midi note: E0 or F0
+
+Set the main amplitude from 0% to 100%.
+On every change on this value the output changes using the slew-rate defined above.
+The electronic version multiplies this value by a potentiometer.
+The software version might, in the future, multiply by a value passed in the command line.
+Since output of the software version is supposed to be sent to a file, a device etc... , there is no modifier to the main amplitude.
+
+TODO calculation formula.
+The lowest value is e=0 and mmmmmmm=0, 0
+The highest value is e=1 and mmmmmmm)$7f, 100%
+The step is about 0.79% or 0.395%, regardless the value.
+
 
 
 Abort
@@ -34,9 +85,11 @@ The main purpose is to run a partial scenario for test.
 The value is the time before leave (not yet implemented).
 
 
+
 Reserved
 --------
 midi= 0001 0011   0-------				c=N.A.			midi note: A#0 
+
 
  
 AA, BA Modulation depth
@@ -45,10 +98,11 @@ midi= 0001 010x   0vvvvvvv				c=N.A.
 x=0 for the amplitude modulation						midi note: G#0
 x=1 for the pulse modulation							midi note: A0
 
-Set the depth from 0% if the value vvvvvvv is 0 to 100% if the value vvvvvvv is 127.
-The step is about 0.79%.
+Set the depth from 0% if the value vvvvvvv is 0, to 100% if the value vvvvvvv is 127.
+The step is about 0.79%, regardless the value.
 If the modulation depth is 0, the output of the modulator is always its input signal untouched.
 If the modulation depth is 100%, the output of the modulator is between 0 and the its input signal according with the modulation.
+
 
 
 BM, AM Modulation mode
@@ -66,9 +120,11 @@ If it is +1, the modulation left its input untouched.
 If it is 0, the modulation reduces its input according with the modulation depth. 100% depth means the output is 0, 0% depth means the output is left untouched.
 
 
+
 Reserved
 --------
 midi= 0001 0110   0000 1---				c=N.A.			midi note: A#0 
+
 
 
 OP, BP, AP Relative phase shift
@@ -82,9 +138,11 @@ Shifts the phase of the signal by vvvv times PI/8. It( is added to the actual va
 This should be used with caution as it breaks the assumption of this project to avoid drops. The user may want to set the volume to 0 or change by multiple invocations until to reach the goal.
 
 
+
 Reserved
 --------
 midi= 0001 0110   0100 vvvv				c=N.A.			midi note: A#0 
+
 
 
 OO, BO, AO Absolute phase set
@@ -109,6 +167,9 @@ The purposes are:
 * Make a kind of TTL or step display, especially with the -N 0 option of the output command
 
 
+
+
+TO BE FINISHED
  * 0001 1eee  0mmmmmmm c=0    C1 to  G1  AF  Amplitude modulation freq  max = 186.035Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
  * 0010 00ee  0mmmmmmm c=0   G#1 to  B1  BF  Pulse frequency max = 106.306Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
  * 0010 01ee  0mmmmmmm c=6    C2 to D#2  BH  Pulse high hold time\n
@@ -125,4 +186,9 @@ midi= 0--- ----   1--- ----
 Reserved, not allowed
 ---------------------
 midi= 1--- ----   0--- ---- 
+
+
+Reserved, not allowed
+---------------------
+midi= 1--- ----   1--- ---- 
 
