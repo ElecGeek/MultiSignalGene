@@ -169,13 +169,47 @@ The purposes are:
 
 
 
-TO BE FINISHED
- * 0001 1eee  0mmmmmmm c=0    C1 to  G1  AF  Amplitude modulation freq  max = 186.035Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
- * 0010 00ee  0mmmmmmm c=0   G#1 to  B1  BF  Pulse frequency max = 106.306Hz step = 1.465Hz min = 0.01144Hz, 87.38s step 43.69s\n
- * 0010 01ee  0mmmmmmm c=6    C2 to D#2  BH  Pulse high hold time\n
- * 0010 10ee  0mmmmmmm c=6    E2 to  B2  BI  Pulse low hold time\n
- * 0010 11ee  0mmmmmmm     Reserved\n
- * \n
+AF Amplitude modulation frequency
+---------------------------------
+midi= 0001 1eee   0mmmmmmm				c=0				midi note: C1 to  G1
+
+Sets the amplitude modulation frequency. It works (and is independent) with all the possible sampling rates.
+
+TODO calculation formula.
+The maximum frequency is eee=$7 and mmmmmmm=$7f, 186.035Hz.
+The minimum frequency is eee=0 and mmmmmmm=1, 0.01144Hz
+The step is not constant. At the highest frequency it is 1.465Hz. At the lowest frequency, it is.
+
+
+
+BF Pulse modulation frequency
+-----------------------------
+midi= 0010 00ee   0mmmmmmm				c=0				midi note: G#1 to  B1
+
+Sets the pulse modulation frequency. It works (and is independent) with all the possible sampling rates.
+
+TODO calculation formula.
+The maximum frequency is ee=$3 and mmmmmmm=$7f, 106.306Hz.
+The minimum frequency is ee=0 and mmmmmmm=1, 0.01144Hz
+The step is not constant. At the highest frequency it is 1.465Hz. At the lowest frequency, it is.
+
+
+BH, BI pulse modulation high or low hold time
+---------------------------------------------
+midi= 0010 xxee  0mmmmmmm				c=6
+xx=01 for the high hold									midi note: C2 to D#2
+xx=10 for the low hold									midi note: E2 to  B2
+
+The pulse modulation has a capability to holds at PI/2 and 3.PI/2 for a certain time
+
+TODO calculation formula.
+TODO minimum and maximums.
+
+
+Reserved
+--------
+midi= 0010 11ee   0mmmmmmm				c=0
+
 
 
 Reserved, not allowed

@@ -14,24 +14,24 @@ The first version was written using the C++03 and GCC 4.6.2. The years later, th
 New modules or improvements are written using the last version.
 The legacy part remains as it, as long as there is no issues nor requests.
 
-The "physical" output can be chosen, at start-up, among Jackaudio, a wave file or void.
-The general output volume is, today, always set to 100% but the software can set update to control this value.  
+The "physical" output can be chosen, at start-up, among Jackaudio, a wave file or dummy.
+The general output volume is, today, always set to 100% but the software can be updated to control this value.  
 For each channel:
 * This audio is a waveform chosen, at start-up, among sine, triangle, pulse and continuous (with restrictions).
 * The default one is chosen at compile time.
 * This waveform can be frequency modulated TODO.
-* This waveform can amplitude modulated by two independent engines.
+* This waveform can be amplitude modulated by two independent engines.
 * Some modifiers applies to some engines (see README.commands).
-* The volume can be changed. A commands defined slew rate applies to change quickly or smoothly.
+* The volume can be changed at any time. The "destination" volume is set. A command defines the slew rate in order to change quickly or smoothly.
 * As many as needed input commands channels can be set. There are many types (see README.parameters).
-* As many as needed output commands channels can be set. The purposes are: i) display in a human readable ii) store for replays iii) use the software as a remote control, especially if there is the network in between iv) test that chained inputs and output give the same result.
+* As many as needed output commands channels can be set. The purposes are: i) display in a human readable ii) store for replays iii) use the software as a remote control of another instantiation, especially if there is the network in between iv) test that chained inputs and output give the same result.
 
 There is no extended documentation files.
 * Some data is in the code. A run of the Doxygen software, separately in the cpp and vhdl version folders generates the documentation in the format one wants.
 * Some data (mostly schematics) is in the Documentation folder. A run of the Graphviz software (dot) exports in the format one wants. The work-flow exports into PNG, JPEG or PDF format. The files are in the artifact.
 * Some information is in the specialized README files.
 
-The commits into GitHub are up and running, but may contain bugs.
+The commits into GitHub are up and running, but might contain bugs.
 
 
 
