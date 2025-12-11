@@ -36,6 +36,10 @@ struct signals_param_action
   signals_param_action( const unsigned short&,const action_list&,const unsigned short&);
   friend ostream&operator<<(ostream&,const signals_param_action&);
 };
+struct input_event {
+  input_event();
+  enum status_t{ warming_up, running, end_track } status;
+};
 class params_base
 {
 public:

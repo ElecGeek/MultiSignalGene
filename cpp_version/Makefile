@@ -1,6 +1,6 @@
-CXX?=g++
-CXXFLAGS?=-O2 -m64
-LDFLAGS?=-m64
+CXX=g++
+CXXFLAGS?=-O2
+LDFLAGS?=
 DEFAULTWAVE?=SINE
 WITH_JACKAUDIO?=YES
 CXX_Version?=-std=c++17
@@ -66,16 +66,16 @@ $(BUILDDIR)params_io_handler.o			:	$(SRCDIR)params_io_handler.hxx $(SRCDIR)param
 $(BUILDDIR)parameters.o			:	$(SRCDIR)parameters.hxx $(SRCDIR)parameters.cpp $(SRCDIR)amplitude_handler.hxx 
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)parameters.o $(SRCDIR)parameters.cpp
 
-$(BUILDDIR)params_input_midi.o			:	$(SRCDIR)params_input_midi.hxx $(SRCDIR)params_input_midi.cpp $(SRCDIR)parameters.hxx $(SRCDIR)params_codes.hxx
+$(BUILDDIR)params_input_midi.o			:	$(SRCDIR)params_input_midi.hxx $(SRCDIR)params_input_midi.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_input_midi.o $(SRCDIR)params_input_midi.cpp
 
-$(BUILDDIR)params_input_mnemos.o			:	$(SRCDIR)params_input_mnemos.hxx $(SRCDIR)params_input_mnemos.cpp $(SRCDIR)parameters.hxx $(SRCDIR)params_codes.hxx
+$(BUILDDIR)params_input_mnemos.o			:	$(SRCDIR)params_input_mnemos.hxx $(SRCDIR)params_input_mnemos.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_input_mnemos.o $(SRCDIR)params_input_mnemos.cpp
 
-$(BUILDDIR)params_output_txt.o			:	$(SRCDIR)params_output_txt.hxx $(SRCDIR)params_output_txt.cpp $(SRCDIR)parameters.hxx $(SRCDIR)params_codes.hxx
+$(BUILDDIR)params_output_txt.o			:	$(SRCDIR)params_output_txt.hxx $(SRCDIR)params_output_txt.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_output_txt.o $(SRCDIR)params_output_txt.cpp
 
-$(BUILDDIR)params_output_mnemos.o			:	$(SRCDIR)params_output_mnemos.hxx $(SRCDIR)params_output_mnemos.cpp $(SRCDIR)parameters.hxx $(SRCDIR)params_codes.hxx
+$(BUILDDIR)params_output_mnemos.o			:	$(SRCDIR)params_output_mnemos.hxx $(SRCDIR)params_output_mnemos.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_output_mnemos.o $(SRCDIR)params_output_mnemos.cpp
 
 .PHONY	: $(BUILDDIR)sound_jack_output.o $(BUILDDIR)main.o

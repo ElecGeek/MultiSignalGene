@@ -1,5 +1,9 @@
 #include "parameters.hxx"
 
+input_event::input_event():
+  status(warming_up)
+{}
+
 signals_param_action::signals_param_action( const unsigned short&channel_id,
 											const action_list&action,
 											const unsigned short&value):

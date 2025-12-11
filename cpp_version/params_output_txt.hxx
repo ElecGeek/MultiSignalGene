@@ -14,10 +14,9 @@ using namespace std;
 #ifndef __PARAMS_OUTPUT_TXT__
 #define __PARAMS_OUTPUT_TXT__
 
-#include "params_codes.hxx"
 #include "parameters.hxx"
 
-class output_params_txt : public output_params_base, private mnemo_event
+class output_params_txt : public output_params_base
 {
   void cnv_2_note_velocity( const unsigned char&nbre_bits_expo,const unsigned short&value,
 					   unsigned char&note, unsigned char&velocity);

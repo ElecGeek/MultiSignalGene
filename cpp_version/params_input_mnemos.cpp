@@ -1,8 +1,7 @@
 #include "params_input_mnemos.hxx"
 #include <cmath>
 
-mnemo_event::mnemo_event():
-  status( warming_up )
+mnemo_event::mnemo_event()
 {
   TS_left.reserve(15);
   TS_right.reserve(15);
@@ -733,7 +732,7 @@ string input_params_mnemos_2_action::Angle_strings_2_val(unsigned long&val_0_15)
 input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str,
 															const mnemo_event&the_event,
 															input_params_base::clearing_t&clearing,
-															mnemo_event::status_t&status):
+															input_event::status_t&status):
   info_out_str(info_out_str),
   the_event( the_event ),
   ipm2a_clearing( clearing ),
@@ -861,7 +860,7 @@ void input_params_mnemos_2_action::mnemos_2_action_run(vector<signals_param_acti
 		  switch( mnemos_list_iter->first )
 			{
 			case P_abort:
-			  ipm2a_status = mnemo_event::end_track;
+			  ipm2a_status = input_event::end_track;
 			  ipm2a_clearing = input_params_base::c_abort;
 			  break;
 			}

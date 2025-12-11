@@ -12,7 +12,16 @@ using namespace std;
 #define __PARAMS_INPUT_MIDI__
 
 #include "parameters.hxx"
-#include "params_codes.hxx"
+
+
+/** \brief Internal data specific to the midi events
+ */
+struct midi_event {
+  unsigned char code;
+  unsigned char key;
+  unsigned char value;
+  midi_event();
+};
 
 /** \brief Handles midio bytes datagram
  *
@@ -21,7 +30,7 @@ using namespace std;
  * and populates the midi event data ( time-stamp (if so ), code, key, value )\n
  * This event is empty because jackaudio has not yet been written
  */
-class midi_bytes_datagram : public midi_event {
+class midi_bytes_datagram : public midi_event, public input_event {
 
 };
 /** \brief Handles midi byte stream
@@ -29,7 +38,7 @@ class midi_bytes_datagram : public midi_event {
  * Reads bytes coming from a file, serial port etc...
  * and populates the midi event data ( time-stamp (if so ), code, key, value )
  */
-class midi_bytes_stream : public midi_event {
+class midi_bytes_stream : public midi_event, public input_event {
   enum state_t{ state_ts, state_code, state_key, state_val, state_string, state_end } state;
   ostream&info_out_str;
   // The input iterator should come here
@@ -70,13 +79,13 @@ class input_params_midi_2_action
   unsigned long get_value( const unsigned char&exponent_size, const unsigned char&exponent_const )const;
   const midi_event&the_event;
   input_params_base::clearing_t&ipm2a_clearing;
-  midi_event::status_t&ipm2a_status;
+  input_event::status_t&ipm2a_status;
 public:
   input_params_midi_2_action(void)=delete;
   input_params_midi_2_action( ostream&info_out_str,
 							  const midi_event&,
 							  input_params_base::clearing_t&clearing,
-							  midi_event::status_t&status);
+							  input_event::status_t&status);
   void midi_2_action_run(vector<signals_param_action>&actions_list);
 };
 /** \brief Bundle class byte stream
