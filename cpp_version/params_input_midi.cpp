@@ -1,8 +1,7 @@
 #include "params_input_midi.hxx"
 
 midi_event::midi_event():
-  code( 0 ), key( 0 ), value( 0 ),
-  status( warming_up )
+  code( 0 ), key( 0 ), value( 0 )
 {}
 
 midi_bytes_stream::midi_bytes_stream(ostream&os,const bool&with_time_stamp, input_params_base::clearing_t&clearing ):
@@ -131,7 +130,7 @@ ostream& operator<<( ostream&the_out , const midi_bytes_stream&me )
 input_params_midi_2_action::input_params_midi_2_action(ostream&info_out_str,
 													   const midi_event&the_event,
 													   input_params_base::clearing_t&clearing,
-													   midi_event::status_t&status):
+													   input_event::status_t&status):
   info_out_str( info_out_str ),
   the_event( the_event ),
   ipm2a_clearing( clearing ),
@@ -208,7 +207,7 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 			  break;
 			case 0x02:
 			  // Abort
-			  ipm2a_status = midi_event::end_track;
+			  ipm2a_status = input_event::end_track;
 			  ipm2a_clearing = input_params_base::c_abort;
 			  break;
 			case 0x04:

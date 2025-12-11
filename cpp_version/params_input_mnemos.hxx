@@ -12,12 +12,32 @@ using namespace std;
 #define __PARAMS_INPUT_MNEMOS__
 
 #include "parameters.hxx"
-#include "params_codes.hxx"
 
 
-class mnemos_bytes_stream : public mnemo_event {
+// Keep left and right in order to allow comma or point as a decimal separator
+// and even a mix inside the same file
+// The restriction is 3 digits blocs are not allowed e.g. 123,456.5
+/** \brief Internal data specific to the mnemo events
+ */
+struct mnemo_event {
+  string TS_left;
+  string TS_right;
+  string TS_unit;
+  string channel;
+  string mnemo;
+  string value_left;
+  string value_right;
+  string value_unit;
+  mnemo_event();
+  mnemo_event( const string&, const string&, const string&,
+			   const string&channel,
+			   const string&mnemo,
+			   const string&, const string&, const string& );
+};
+
+class mnemos_bytes_stream : public mnemo_event, public input_event {
   // just copied and pasted, have to be enriched by the line parsing
-  enum state_t{ state_ts, state_code, state_key, state_val, state_string, state_end } state;
+  enum state_t{ state_ts, state_code, state_end } state;
   enum{ ls_start=0, ls_wait_eol_comment=1,
 	ls_in_ts_left=2, ls_in_ts_right=3, ls_in_ts_unit=4, ls_spctab_ts=5,
 	ls_in_channel=6, ls_spctab_channel=7,
@@ -44,7 +64,7 @@ public:
   // For debug purposes, sends the content of a mnemo message
   friend ostream&operator<<( ostream&, const mnemos_bytes_stream& );
 };
-class mnemos_bytes_datagram_test : public mnemo_event {
+class mnemos_bytes_datagram_test : public mnemo_event, public input_event {
   ostream&info_out_str;
   input_params_base::clearing_t&mbs_clearing;
 public:
@@ -122,7 +142,7 @@ private:
   unsigned long get_value( const unsigned char&exponent_size, const unsigned char&exponent_const )const;
   const mnemo_event&the_event;
   input_params_base::clearing_t&ipm2a_clearing;
-  mnemo_event::status_t&ipm2a_status;
+  input_event::status_t&ipm2a_status;
   const multimap< short, string >mnemos_list;
   // Not that readable, but it avoid excessive indentation in the constructor
   const map< string, function< string(unsigned long&,signals_param_action::action_list&)> >mrf;
@@ -138,7 +158,7 @@ public:
   input_params_mnemos_2_action(ostream&info_out_str,
 							   const mnemo_event&,
 							  input_params_base::clearing_t&clearing,
-							  mnemo_event::status_t&status);
+							  input_event::status_t&status);
   void mnemos_2_action_run(vector<signals_param_action>&actions_list);
 };
 

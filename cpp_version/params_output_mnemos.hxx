@@ -14,10 +14,9 @@ using namespace std;
 #ifndef __PARAMS_OUTPUT_MNEMOS__
 #define __PARAMS_OUTPUT_MNEMOS__
 
-#include "params_codes.hxx"
 #include "parameters.hxx"
 
-class output_params_mnemos : public output_params_base, private midi_event
+class output_params_mnemos : public output_params_base
 {
   void cnv_2_note_velocity( const unsigned char&nbre_bits_expo,const unsigned short&value,
 					   unsigned char&note, unsigned char&velocity);
