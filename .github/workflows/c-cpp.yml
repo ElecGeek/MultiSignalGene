@@ -37,7 +37,7 @@ jobs:
           path: build
 
   macos-x-build:
-    runs-on: macOS-13
+    runs-on: macOS-14
     name: Mac OS X build with jackaudio
     steps:
       - uses: actions/checkout@v4
