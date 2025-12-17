@@ -43,6 +43,44 @@ string params_fio_handler_base::GetInfos()
   info_fio_params.clear();
   return the_return;
 }
+optional<string> params_fio_handler_base::
+FileTypeChecker( const filesystem::path& the_path,
+				 const string&prefix,
+				 const bool&check_exists, const bool& check_not_fifo, const bool&check_not_dev_char)
+{
+  filesystem::file_status the_file_status( filesystem::status( the_path ));
+  if ( filesystem::exists( the_file_status ) == false )
+	{
+	  if ( check_exists )
+		return prefix + string(" file ") + the_path.filename().string() + string(" not found");
+	  else
+		return nullopt;
+	}
+  if ( filesystem::is_regular_file( the_file_status ))
+	return nullopt;
+  if ( filesystem::is_fifo( the_file_status ) )
+	{
+	  if ( check_not_fifo ) 
+		  return prefix + string(" ") + the_path.filename().string() + string(" should NOT be a fifo");
+	  else
+		return nullopt;
+	}
+  if (filesystem::is_directory( the_file_status ) )
+	return prefix + string(" ") + the_path.filename().string() + string(" should NOT be a directory");
+	   
+  // Since we ask to follow symlinks to the destination,
+  //   it is claimed as a symlink only if it points on nothing.
+  if (filesystem::is_symlink( the_file_status ) )
+	return prefix + string(" ") + the_path.filename().string() + string(" should NOT be a symlink");
+  if ( filesystem::is_character_file( the_file_status ) )
+	{
+	  if ( check_not_dev_char ) 
+		  return prefix + string(" ") + the_path.filename().string() + string(" should NOT be a char device");
+	  else
+		return nullopt;
+	}
+  return prefix + string(" ") + the_path.filename().string() + string(" should NOT be a dev block nor socket");
+}
 
 
 params_input_handler::params_input_handler():
@@ -59,11 +97,11 @@ params_input_handler::params_input_handler():
 {}
 
 
-/* @breif Validate options in the current channel
+/* @brief Validate options in the current channel
  *
  * Each time the software receives a new input (-i), a new output (-o)
  * or a flush (calling parameters are over), the pending input options are tested and
- * if everythingare is correct, a structure is added to the input channels list.
+ * if everything is correct, a structure is added to the input channels list.
  * If something is wrong, the options of this input are discarded.
  * That does NOT prevent the usage of other input channels
  */
@@ -101,7 +139,7 @@ void params_input_handler::AddChannelOptions( const options_list_t  & opts_list 
 		if( it.second == in_format->second )
 		  {
 			info_fio_params << "The input commands format "<<in_format->second;
-			info_fio_params << " is not yet supported, comming soon"<<endl;
+			info_fio_params << " is not yet supported, coming soon"<<endl;
 			return;
 		  }
 	  info_fio_params << "The input commands format "<<in_format->second;
@@ -114,7 +152,7 @@ void params_input_handler::AddChannelOptions( const options_list_t  & opts_list 
 void params_input_handler::CreateInputChannels(const unsigned short&loop_counter)
 {
   // For the input channels there is a sanity check.
-  // If the type is explicitely defined, the check verifies the input. If false, the input is omitted.
+  // If the type is explicitly defined, the check verifies the input. If false, the input is omitted.
   // If the type is not defined, the software tries to identify with the sanity checks.
   for( auto& chan : fio_channels_with_opts )
 	{
@@ -136,8 +174,20 @@ void params_input_handler::CreateInputChannels(const unsigned short&loop_counter
 			  ifstream input_stream;
 			  if( (*in_opt_name).second.compare( "-" ))
 				{
-		   		  input_stream.open( (*in_opt_name).second, ios_base::in );
-				  if( input_stream.is_open() )
+				  bool file_is_opened = false;
+				  filesystem::path the_path( (*in_opt_name).second );
+				  optional<string> ftc = FileTypeChecker( the_path, "Input commands", true, false, true );
+				  if ( ftc )
+					info_fio_params << *ftc << endl;
+				  else
+					{
+					  input_stream.open( the_path, ios_base::in );
+					  file_is_opened = input_stream.is_open();
+					  if ( file_is_opened == false )
+						cout << "Problem opening " << the_path.filename() << ", check the permissions" << endl;
+					}
+
+				  if( file_is_opened )
 					{
 					  switch( chan.first )
 						{
@@ -168,11 +218,6 @@ void params_input_handler::CreateInputChannels(const unsigned short&loop_counter
 							}
 						  break;
 						}
-					}
-				  else
-					{
-					  info_fio_params << "Problem opening file " << (*in_opt_name).second;
-					  info_fio_params << ", check directory and permissions" << endl;
 					}
 				}
 			  else
@@ -233,7 +278,7 @@ params_output_handler::params_output_handler():
  *
  * Each time the software receives a new input (-i), a new output (-o)
  * or a flush (calling parameters are over), the pending output options are tested and
- * if everythingare is correct, a structure is added to the output channels list.
+ * if everything is correct, a structure is added to the output channels list.
  * If something is wrong, the options of this output are discarded.
  * That does NOT prevent the usage of other output channels
  */
@@ -264,14 +309,14 @@ void params_output_handler::AddChannelOptions( const options_list_t  & opts_list
 		if( it.second == out_format->second )
 		  {
 			info_fio_params << "The output commands format "<<out_format->second;
-			info_fio_params << " is not yet supported, comming soon"<<endl;
+			info_fio_params << " is not yet supported, coming soon"<<endl;
 			return;
 		  }
 	  info_fio_params << "The output commands format "<<out_format->second;
 	  info_fio_params << " is unknown"<<endl;
 	  return;
 	}
-  // no format info, use a defult
+  // no format info, use a default
   else
 	fio_channels_with_opts.push_back( make_pair( params_io_text, opts_list ));
 }
@@ -301,8 +346,20 @@ void params_output_handler::CreateOutputChannels(void)
 
 			  if( (*out_opt_name).second.compare( "-" ))
 				{
-				  output_stream.open( (*out_opt_name).second, ios_base::out );
-				  if( output_stream.is_open() )
+				  bool file_is_opened = false;
+				  filesystem::path the_path( (*out_opt_name).second );
+				  optional<string> ftc = FileTypeChecker( the_path, "Output commands", false, false, true );
+				  if ( ftc )
+					info_fio_params << *ftc << endl;
+				  else
+					{
+					  output_stream.open( the_path, ios_base::out );
+					  file_is_opened = output_stream.is_open();
+					  if ( file_is_opened == false )
+						cout << "Problem opening " << the_path.filename() << ", check the permissions" << endl;
+					}
+
+				  if( file_is_opened )
 					{
 					  switch( chan.first )
 						{
@@ -324,11 +381,6 @@ void params_output_handler::CreateOutputChannels(void)
 						  // TODO
 						  break;
 						}
-					}
-				  else
-					{
-					  info_fio_params << "Problem opening file " << (*out_opt_name).second;
-					  info_fio_params << ", check directory and permissions" << endl;
 					}
 				}
 			  else
@@ -418,14 +470,14 @@ void params_file_handler::AddChannelOptions( const options_list_t & opts_list )
 		if( it.second == out_format->second )
 		  {
 			info_fio_params << "The file format format "<<out_format->second;
-			info_fio_params << " is not yet supported, comming soon"<<endl;
+			info_fio_params << " is not yet supported, coming soon"<<endl;
 			return;
 		  }
 	  info_fio_params << "The file format "<<out_format->second;
 	  info_fio_params << " is unknown"<<endl;
 	  return;
 	}
-  // no format info, use a defult
+  // no format info, use a default
   else
 	fio_channels_with_opts.push_back( make_pair( params_file_16BE, opts_list ));
 }
@@ -433,7 +485,7 @@ void params_file_handler::EnvironementNeeds(void)
 {}
 void params_file_handler::CreateOutputFile()
 {
-  // This may be temporary as today, there is only one possiblie file at a time
+  // This may be temporary as today, there is only one possible file at a time
   if ( fio_channels_with_opts.empty() == false )
 	{
 	  auto chan = fio_channels_with_opts.rbegin();
@@ -458,8 +510,23 @@ void params_file_handler::CreateOutputFile()
 		{
 		  if( (*file_opt_name).second.compare( "-" ))
 			{
-			  output_file_stream.open( (*file_opt_name).second, ostream::binary | ostream::trunc );
-			  info_fio_params << "Opening the output file" << (*file_opt_name).second << endl; 
+				  bool file_is_opened = false;
+				  filesystem::path the_path( (*file_opt_name).second );
+				  optional<string> ftc = FileTypeChecker( the_path, "Output sound file", false, true, true );
+				  if ( ftc )
+					info_fio_params << *ftc << endl;
+				  else
+					{
+					  output_file_stream.open( the_path, ostream::binary | ostream::trunc );
+					  file_is_opened = output_file_stream.is_open();
+					  if ( file_is_opened == false )
+						cout << "Problem opening " << the_path.filename() << ", check the permissions" << endl;
+					  else
+						info_fio_params << "Opening the output file" << the_path.filename() << endl; 
+					}
+				  // *************************************************
+				  // Should do something if the file can not be opened
+				  // *************************************************
 			}else{
 			info_fio_params << "Using the standard output for the file output is discourageous" << endl;
 		  }

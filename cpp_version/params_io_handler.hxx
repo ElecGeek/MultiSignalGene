@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <optional>
+#include <filesystem>
 // #include <execution>
 
 #ifndef __PARAMS_IO_HANDLER__
@@ -60,12 +62,25 @@ protected:
   virtual void AddChannelOptions( const options_list_t & ) = 0;
   virtual void EnvironementNeeds(void) = 0;
   
-  /** @brief parse a boolean parameter
+  /** @brief Parse a boolean parameter
    *
    * @return the result or the default
    */
   bool GetBoolParam(const options_list_t&the_params_list,
 					const unsigned char&param_code, const bool default_data = false );
+  /** @brief Check the files type
+   *
+   * Sanity check on the file type before opening it.
+   * It is used by the input parameters, output parameters wave sound output,
+   *   trigger output (to be written).
+   * The type regular file is always allowed.
+   * Some types, such as directory are always rejected.
+   * Other types are accepted or rejected according with the calling parameters.
+   * @return nothing if it is accepted, an error string if the type is rejected.
+   */
+  optional<string> FileTypeChecker( const filesystem::path& the_path,
+						const string&prefix,
+						const bool&check_exists, const bool&check_not_fifo, const bool&check_not_dev_char);
 /** \brief Get information
    *
    * This returns both the notes and the errors
@@ -98,9 +113,9 @@ class params_input_handler : public params_fio_handler_base {
    * and perform the last checks
    */
   void CreateInputChannels(const unsigned short&);
-  /** @brief environement needs
+  /** @brief environment needs
    *
-   * Make the list of environement needs
+   * Make the list of environment needs
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
@@ -134,9 +149,9 @@ class params_output_handler  : public params_fio_handler_base {
    * and perform the last checks
    */
   void CreateOutputChannels(void);
-  /** @brief environement needs
+  /** @brief environment needs
    *
-   * Make the list of environement needs
+   * Make the list of environment needs
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
@@ -167,9 +182,9 @@ class params_file_handler  : public params_fio_handler_base {
    * and add it to the list
    */
   void AddChannelOptions( const options_list_t & );
-  /** @brief environement needs
+  /** @brief environment needs
    *
-   * Make the list of environement needs
+   * Make the list of environment needs
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
@@ -209,9 +224,9 @@ public:
    * and perform the last checks
    */
   void CreateChannels(const unsigned short&n_loops);
-  /** @brief environement needs
+  /** @brief environment needs
    *
-   * Make the list of environement needs
+   * Make the list of environment needs
    *   such as network alive, jackaudio etc...
    */
   void EnvironementNeeds(void);
@@ -232,14 +247,14 @@ public:
    *
    * Tells if there is at least one output that passed the first sanity check.\n
    * That is not a guarantee there is at least one valid channel
-   * @return true if there is atr least one
+   * @return true if there is at least one
    */ 
   bool hasOutputChannels()const;
   /** @brief Has file defined
    *
-   * Tells if there is a filename (or pipe) that passed the first sanity check.\n
+   * Tells if there is a file-name (or pipe) that passed the first sanity check.\n
    * That is not a guarantee there is at least one valid channel
-   * @return true if there is atr least one
+   * @return true if there is at least one
    */ 
   bool hasFileOutput()const;
   /** @brief Has really file output
