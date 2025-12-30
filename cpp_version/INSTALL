@@ -47,5 +47,6 @@ CONFIGURATION
 
 TESTED
     It has been (yet) tested on 32 and 64 bits Intel based CPU.
-	It has been tested with an old 13.3.0 gcc compiler.
-	It might work with older compilers, but not that old than the 8.5.0 (problem with the optional template).
+    It has been tested with an old 13.3.0 gcc compiler.
+    It might work with older compilers, but not that old than the 8.5.0 (problem with the optional template).
+    It has been quickly tested with a 10.5.0 gcc quickly built. It looks like working but subject to the useful libiconv link. However, the Makefile supports the LDFLAGS to add -liconv.
