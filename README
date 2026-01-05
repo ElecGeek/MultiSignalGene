@@ -5,11 +5,16 @@ There are 2 projects: a software version and an hardware version.
 The main goal of this project is to change the parameters on the fly. That means, without any drops. If a frequency and an amplitude change, the sinusoid is faster/slower and higher/lower from the current point.
 All the parameters can be changed by commands, unless otherwise. In such case, the compile time or start-up is specified.
 
+It is a mixture of object oriented and C style complex states machines.
+
+It started long time ago with a couple of pages and the C++03 (GCC-4).
+It was improved and made multi plate-forms with the C++11.
+It is currently going future with the C++17, or C++23 in a close future.
+Each time, the legacy remains as it unless there are bugs to fix or a good reason.
 
 
 Software version
 ----------------
-The first version was written using the C++03 and GCC 4.6.2. The years later, the minimal versions was raised to GCC 5.5, GCC 7.5 and GCC 8.5. The minimum is now C++17.
 
 New modules or improvements are written using the last version.
 The legacy part remains as it, as long as there is no issues nor requests.
@@ -35,16 +40,13 @@ The commits into GitHub are up and running, but might contain bugs.
 
 
 
-Hardware version
-----------------
-This version is on hold for some time.
+Hardware version (on hold, probabely dead)
+------------------------------------------
 It is similar to the software version but:
 * The physical output and the audio waveform are defined at compile time.
 * The general output volume is a real input.
 * There is no output commands channels.
 * There is only one input commands channel of one type.
-
-This version is on hold.
 
 
 Others related projects
