@@ -1,0 +1,5 @@
+*.ps  linguist-documentation
+*.pdf  linguist-documentation
+*.cir  linguist-language=LTspice
+*.sch  linguist-detectable
+*.dot  linguist-detectable
