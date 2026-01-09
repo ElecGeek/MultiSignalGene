@@ -1,5 +1,6 @@
 *.ps  linguist-documentation
 *.pdf  linguist-documentation
+vhdl_version/*  linguist-documentation
 *.cir  linguist-language=LTspice
 *.sch  linguist-detectable
 *.gv  linguist-detectable
