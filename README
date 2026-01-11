@@ -1,6 +1,6 @@
 This project generates independent multi channels audio signals from commands.
 
-There are 2 projects: a software version and an hardware version.
+There was 2 projects: a software version and an hardware version. Today, only the software is active.
 
 The main goal of this project is to change the parameters on the fly. That means, without any drops. If a frequency and an amplitude change, the sinusoid is faster/slower and higher/lower from the current point.
 All the parameters can be changed by commands, unless otherwise. In such case, the compile time or start-up is specified.
