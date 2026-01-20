@@ -24,6 +24,8 @@ struct signals_param_action
 {
   enum action_list { base_freq, base_phase_shift, base_phase_set,
 					 main_ampl_val, main_ampl_slewrate,
+					 freq_modul_freq, freq_modul_depth,
+					 freq_modul_phase_shift, freq_modul_phase_set,
 					 pulse_freq, pulse_depth, pulse_high_hold, pulse_low_hold,
 					 pulse_phase_shift, pulse_phase_set, pulse_modul_mode,
 					 ampl_modul_freq, ampl_modul_depth,

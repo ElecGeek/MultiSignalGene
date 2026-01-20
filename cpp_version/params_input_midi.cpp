@@ -206,9 +206,13 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 			  action.value = long_value;
 			  break;
 			case 0x02:
-			  // Abort
-			  ipm2a_status = input_event::end_track;
-			  ipm2a_clearing = input_params_base::c_abort;
+			  if ( action.value == 0x7f )
+				action.action = signals_param_action::nop;
+			  else
+				{
+				  ipm2a_status = input_event::end_track;
+				  ipm2a_clearing = input_params_base::c_abort;
+				}
 			  break;
 			case 0x04:
 			  long_value = get_value( 0, 1 );
@@ -252,8 +256,8 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 				}
 			  action.value &= 0x0f;
 			  break;
-			case 0x03:
-			  action.action = signals_param_action::nop;
+			case 0x07:
+			  // freq modulation TODO
 			  break;
 			}
 		  break;
