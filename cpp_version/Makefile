@@ -1,7 +1,6 @@
-#CXX=i686-pc-linux-gnu-13-m32m64-g++
 CXX=g++
-CXXFLAGS?=-O2 -m64
-LDFLAGS?=-m64
+CXXFLAGS?=-O2
+LDFLAGS?=
 DEFAULTWAVE?=SINE
 WITH_JACKAUDIO?=YES
 CXX_Version?=-std=c++17
@@ -9,7 +8,7 @@ SRCDIR?=
 BUILDDIR?=
 EXECDIR?=
 
-OBJECTS = $(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_input_mnemos.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)params_io_handler.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)sound_jack_links.o $(BUILDDIR)sound_jack_output.o $(BUILDDIR)samplerate_handler.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
+OBJECTS = $(BUILDDIR)main.o $(BUILDDIR)main_loop_DW_$(DEFAULTWAVE).o $(BUILDDIR)bundle_signals.o $(BUILDDIR)params_input_midi.o $(BUILDDIR)params_input_mnemos.o $(BUILDDIR)params_input_json.o $(BUILDDIR)params_output_txt.o $(BUILDDIR)params_output_mnemos.o $(BUILDDIR)parameters.o $(BUILDDIR)params_io_handler.o $(BUILDDIR)sample_step.o $(BUILDDIR)sound_file_output.o $(BUILDDIR)sound_jack_links.o $(BUILDDIR)sound_jack_output.o $(BUILDDIR)samplerate_handler.o $(BUILDDIR)amplitude_handler.o $(BUILDDIR)frequency_handler.o $(BUILDDIR)modulation_handler.o
 
 $(BUILDDIR)multisignalgene_DW_$(DEFAULTWAVE)			:	$(OBJECTS)
 ifeq ($(WITH_JACKAUDIO),YES)
@@ -72,6 +71,9 @@ $(BUILDDIR)params_input_midi.o			:	$(SRCDIR)params_input_midi.hxx $(SRCDIR)param
 
 $(BUILDDIR)params_input_mnemos.o			:	$(SRCDIR)params_input_mnemos.hxx $(SRCDIR)params_input_mnemos.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_input_mnemos.o $(SRCDIR)params_input_mnemos.cpp
+
+$(BUILDDIR)params_input_json.o			:	$(SRCDIR)params_input_json.hxx $(SRCDIR)params_input_json.cpp $(SRCDIR)parameters.hxx
+	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_input_json.o $(SRCDIR)params_input_json.cpp
 
 $(BUILDDIR)params_output_txt.o			:	$(SRCDIR)params_output_txt.hxx $(SRCDIR)params_output_txt.cpp $(SRCDIR)parameters.hxx
 	$(CXX) -c $(CXXFLAGS) $(CXX_Version) -o $(BUILDDIR)params_output_txt.o $(SRCDIR)params_output_txt.cpp
