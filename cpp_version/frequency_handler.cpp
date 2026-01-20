@@ -14,3 +14,11 @@ frequency_handler::frequency_handler( const unsigned short&sample_rate_id,
   frequency = 1;
 }
 
+frequency_modulated_handler::frequency_modulated_handler( const unsigned short&sample_rate_id,
+												const unsigned char&division_rate):
+  frequency_handler(sample_rate_id,division_rate),
+  angle( 0 )
+{
+  // put something non null to initialise
+  frequency = 0;
+}

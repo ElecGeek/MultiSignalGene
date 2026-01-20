@@ -3,32 +3,37 @@
 #ifndef __FREQUENCY_HANDLER__
 #define __FREQUENCY_HANDLER__
 
+
+// TODO make the high and low hold a separated class inherited from the freq handler
+
+
 /** \brief Manages the frequency and the period for one generator
  * 
  * Computes the data of a periodic output except the shape itself
  * It computes the period as an angle between 0 and 16777216 (2 power 24).
  * After the value passed the high limit, it returns to 0 and set a starting pulse
- * The actual sampling rate is computed to be transparent for the input and output values
+ * The actual sampling rate is computed to be transparent for the input and output values.\n
  *
  * It holds the angle at 1/4 and 3/4 of the period for a certain time (2 different parameters)
- *   The delay can be set from 0 (no hold) to 21.85s with a step of 0.33mS
+ *   The delay can be set from 0 (no hold) to 21.85s with a step of 0.33mS.\n
  *
  * The signal class uses this class to generate the output.
  * The run operator computes the next angle and the period start data
- * Other functions fetch them
+ * Other functions fetch them.\n
  *
  * The maximum frequency is 5999.91Hz, the step is 0.091Hz
  * There is a division rate in order to get lower frequencies with a lower step, with longer holds
  *   The base signal should use 1 as the range is around Hz to a few KHz.
  *   The modulations should use higher values as their range are around centiHz to a couple of Hz
  *     Second, in this project, this a non sense to modulate at rates higher than the carrier.
- *     For instance a division rate for 8 the maximum is 750Hz and the step is a period of 87s
+ *     For instance a division rate for 8 the maximum is 750Hz and the step is a period of 87s.\n
  *
  * CAUTION: The parameters described in this class defined the maximum and steps.
- * The can be narrow if an input module does not support the full range.
+ * The can be narrow if an input module does not support the full range.\n
  */
 class frequency_handler
 {
+protected:
   unsigned long frequency;
   const unsigned short global_rate;
   unsigned long angle;
@@ -103,7 +108,7 @@ class frequency_handler
    * \param high_hold Enter the hold time. The unit is the number of 16 samples at 48KHz
    * The minimum is 0.333mS, the maximum is 21.85S
    *
-   * It gets the requested value and apply the coeficient
+   * It gets the requested value and apply the coefficient
    * according with the division rate and the sample rate used
    * The result is stored to initialize the counter if so.
    * Since the hold time terminates when the counter reaches 0
@@ -206,12 +211,54 @@ class frequency_handler
    *
    * Get an event each time the angle rolls out the maximum value
    * The operator run should be used before
-   * \return Returns a boolean true one time when the cycle starts
+   * \return Returns a Boolean true one time when the cycle starts
    */ 
   constexpr bool GetStartCycle(void)const
   {
 	return startCycle;
   }
 };
+
+
+/** \brief Manages the frequency and the period for one generator
+ * 
+ * It work by a similar way than the frequency handler but with a frequency modulation.\n
+ * The class is inherited from the FH for the angle generator part.\n
+ * Some additional code computes the modulation. It is similar to the main one,
+ *   but it is a light version.\n
+ * More information can be found in the frequency handler class.
+ */
+class frequency_modulated_handler : public frequency_handler
+{
+  unsigned long frequency;
+  unsigned short angle;
+  unsigned char depth;
+public:
+  frequency_modulated_handler()=delete;
+  frequency_modulated_handler( const unsigned short& samle_rate_id,
+							   const unsigned char& division_rate);
+
+  // TODO depth
+  constexpr void set_modulation_frequency( const unsigned short&frequency )
+  {
+	this->frequency = frequency;
+	// TODO 
+	this->frequency *= 16 * 48;
+	this->frequency /= global_rate;
+  }
+  constexpr void modulation_shift_phase(const unsigned char&shift)
+  {
+	unsigned long shift_shifted( ((unsigned long)( 0x0f & shift )) << 20 );
+	angle += shift_shifted;
+	CheckHold();
+  }
+  constexpr void modulation_set_phase( const unsigned char&new_phase )
+  {
+	unsigned long shift_shifted( ((unsigned long)( 0x0f & new_phase )) << 20 );
+	angle = shift_shifted;
+  }
+  // TODO run operator
+};
+
 
 #endif
