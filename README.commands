@@ -1,5 +1,8 @@
 This is the documentation of the commands.
 
+
+Please note the frequency modulation is or is not available, depending which the branch has been fetch
+
 ************************
 THIS IS AN EARLY VERSION
 ************************
@@ -76,9 +79,21 @@ The step is about 0.79% or 0.395%, regardless the value.
 
 
 
+NN No operation
+---------------
+midi= 0001 0010   0vvvvvvv				c=N.A.			midi note: A#0
+vvvvvv is every value except $1111111
+
+This does not do anything. The value is not treated in the software but it is passed to the commands outputs.
+The purposes are:
+* Reserve some room for a manual edition of a binary file.
+* Make a kind of TTL or step display, especially with the -N 0 option of the output command
+
+
+
 Abort
 -----
-midi= 0001 0010   0vvvvvvv				c=N.A.			midi note: A#0 
+midi= 0001 0010   01111111				c=N.A.			midi note: A#0 
 
 This input commands channel is discarded. If all of them are discarded or have reach an end of stream, the program quits.
 The main purpose is to run a partial scenario for test.
@@ -86,17 +101,13 @@ The value is the time before leave (not yet implemented).
 
 
 
-Reserved
---------
-midi= 0001 0011   0-------				c=N.A.			midi note: A#0 
-
-
  
-AA, BA Modulation depth
+FA, AA, BA Modulation depth
 ---------------------------------
-midi= 0001 010x   0vvvvvvv				c=N.A.		
-x=0 for the amplitude modulation						midi note: G#0
-x=1 for the pulse modulation							midi note: A0
+midi= 0001 0xxx   0vvvvvvv				c=N.A.		
+  xxx=011 for the frequency modulation						midi note: A#0
+  xxx=100 for the amplitude modulation						midi note: G#0
+  xxx=101 for the pulse modulation							midi note: A0
 
 Set the depth from 0% if the value vvvvvvv is 0, to 100% if the value vvvvvvv is 127.
 The step is about 0.79%, regardless the value.
@@ -121,15 +132,11 @@ If it is 0, the modulation reduces its input according with the modulation depth
 
 
 
-Reserved
---------
-midi= 0001 0110   0000 1---				c=N.A.			midi note: A#0 
 
-
-
-OP, BP, AP Relative phase shift
+FP, OP, BP, AP Relative phase shift
 --------------------------------
 midi= 0001 0110   00xx vvvv				c=N.A.			midi note: A#0 
+ xx=00 for the frequency modulation
  xx=01 for the base signal OP
  xx=10 for the pulse modulation BP
  xx=11 for the amplitude modulation AP
@@ -139,15 +146,10 @@ This should be used with caution as it breaks the assumption of this project to 
 
 
 
-Reserved
---------
-midi= 0001 0110   0100 vvvv				c=N.A.			midi note: A#0 
-
-
-
-OO, BO, AO Absolute phase set
+FO, OO, BO, AO Absolute phase set
 -----------------------------
 midi= 0001 0110   01xx vvvv				c=N.A.			midi note: A#0 
+xx=00 for the frequency modulation
 xx=01 for the base signal OP
 xx=10 for the pulse modulation BP
 xx=11 for the amplitude modulation AP
@@ -157,14 +159,16 @@ This should be used with caution as it breaks the assumption of this project to 
 
 
 
-NN No operation
----------------
-midi= 0001 0111   0--- ----				c=N.A.			midi note: B0
+FF frequency modulation
+-----------------------
+midi= 0001 0111   0vvvvvvv				c=N.A.			midi note: B0
 
-This does not do anything. The value is not treated in the software but it is passed to the commands outputs.
-The purposes are:
-* Reserve some room for a manual edition of a binary file.
-* Make a kind of TTL or step display, especially with the -N 0 option of the output command
+Sets the fre'quency modulation frequency. It works (and is independent) with all the possible sampling rates.
+
+TODO calculation formula.
+The maximum frequency is TODO
+The minimum frequency is TODO
+The step is TODO
 
 
 
