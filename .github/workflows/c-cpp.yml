@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: environement
         run: sudo apt-get install -y libjack-jackd2-dev
       - name: setup build folders
@@ -31,7 +31,7 @@ jobs:
           cd build/Ubuntu
           tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: multisignalgene_build_ubuntu
           path: build
@@ -40,7 +40,7 @@ jobs:
     runs-on: macOS-14
     name: Mac OS X build with jackaudio
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: environement
         run: brew install jack
       - name: setup build folders
@@ -59,7 +59,7 @@ jobs:
           tar -cf The_objects_files.tar *.o
           rm -f *.o
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: multisignalgene_build_macOS
           path: build
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: setup build folders
         run: |
           mkdir build
@@ -85,7 +85,7 @@ jobs:
           cd build/Ubuntu_without_jackaudio
           tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: multisignalgene_build_ubuntu_withoutjack
           path: build
@@ -94,7 +94,7 @@ jobs:
     runs-on: macOS-latest
     name: Mac OS X build without
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: setup build folders
         run: |
           mkdir build
@@ -111,7 +111,7 @@ jobs:
           tar -cf The_objects_files.tar *.o
           rm -f *.o
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: multisignalgene_build_macOS_withoutjack
           path: build
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Windows build without
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: environement
         run: sudo apt-get install -y libjack-jackd2-dev
       - name: Windows env
@@ -141,7 +141,7 @@ jobs:
           cd build/Windows_without_jackaudio
           tar -cf The_objects_files.tar *.o --remove-files
       - name: return workflow as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: multisignalgene_build_windows_withoutjack
           path: build
@@ -153,7 +153,7 @@ jobs:
     needs: [ windows-build-without-jackaudio, macos-x-build-without-jackaudio, ubuntu-build-without-jackaudio,macos-x-build, ubuntu-build ] 
     steps:
       - name: Merge artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           delete-merged: true
           name: MultiSignalGene_builds
