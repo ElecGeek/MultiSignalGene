@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: environement
       run: sudo apt-get install -y graphviz
     - name: setup folders
@@ -29,7 +29,7 @@ jobs:
         make DOTLANG=jpeg BUILDDIR=../build/jpeg/
         make DOTLANG=png BUILDDIR=../build/png/
     - name: return workflow as artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: multisignalgene-doc
         path: build/*
