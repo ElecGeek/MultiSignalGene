@@ -530,7 +530,7 @@ string input_params_mnemos_2_action::FreqDelay_strings_2_val(unsigned long&value
 	  if ( the_val < 0.0000015259022 )
 		the_val = 1.0 / the_val;
 	  else
-		// Take the maximum valus
+		// Take the maximum value
 		the_val = 65535.0;
 	}
   // step 6:
@@ -778,6 +778,10 @@ input_params_mnemos_2_action::input_params_mnemos_2_action( ostream&out_info_str
 		  act=signals_param_action::ampl_modul_phase_set;
 		  return Angle_strings_2_val(value);}},
 	  {"nn",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  act=signals_param_action::nop;
+		  return Mode_strings_2_val( value, numeric_limits<unsigned long>::max() );}},
+	  {"fr",[&](unsigned long&value,signals_param_action::action_list&act)->string{
+		  // Random base frequency modulation. For now, it is treated as a nop
 		  act=signals_param_action::nop;
 		  return Mode_strings_2_val( value, numeric_limits<unsigned long>::max() );}},
 	  {"af",[&](unsigned long&value,signals_param_action::action_list&act)->string{
