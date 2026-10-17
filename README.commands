@@ -81,13 +81,21 @@ The step is about 0.79% or 0.395%, regardless the value.
 
 NN No operation
 ---------------
-midi= 0001 0010   0vvvvvvv				c=N.A.			midi note: A#0
-vvvvvv is every value except $1111111
+midi= 0001 0010   00vvvvvv				c=N.A.			midi note: A#0
 
 This does not do anything. The value is not treated in the software but it is passed to the commands outputs.
 The purposes are:
 * Reserve some room for a manual edition of a binary file.
 * Make a kind of TTL or step display, especially with the -N 0 option of the output command
+
+
+
+FR Random frequency modulation of the base
+------------------------------------------
+midi= 0001 0010   01vvvvvv				c=N.A.			midi note: A#0
+
+vvvvvv should be different form $111110 and from $111111
+This is a reservation of the code, it is not yet implemented.
 
 
 
@@ -98,7 +106,6 @@ midi= 0001 0010   01111111				c=N.A.			midi note: A#0
 This input commands channel is discarded. If all of them are discarded or have reach an end of stream, the program quits.
 The main purpose is to run a partial scenario for test.
 The value is the time before leave (not yet implemented).
-
 
 
  
@@ -163,7 +170,7 @@ FF frequency modulation
 -----------------------
 midi= 0001 0111   0vvvvvvv				c=N.A.			midi note: B0
 
-Sets the fre'quency modulation frequency. It works (and is independent) with all the possible sampling rates.
+Sets the frequency modulation frequency. It works (and is independent) with all the possible sampling rates.
 
 TODO calculation formula.
 The maximum frequency is TODO
