@@ -207,12 +207,17 @@ void input_params_midi_2_action::midi_2_action_run(vector<signals_param_action>&
 			  break;
 			case 0x02:
 			  if ( action.value == 0x7f )
-				action.action = signals_param_action::nop;
-			  else
 				{
 				  ipm2a_status = input_event::end_track;
 				  ipm2a_clearing = input_params_base::c_abort;
 				}
+			  else if ( ( action.value & 0x40 ) == 0x40 )
+				{
+				  // random frequency modulation TODO. For now, it is treated as a nop
+				  action.action = signals_param_action::nop;
+				}
+			  else
+				  action.action = signals_param_action::nop;
 			  break;
 			case 0x04:
 			  long_value = get_value( 0, 1 );
