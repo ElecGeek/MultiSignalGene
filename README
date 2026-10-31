@@ -40,15 +40,18 @@ The commits into GitHub are up and running, but might contain bugs.
 
 
 
-Hardware version (on hold, probabely dead)
-------------------------------------------
-It is similar to the software version but:
-* The physical output and the audio waveform are defined at compile time.
-* The general output volume is a real input.
-* There is no output commands channels.
-* There is only one input commands channel of one type.
+Hardware version DEAD
+---------------------
+An hardware version was planned from the commands to the output. It would have handled the midi mapped commands (the most easy), the 2 modulators, the volume control and the output.
+There is too much work as it is the re-invention of the wheel.
+For details see every version prior October 2026. Some parts may, even, be designed without the VHDL2008.
 
 
-Others related projects
------------------------
-There are two not pinned fun projects in the same GitHub user that implements only the pulse audio waveform. One is a pure electronics (logic and analogue) version, the other one is the VHDL only of a full digital version.
+
+Alternatives hardware
+---------------------
+Two fun projects to hardware implement a smaller part of the project. They are hosted in the same ElecGeek user.
+* A pure analogue electronics version generates a pretty good pulse mode from a sine output of the project, even with low sample rate.
+  The strategy is one channel one board.
+* A pure VHDL design generates only the pulses mode, the volume control and the display.
+  The strategy is one FPGA for all the channels.
